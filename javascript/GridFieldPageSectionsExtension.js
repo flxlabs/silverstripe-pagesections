@@ -4,42 +4,51 @@
 		 * Orderable rows
 		 */
 
-		var showContextMenu = function(event) {
-			var $target = $(event.target);
-			var $parents = $target.parents(".ss-gridfield-pagesections");
+		$(document).on("mousedown", function (event) {
+			$parents = $(event.target).parents(".treenav-menu");
+			if ($parents.length == 0) {
+				$(".treenav-menu").remove();
+			}
+		});
 
-			if ($parents.length) {
-				var $parent = $parents[0];
+		$(document).on("click", ".treenav-menu li", function(event) {
+			var $this = $(this);
+			var $menu = $this.parents(".treenav-menu");
+			var $gridfield = $(".ss-gridfield-pagesections[data-id='" + $menu.data("grid-id") + "']").find("tbody");
+			var newType = $this.data("type");
+
+			$gridfield.addElement($menu.data("row-id"), newType);
+
+			$this.parents(".treenav-menu").hide();
+		});
+
+		$(".ss-gridfield-pagesections tbody").entwine({
+			oncontextmenu: function(event) {
+				event.preventDefault();
+
+				$target = $(event.target);
+
+				var grid = this.getGridField();
+				var id = grid.data("id");
+				var rowId = $target.parents(".ss-gridfield-item").data("id");
 				var $treeNav = $target.parents(".col-treenav").first();
 
-				var elems = $treeNav.data("allowed-elements").split(",");
-				$menu = $("#treenav-menu").first();
-				$menu.empty();
+				var elems = $treeNav.data("allowed-elements");
+				$menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
 				$menu.css({
 					top: event.pageY + "px",
 					left: event.pageX + "px"
 				});
-				$menu.append("<li><b>Add a new element</b></li>");
-				elems.forEach(function(elem) {
-					$menu.append("<li>" + elem  + "</li>");
+				$(document.body).append($menu);
+
+				$menu.data("grid-id", id);
+				$menu.data("row-id", rowId);
+				$menu.append("<li class='header'>Add a child</li>");
+				$.each(elems, function(key, value) {
+					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});
 				$menu.show();
-
-				return true;
-			}
-		};
-
-		if (document.addEventListener) { // IE >= 9; other browsers
-			document.addEventListener("contextmenu", function(e) {
-				if (showContextMenu(e)) e.preventDefault();
-			}, false);
-		} else { // IE < 9
-			document.attachEvent("oncontextmenu", function() {
-				if (showContextMenu(window.event)) window.event.returnValue = false;
-			});
-		}
-
-		$(".ss-gridfield-pagesections tbody").entwine({
+			},
 			rebuildSort: function() {
 				var grid = this.getGridField();
 
@@ -61,6 +70,17 @@
 				grid.getItems().each(function() {
 					$(this).find(".col-reorder").data("sort", sort);
 					sort++;
+				});
+			},
+			addElement: function(id, elemType) {
+				var grid = this.getGridField();
+
+				grid.reload({
+					url: grid.data("url-add"),
+					data: [
+						{ name: "id", value: id },
+						{ name: "type", value: elemType },
+					]
 				});
 			},
 			onadd: function() {
@@ -104,7 +124,7 @@
 						var allowedElements = prev.data("allowed-elements").split(",");
 						
 						var helper = ui.helper.find(".col-treenav");
-						console.log(allowedElements.indexOf(helper.data("class")) !== false);
+						console.log(allowedElements[helper.data("class")]);
 					}
 				});
 			},

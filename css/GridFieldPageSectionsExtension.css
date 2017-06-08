@@ -2,7 +2,7 @@
  * Tree Nav
  */
 
- #treenav-menu {
+ .treenav-menu {
     display: none;
     z-index: 1000;
     position: fixed;
@@ -16,15 +16,19 @@
     padding: 0;
 }
 
-#treenav-menu li {
+.treenav-menu li {
     padding: 8px 12px;
     cursor: pointer;
     list-style-type: none;
     transition: all .3s ease;
 }
 
-#treenav-menu li:hover {
+.treenav-menu li:hover {
     background-color: #DEF;
+}
+
+.treenav-menu li.header {
+	font-weight: bolder;
 }
 
 

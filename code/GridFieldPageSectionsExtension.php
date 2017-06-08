@@ -12,6 +12,7 @@ class GridFieldPageSectionsExtension implements
     protected $sortField;
 
     protected static $allowed_actions = array(
+        "handleAdd",
         "handleReorder",
         "handleMoveToPage"
     );
@@ -28,6 +29,7 @@ class GridFieldPageSectionsExtension implements
 
     public function getURLHandlers($grid) {
         return array(
+            "POST add"        => "handleAdd",
             "POST reorder"    => "handleReorder",
             "POST movetopage" => "handleMoveToPage"
         );
@@ -42,13 +44,14 @@ class GridFieldPageSectionsExtension implements
         Requirements::css($moduleDir . "/css/GridFieldPageSectionsExtension.css");
         Requirements::javascript($moduleDir . "/javascript/GridFieldPageSectionsExtension.js");
 
+        $id = rand(1000000, 9999999);
         $field->addExtraClass("ss-gridfield-pagesections");
+        $field->setAttribute("data-id", $id);
+        $field->setAttribute("data-url-add", $field->Link("add"));
         $field->setAttribute("data-url-reorder", $field->Link("reorder"));
         $field->setAttribute("data-url-movetopage", $field->Link("movetopage"));
 
-        return array(
-            "header" => "<ul id='treenav-menu'></ul>"
-        );
+        return array();
     }
 
     public function augmentColumns($gridField, &$columns) {
@@ -77,11 +80,18 @@ class GridFieldPageSectionsExtension implements
 
         // Handle tree nav column
         else if ($columnName == "TreeNav") {
+            $classes = $record->getAllowedPageElements();
+            $elems = array();
+            foreach ($classes as $class) {
+                $elems[$class] = $class::$singular_name;
+            }
+
             return array(
-                "class" => "col-treenav",
+                "class" => "col-treenav group" . $record->_GroupId,
                 "data-class" => $record->ClassName,
-                "data-level" => isset($record->Level) ? $record->Level : "0",
-                "data-allowed-elements" => implode(",", $record->getAllowedPageElements()),
+                "data-level" => isset($record->_Level) ? $record->_Level : "0",
+                "data-group" => $record->_GroupId,
+                "data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
             );
         }
     }
@@ -110,7 +120,7 @@ class GridFieldPageSectionsExtension implements
 
             $id = $record->ID;
             $open = isset($state->open->$id);
-            $level = isset($record->Level) ? $record->Level : 0;
+            $level = isset($record->_Level) ? $record->_Level : 0;
             $field = null;
 
             if ($record->Children() && $record->Children()->Count() > 0) {
@@ -176,6 +186,12 @@ class GridFieldPageSectionsExtension implements
         $opens = $state->open->toArray();
         $list = $dataList->toArray();
         $sort = $this->getSortField();
+        $groupId = 0;
+
+        foreach ($list as $item) {
+            $item->_GroupId = $groupId % 2;
+            $groupId++;
+        }
 
         // Add child elements for every open element
         foreach ($opens as $id => $value) {
@@ -189,7 +205,8 @@ class GridFieldPageSectionsExtension implements
             $children = $obj->Children()->Sort($sort);
             for ($i = 0; $i < $children->count(); $i++) {
                 $child = $children[$i];
-                $child->Level = $value["level"];
+                $child->_Level = $value["level"];
+                $child->_GroupId = $base->_GroupId;
                 array_splice($list, $index + 1 + $i, 0, array($child));
             }
         }
@@ -205,5 +222,9 @@ class GridFieldPageSectionsExtension implements
                 $this->executeReorder($gridField, $sortedIDs);
             }
         //}
+    }
+
+    public function handleAdd(GridField $gridField, SS_HTTPRequest $request) {
+
     }
 }
