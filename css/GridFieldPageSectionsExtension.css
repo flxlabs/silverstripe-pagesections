@@ -51,26 +51,56 @@
 	text-align: left !important;
 }
 
+.ss-gridfield-pagesections .col-treenav > button:focus {
+	background: none !important;
+	box-shadow: none!important;
+	border: none !important;
+	background-color: none !important;
+}
+
+.ss-gridfield-pagesections .col-treenav > button > span > span.is-closed{
+	font-size: 175%;
+	color: #008000;
+}
+
+.ss-gridfield-pagesections .col-treenav > button > span > span.is-open{
+	font-size: 150%;
+	color: #ff0000;
+}
+
 .ss-gridfield-pagesections .col-treenav > button > span > span {
-	margin-right: 10px !important;
+	margin-right: 1em;
+	text-transform: capitalize;
+	vertical-align: middle;
+}
+
+.ss-gridfield-pagesections .col-treenav > button > span {
+	margin-right: 30px !important;
+	text-overflow: ellipsis;
+  	white-space: nowrap;
+	overflow-x: hidden;
 }
 
 .ss-gridfield-pagesections .col-treenav > button.level0 > span {
-	margin-left: 0px !important;
+	margin-left: 1em !important;
 }
 .ss-gridfield-pagesections .col-treenav > button.level1 > span {
-	margin-left: 30px !important;
+	margin-left: 2em !important;
 }
 .ss-gridfield-pagesections .col-treenav > button.level2 > span {
-	margin-left: 60px !important;
+	margin-left: 4em !important;
 }
 .ss-gridfield-pagesections .col-treenav > button.level3 > span {
-	margin-left: 90px !important;
+	margin-left: 6em !important;
 }
 .ss-gridfield-pagesections .col-treenav > button.level4 > span {
-	margin-left: 120px !important;
+	margin-left: 8em !important;
 }
 
+.ss-gridfield-pagesections .col-treenav > button:not(.level0) > span:before {
+	content: "├";
+	font-size: 100%;
+}
 
 /**
  * Orderable rows
