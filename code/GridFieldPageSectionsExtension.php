@@ -1,8 +1,8 @@
 <?php
 
-class GridFieldPageSectionsExtension implements 
-    GridField_ColumnProvider, 
-    GridField_ActionProvider, 
+class GridFieldPageSectionsExtension implements
+    GridField_ColumnProvider,
+    GridField_ActionProvider,
     GridField_DataManipulator,
     GridField_HTMLProvider,
     GridField_URLHandler,
@@ -124,17 +124,17 @@ class GridFieldPageSectionsExtension implements
             $field = null;
 
             if ($record->Children() && $record->Children()->Count() > 0) {
-                $icon = ($open === true ? "- " : "+ ");
+                $icon = ($open === true ? '<span class="is-open">–</span>' : '<span class="is-closed">+</span>');
 
-                $field = GridField_FormAction::create($gridField, "TreeNavAction".$record->ID, null, 
+                $field = GridField_FormAction::create($gridField, "TreeNavAction".$record->ID, null,
                     "dotreenav", array("element" => $record, "level" => $level));
                 $field->addExtraClass("level".$level . ($open ? " is-open" : " is-closed"));
-                $field->setButtonContent("<span>" . $icon . "</span><span>" . $record->Title . "</span>");
+                $field->setButtonContent( $icon . "<span>" . $record->Title . "</span>");
             } else {
-                $field = GridField_FormAction::create($gridField, "TreeNavAction".$record->ID, null, 
+                $field = GridField_FormAction::create($gridField, "TreeNavAction".$record->ID, null,
                     "dotreenav", array("element" => $record, "level" => $level));
                 $field->addExtraClass("level".$level . ($open ? " is-open" : " is-closed"));
-                $field->setButtonContent("<span>&#8226;</span><span>" . $record->Title . "</span>");
+                $field->setButtonContent("<span>" . $record->Title . "</span>");
             }
 
             $field->setForm($gridField->getForm());
