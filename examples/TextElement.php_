@@ -1,0 +1,20 @@
+<?php
+class TextElement extends PageElement  {
+	public static $singular_name = 'Text';
+	public static $plural_name = 'Texts';
+    
+    private static $db = array(
+        'Content' => 'HTMLText',
+    );
+    
+    public function getCMSFields(){
+        $fields = parent::getCMSFields();
+        $fields->removeByName('Children');
+        
+        return $fields;
+    }
+
+    public function getGridFieldPreview() {
+        return $this->Content;
+    }
+}

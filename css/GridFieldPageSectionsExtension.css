@@ -1,0 +1,103 @@
+/*
+ * Tree Nav
+ */
+
+.ss-gridfield-pagesections .col-treenav {
+	height: 100%;
+	padding: 0 !important;
+}
+
+.ss-gridfield-pagesections .col-treenav > button {
+	width: 100% !important;
+	height: 100% !important;
+	font-weight: bold !important;
+	/*font-size: 150% !important;*/
+	color: black !important;
+}
+
+.ss-gridfield-pagesections .col-treenav > button, .ss-gridfield-pagesections .col-treenav > button > span {
+	padding: 0 !important;
+	margin: 0 !important;
+	text-align: left !important;
+}
+
+.ss-gridfield-pagesections .col-treenav > button > span > span {
+	margin-right: 10px !important;
+}
+
+.ss-gridfield-pagesections .col-treenav > button.level0 > span {
+	margin-left: 0px !important;
+}
+.ss-gridfield-pagesections .col-treenav > button.level1 > span {
+	margin-left: 30px !important;
+}
+.ss-gridfield-pagesections .col-treenav > button.level2 > span {
+	margin-left: 60px !important;
+}
+.ss-gridfield-pagesections .col-treenav > button.level3 > span {
+	margin-left: 90px !important;
+}
+.ss-gridfield-pagesections .col-treenav > button.level4 > span {
+	margin-left: 120px !important;
+}
+
+
+/**
+ * Orderable rows
+ */
+
+.ss-gridfield-pagesections thead tr th.col-Reorder span {
+	padding: 0 !important;
+	margin-left: 8px;
+}
+
+.ss-gridfield-pagesections .col-reorder {
+	position: relative;
+	padding: 0 !important;
+	width: 16px !important;
+}
+
+.ss-gridfield-pagesections .col-reorder .handle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	cursor: move;
+}
+
+.ss-gridfield-pagesections .col-reorder .handle .icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 5px;
+	height: 11px;
+	margin: -5px 0 0 -2px;
+	background-image: url('../../framework/thirdparty/jquery-ui-themes/smoothness/images/ui-icons_222222_256x240.png');
+	background-position: -5px -227px;
+}
+
+.ss-gridfield-orderhelper {
+	border-bottom: 1px solid rgba(0, 0, 0, .1);
+	border-top: 1px solid rgba(0, 0, 0, .1);
+	box-shadow: 0 0 8px rgba(0, 0, 0, .4);
+}
+
+.ss-gridfield-pagesections tfoot .ui-droppable {
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+.ss-gridfield-pagesections tfoot .ui-droppable-active {
+	background-color: #D4CF90 !important;
+}
+
+.ss-gridfield-pagesections tfoot .ss-gridfield-previouspage {
+	background-position: -16px 9px !important;
+	margin-left: 0;
+}
+
+.ss-gridfield-pagesections tfoot .ss-gridfield-nextpage {
+	background-position: -40px 9px !important;
+	margin-right: 0;
+}

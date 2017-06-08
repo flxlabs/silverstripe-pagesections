@@ -1,0 +1,24 @@
+<?php
+class ImageElement extends PageElement  {
+	public static $singular_name = 'Image';
+	public static $plural_name = 'Images';
+    
+    private static $has_one = array(
+        'Image' => 'Image',
+    );
+    
+    public function getCMSFields(){
+        $fields = parent::getCMSFields();
+        $fields->removeByName('Children');
+        
+        $fields->addFieldToTab(
+            'Root.Main',    
+            $uploadField = new UploadField(
+                $name = 'Image',
+                $title = 'Upload an image'
+            )
+        );
+        
+        return $fields;
+    }
+}
