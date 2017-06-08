@@ -88,7 +88,7 @@ class PageElement extends DataObject {
 
         $fields->removeByName("Children");
         if ($this->ID && count(static::getAllowedPageElements())) {
-            $fields->addFieldToTab('Root.Main', $this->getChildrenGridField());
+            $fields->addFieldToTab('Root.PageSections', $this->getChildrenGridField());
         }
 
         return $fields;

@@ -45,6 +45,10 @@ class GridFieldPageSectionsExtension implements
         $field->addExtraClass("ss-gridfield-pagesections");
         $field->setAttribute("data-url-reorder", $field->Link("reorder"));
         $field->setAttribute("data-url-movetopage", $field->Link("movetopage"));
+
+        return array(
+            "header" => "<ul id='treenav-menu'></ul>"
+        );
     }
 
     public function augmentColumns($gridField, &$columns) {

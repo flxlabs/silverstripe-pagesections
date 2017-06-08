@@ -4,6 +4,41 @@
 		 * Orderable rows
 		 */
 
+		var showContextMenu = function(event) {
+			var $target = $(event.target);
+			var $parents = $target.parents(".ss-gridfield-pagesections");
+
+			if ($parents.length) {
+				var $parent = $parents[0];
+				var $treeNav = $target.parents(".col-treenav").first();
+
+				var elems = $treeNav.data("allowed-elements").split(",");
+				$menu = $("#treenav-menu").first();
+				$menu.empty();
+				$menu.css({
+					top: event.pageY + "px",
+					left: event.pageX + "px"
+				});
+				$menu.append("<li><b>Add a new element</b></li>");
+				elems.forEach(function(elem) {
+					$menu.append("<li>" + elem  + "</li>");
+				});
+				$menu.show();
+
+				return true;
+			}
+		};
+
+		if (document.addEventListener) { // IE >= 9; other browsers
+			document.addEventListener("contextmenu", function(e) {
+				if (showContextMenu(e)) e.preventDefault();
+			}, false);
+		} else { // IE < 9
+			document.attachEvent("oncontextmenu", function() {
+				if (showContextMenu(window.event)) window.event.returnValue = false;
+			});
+		}
+
 		$(".ss-gridfield-pagesections tbody").entwine({
 			rebuildSort: function() {
 				var grid = this.getGridField();
