@@ -24,11 +24,20 @@
 }
 
 .treenav-menu li:hover {
-    background-color: #DEF;
+    background-color: #FEFAD5;
+}
+
+.treenav-menu li.header:hover {
+    background-color: none;
 }
 
 .treenav-menu li.header {
 	font-weight: bolder;
+	cursor: default;
+}
+
+.treenav-menu li.header:hover {
+    background: none;
 }
 
 
@@ -59,13 +68,17 @@
 }
 
 .ss-gridfield-pagesections .col-treenav > button > span > span.is-closed{
-	font-size: 175%;
-	color: #008000;
+	font-size: 100%;
 }
 
 .ss-gridfield-pagesections .col-treenav > button > span > span.is-open{
-	font-size: 150%;
-	color: #ff0000;
+	font-size: 96%;
+	margin-left: -0.1em;
+}
+
+.ss-gridfield-pagesections .col-treenav > button > span > span.is-end{
+	font-size: 110%;
+	margin-left: -0.1em;
 }
 
 .ss-gridfield-pagesections .col-treenav > button > span > span {
@@ -98,8 +111,7 @@
 }
 
 .ss-gridfield-pagesections .col-treenav > button:not(.level0) > span:before {
-	content: "├";
-	font-size: 100%;
+
 }
 
 /**
