@@ -52,6 +52,7 @@ class GridFieldPageSectionsExtension implements
         $field->setAttribute("data-url-movetopage", $field->Link("movetopage"));
 
         return array();
+
     }
 
     public function augmentColumns($gridField, &$columns) {

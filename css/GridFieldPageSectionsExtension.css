@@ -68,6 +68,7 @@
 }
 
 .ss-gridfield-pagesections .col-treenav > button > span > span.is-closed{
+
 	font-size: 100%;
 }
 
@@ -108,11 +109,9 @@
 }
 .ss-gridfield-pagesections .col-treenav > button.level4 > span {
 	margin-left: 8em !important;
-}
-
-.ss-gridfield-pagesections .col-treenav > button:not(.level0) > span:before {
 
 }
+
 
 /**
  * Orderable rows
