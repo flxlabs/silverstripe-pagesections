@@ -141,7 +141,6 @@ class GridFieldPageSectionsExtension implements
 			} else {
 				$icon = '<span class="is-end">◼</span>';
 			}
-			$icon = $level . " " . $icon;
 
 			$field = GridField_FormAction::create(
 				$gridField,
