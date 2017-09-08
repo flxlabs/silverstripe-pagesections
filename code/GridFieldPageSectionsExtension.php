@@ -137,7 +137,8 @@ class GridFieldPageSectionsExtension implements
 			$field = null;
 
 			if ($record->Children() && $record->Children()->Count() > 0) {
-				$icon = ($open === true ? '<span class="is-open">▼</span>' : '<span class="is-closed">▶</span>');
+				$icon = ($open === true ? '<span class="is-open">▼</span>'
+					: '<span class="is-closed">▶</span>');
 			} else {
 				$icon = '<span class="is-end">◼</span>';
 			}
@@ -337,9 +338,6 @@ class GridFieldPageSectionsExtension implements
 
 		$obj->Children()->Add($child);
 
-		$state = $gridField->getState(true);
-		$this->openElement($state, $obj);
-
 		return $gridField->FieldHolder();
 	}
 
@@ -350,18 +348,11 @@ class GridFieldPageSectionsExtension implements
 		$parentId = intval($request->postVar("parentId"));
 		$parentObj = DataObject::get_by_id("PageElement", $parentId);
 
-		// Close the element in case it's open to avoid errors
-		$state = $gridField->getState(true);
-		if ($this->isOpen($state, $obj)) {
-			$this->closeElement($state, $obj);
-		}
-
 		// Detach it from this parent (from the page if we're top level)
 		if (!$parentObj) {
 			$gridField->getList()->Remove($obj);
 		} else {
 			$parentObj->Children()->Remove($obj);
-			$obj->Parents()->Remove($parentObj);
 		}
 
 		return $gridField->FieldHolder();
