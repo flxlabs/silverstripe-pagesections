@@ -13,6 +13,7 @@ class GridFieldPageSectionsExtension implements
 
     protected static $allowed_actions = array(
         "handleAdd",
+        "handleRemove",
         "handleReorder",
         "handleMoveToPage"
     );
@@ -30,6 +31,7 @@ class GridFieldPageSectionsExtension implements
     public function getURLHandlers($grid) {
         return array(
             "POST add"        => "handleAdd",
+            "POST remove"     => "handleRemove",
             "POST reorder"    => "handleReorder",
             "POST movetopage" => "handleMoveToPage"
         );
@@ -48,6 +50,7 @@ class GridFieldPageSectionsExtension implements
         $field->addExtraClass("ss-gridfield-pagesections");
         $field->setAttribute("data-id", $id);
         $field->setAttribute("data-url-add", $field->Link("add"));
+        $field->setAttribute("data-url-remove", $field->Link("remove"));
         $field->setAttribute("data-url-reorder", $field->Link("reorder"));
         $field->setAttribute("data-url-movetopage", $field->Link("movetopage"));
 
@@ -90,8 +93,8 @@ class GridFieldPageSectionsExtension implements
             return array(
                 "class" => "col-treenav group" . $record->_GroupId,
                 "data-class" => $record->ClassName,
-                "data-level" => isset($record->_Level) ? $record->_Level : "0",
-                "data-group" => $record->_GroupId,
+                "data-level" => strval($record->_Level),
+                "data-group" => strval($record->_GroupId),
                 "data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
             );
         }
@@ -121,7 +124,7 @@ class GridFieldPageSectionsExtension implements
 
             $id = $record->ID;
             $open = isset($state->open->$id);
-            $level = isset($record->_Level) ? $record->_Level : 0;
+            $level = $record->_Level;
             $field = null;
 
             if ($record->Children() && $record->Children()->Count() > 0) {
@@ -135,15 +138,15 @@ class GridFieldPageSectionsExtension implements
                 "TreeNavAction".$record->ID,
                 null,
                 "dotreenav",
-                array("element" => $record, "level" => $level)
+                array("element" => $record)
             );
             $field->addExtraClass("level".$level . ($open ? " is-open" : " is-closed"));
-            $field->setButtonContent( $icon . "<span>" . $record->Title . "</span>");
-
+            $field->setButtonContent($icon);
             $field->setForm($gridField->getForm());
 
             return ViewableData::create()->customise(array(
                 "ButtonField" => $field,
+                "Title" => $record->Title,
             ))->renderWith("GridFieldPageElement");
         }
     }
@@ -155,8 +158,6 @@ class GridFieldPageSectionsExtension implements
     public function handleAction(GridField $gridField, $actionName, $arguments, $data) {
         if ($actionName == "dotreenav") {
             $elem = $arguments["element"];
-            $level = $arguments["level"];
-            $id = $elem->ID;
 
             if ($elem->Children()->Count() == 0) {
                 Controller::curr()->getResponse()->setStatusCode(
@@ -167,19 +168,39 @@ class GridFieldPageSectionsExtension implements
             }
 
             $state = $gridField->getState(true);
-
-            if (isset($state->open->$id)) {
-                $this->closeElement($elem, $state);
+            if ($this->isOpen($state, $elem)) {
+                $this->closeElement($state, $elem);
             } else {
-                $state->open->$id = array("class" => $elem->ClassName, "level" => $level + 1);
+                $this->openElement($state, $elem, $level);
             }
         }
     }
 
-    private function closeElement($element, $state) {
+    private function isOpen($state, $element) {
+        $id = $element->ID;
+        return isset($state->open->$id);
+    }
+    private function getLevel($state, $element) {
+        if ($this->isOpen($state, $element)) {
+            return $state->open->{$element->ID}->level;
+        }
+        $parents = $element->Parents();
+        foreach ($parents as $parent) {
+            if ($this->isOpen($state, $parent)) {
+                return $state->open->{$parent->ID}->level + 1;
+            }
+        }
+        return 0;
+    }
+    private function openElement($state, $element) {
+        $id = $element->ID;
+        $lvl = $this->getLevel($state, $element);
+        $state->open->$id = array("level" => $lvl);
+    }
+    private function closeElement($state, $element) {
         $id = $element->ID;
         foreach ($element->Children() as $child) {
-            $this->closeElement($child, $state);
+            $this->closeElement($state, $child);
         }
         unset($state->open->$id);
     }
@@ -191,14 +212,16 @@ class GridFieldPageSectionsExtension implements
         $sort = $this->getSortField();
         $groupId = 0;
 
+        // Create groups for coloring
         foreach ($list as $item) {
             $item->_GroupId = $groupId % 2;
+            $item->_Level = 0;
             $groupId++;
         }
 
         // Add child elements for every open element
         foreach ($opens as $id => $value) {
-            $obj = DataObject::get_by_id($value["class"], $id);
+            $obj = DataObject::get_by_id("PageElement", $id);
 
             // Get index of the current element in the list
             $base = current(array_filter($list, function($item) use ($id) { return $item->ID == $id; }));
@@ -208,7 +231,7 @@ class GridFieldPageSectionsExtension implements
             $children = $obj->Children()->Sort($sort);
             for ($i = 0; $i < $children->count(); $i++) {
                 $child = $children[$i];
-                $child->_Level = $value["level"];
+                $child->_Level = $value["level"] + 1;
                 $child->_GroupId = $base->_GroupId;
                 array_splice($list, $index + 1 + $i, 0, array($child));
             }
@@ -228,6 +251,35 @@ class GridFieldPageSectionsExtension implements
     }
 
     public function handleAdd(GridField $gridField, SS_HTTPRequest $request) {
+        $id = intval($request->postVar("id"));
+        $type = $request->postVar("type");
 
+        $obj = DataObject::get_by_id("PageElement", $id);
+        $child = $type::create();
+        $child->Title = "New " . $type;
+        $child->write();
+
+        $obj->Children()->Add($child);
+
+        $state = $gridField->getState(true);
+        $this->openElement($state, $obj);
+
+        return $gridField->FieldHolder();
     }
+
+    public function handleRemove(GridField $gridField, SS_HTTPRequest $request) {
+        $id = intval($request->postVar("id"));
+        $obj = DataObject::get_by_id("PageElement", $id);
+
+        // Close the element in case it's open to avoid errors
+        $state = $gridField->getState(true);
+        if ($this->isOpen($state, $obj)) {
+            $this->closeElement($obj);
+        }
+
+        // Delete the element
+        $obj->delete();
+
+        return $gridField->FieldHolder();
+    }  
 }

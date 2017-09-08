@@ -11,17 +11,29 @@
 			}
 		});
 
+		// Context menu click
 		$(document).on("click", ".treenav-menu li", function(event) {
 			var $this = $(this);
 			var $menu = $this.parents(".treenav-menu");
 			var $gridfield = $(".ss-gridfield-pagesections[data-id='" + $menu.data("grid-id") + "']").find("tbody");
 			var newType = $this.data("type");
 
-			$gridfield.addElement($menu.data("row-id"), newType);
+			// If we don't have a type then the user clicked a header or some random thing
+			if (!newType) return;
+
+			if (newType === "__DELETE__") {
+				if (!confirm("Are you sure you want to remove this element? All children will be orphans!"))
+					return;
+
+				$gridfield.removeElement($menu.data("row-id"));
+			} else {
+				$gridfield.addElement($menu.data("row-id"), newType);
+			}
 
 			$this.parents(".treenav-menu").hide();
 		});
 
+		// Show context menu
 		$(".ss-gridfield-pagesections tbody").entwine({
 			oncontextmenu: function(event) {
 				event.preventDefault();
@@ -47,6 +59,8 @@
 				$.each(elems, function(key, value) {
 					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});
+				$menu.append("<li class='header'>--------------------</li>");
+				$menu.append("<li data-type='__DELETE__'>Remove</li>");
 				$menu.show();
 			},
 			rebuildSort: function() {
@@ -80,6 +94,16 @@
 					data: [
 						{ name: "id", value: id },
 						{ name: "type", value: elemType },
+					]
+				});
+			},
+			removeElement: function(id) {
+				var grid = this.getGridField();
+
+				grid.reload({
+					url: grid.data("url-remove"),
+					data: [
+						{ name: "id", value: id },
 					]
 				});
 			},
