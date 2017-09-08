@@ -21,11 +21,13 @@
 			// If we don't have a type then the user clicked a header or some random thing
 			if (!newType) return;
 
-			if (newType === "__DELETE__") {
+			if (newType === "__REMOVE__") {
+				$gridfield.removeElement($menu.data("row-id"), $menu.data("parent-id"));
+			} else if (newType === "__DELETE__") {
 				if (!confirm("Are you sure you want to remove this element? All children will be orphans!"))
 					return;
 
-				$gridfield.removeElement($menu.data("row-id"));
+				$gridfield.deleteElement($menu.data("row-id"));
 			} else {
 				$gridfield.addElement($menu.data("row-id"), newType);
 			}
@@ -44,6 +46,10 @@
 				var id = grid.data("id");
 				var rowId = $target.parents(".ss-gridfield-item").data("id");
 				var $treeNav = $target.parents(".col-treenav").first();
+				var parentId = null;
+				if ($treeNav.data("level") > 0) {
+					parentId = $treeNav.parents(".ss-gridfield-item").prev().data("id");
+				}
 
 				var elems = $treeNav.data("allowed-elements");
 				$menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
@@ -53,14 +59,18 @@
 				});
 				$(document.body).append($menu);
 
-				$menu.data("grid-id", id);
-				$menu.data("row-id", rowId);
+				$menu.data({
+					gridId: id,
+					rowId: rowId,
+					parentId: parentId,
+				});
 				$menu.append("<li class='header'>Add a child</li>");
 				$.each(elems, function(key, value) {
 					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});
 				$menu.append("<li class='header'>--------------------</li>");
-				$menu.append("<li data-type='__DELETE__'>Remove</li>");
+				$menu.append("<li data-type='__REMOVE__'>Remove</li>");
+				$menu.append("<li data-type='__DELETE__'>Delete</li>");
 				$menu.show();
 			},
 			rebuildSort: function() {
@@ -97,11 +107,22 @@
 					]
 				});
 			},
-			removeElement: function(id) {
+			removeElement: function(id, parentId) {
 				var grid = this.getGridField();
 
 				grid.reload({
 					url: grid.data("url-remove"),
+					data: [
+						{ name: "id", value: id },
+						{ name: "parentId", value: parentId },
+					]
+				});
+			},
+			deleteElement: function(id) {
+				var grid = this.getGridField();
+
+				grid.reload({
+					url: grid.data("url-delete"),
 					data: [
 						{ name: "id", value: id },
 					]
@@ -112,11 +133,11 @@
 
 				var helper = function(e, row) {
 					return row.clone()
-							  .addClass("ss-gridfield-orderhelper")
-							  .width("auto")
-							  .find(".col-buttons")
-							  .remove()
-							  .end();
+								.addClass("ss-gridfield-orderhelper")
+								.width("auto")
+								.find(".col-buttons")
+								.remove()
+								.end();
 				};
 
 				var update = function(event, ui) {
@@ -141,12 +162,13 @@
 					opacity: 0.7,
 					update: update,
 					start: function(event, ui) {
-						alert("hi");
+						console.log(ui.placeholder);
 					},
 					over: function(event, ui) {
 						var prev = ui.placeholder.prev().find(".col-treenav");
-						var allowedElements = prev.data("allowed-elements").split(",");
-						
+						var allowedElements = Object.keys(prev.data("allowed-elements"));
+						console.log(allowedElements);
+
 						var helper = ui.helper.find(".col-treenav");
 						console.log(allowedElements[helper.data("class")]);
 					}
