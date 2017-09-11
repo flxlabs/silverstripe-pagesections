@@ -33,6 +33,22 @@ class PageSectionsExtension extends DataExtension {
 		$classes = array_diff($classes, ["PageElement"]);
 		return $classes;
 	}
+
+	public function onBeforeWrite() {
+		$sections = $this->owner->config()->get("page_sections");
+		if (!$sections) $sections = array("Main");
+
+		foreach ($sections as $section) {
+			$name = "PageSection".$section;
+
+			$list = $this->owner->$name()->Sort("SortOrder")->toArray();
+			$count = count($list);
+
+			for ($i = 0; $i < $count; $i++) { 
+					$this->owner->$name()->Add($list[$i], array("SortOrder" => $i));
+			}
+		}
+	}
 	
 	public function updateCMSFields(FieldList $fields) {
 		$sections = $this->owner->config()->get("page_sections");
@@ -56,9 +72,8 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent($dataColumns = new GridFieldDataColumns())
 					->addComponent($autoCompl)
 					->addComponent($addNewButton)
-					->addComponent(new GridFieldPageSectionsExtension("SortOrder"))
-					->addComponent(new GridFieldDetailForm())
-					;
+					->addComponent(new GridFieldPageSectionsExtension($this->owner))
+					->addComponent(new GridFieldDetailForm());
 
 				$f = new GridField($name, $section, $this->owner->$name(), $config);
 				$fields->addFieldToTab("Root.PageSections", $f);

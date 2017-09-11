@@ -73,29 +73,6 @@
 				$menu.append("<li data-type='__DELETE__'>Delete</li>");
 				$menu.show();
 			},
-			rebuildSort: function() {
-				var grid = this.getGridField();
-
-				// Get lowest sort value in this list (respects pagination)
-				var minSort = null;
-				grid.getItems().each(function() {
-					var sort = $(this).find(".col-reorder").data("sort");
-
-					if (minSort === null && sort > 0) {
-						minSort = sort;
-					} else if (sort > 0) {
-						minSort = Math.min(minSort, sort);
-					}
-				});
-				minSort = Math.max(1, minSort);
-
-				// With the min sort found, loop through all records and re-arrange
-				var sort = minSort;
-				grid.getItems().each(function() {
-					$(this).find(".col-reorder").data("sort", sort);
-					sort++;
-				});
-			},
 			addElement: function(id, elemType) {
 				var grid = this.getGridField();
 
@@ -129,49 +106,68 @@
 				});
 			},
 			onadd: function() {
-				var self = this;
+				var grid = this.getGridField();
 
-				var helper = function(e, row) {
-					return row.clone()
-								.addClass("ss-gridfield-orderhelper")
-								.width("auto")
-								.find(".col-buttons")
-								.remove()
-								.end();
-				};
+				$("tr.ss-gridfield-item").each(function() {
+					var $this = $(this);
 
-				var update = function(event, ui) {
-					// Rebuild all sort data fields
-					self.rebuildSort();
+					$col = $this.find(".col-reorder");
+					$col.append("<div class='before'></div><div class='middle'></div><div class='after'></div>");
+					$col.find("div").each(function() {
+						$(this).droppable({
+							tolerance: "pointer",
+							drop: function(event, ui) {
+								$drop = $(this);
 
-					// If the item being dragged is unsaved, don't do anything
-					if ((ui != undefined) && ui.item.hasClass('ss-gridfield-inline-new')) {
-						return;
-					}
+								var type = "before";
+								if ($drop.hasClass("middle"))
+									type = "child";
+								else if ($drop.hasClass("after"))
+									type = "after";
 
-					// Check if we are allowed to postback
-					var grid = self.getGridField();
-					grid.reload({
-						url: grid.data("url-reorder")
+								var id = ui.draggable.data("id");
+								var parent = ui.draggable.find(".col-treenav").data("parent");
+								var newParent = type === "child" ? $this.data("id") : $this.find(".col-treenav").data("parent");
+								var sort = $this.find(".col-reorder").data("sort");
+
+								grid.reload({
+									url: grid.data("url-reorder"),
+									data: [{
+										name: "type",
+										value: type,
+									}, {
+										name: "id",
+										value: id,
+									}, {
+										name: "parent",
+										value: parent,
+									}, {
+										name: "newParent",
+										value: newParent,
+									}, {
+										name: "sort",
+										value: sort,
+									}],
+								});
+							},
+						});
 					});
-				};
 
-				this.sortable({
-					handle: ".handle",
-					helper: helper,
-					opacity: 0.7,
-					update: update,
-					start: function(event, ui) {
-						console.log(ui.placeholder);
-					},
-					over: function(event, ui) {
-						var prev = ui.placeholder.prev().find(".col-treenav");
-						var allowedElements = Object.keys(prev.data("allowed-elements"));
-						console.log(allowedElements);
-
-						var helper = ui.helper.find(".col-treenav");
-						console.log(allowedElements[helper.data("class")]);
-					}
+					$this.draggable({
+						revert: "invalid",
+						helper: function() {
+							var clone = $this.clone().css("z-index", 200).find(".ui-droppable").remove().end();
+							// Timeout is needed otherwise the draggable position is messed up
+							setTimeout(function() { $this.hide(); }, 1);
+							return clone;
+						},
+						start: function() {
+							$(".ui-droppable").show();
+						},
+						stop: function(event, ui) {
+							$(".ui-droppable").hide();
+						},
+					});
 				});
 			},
 			onremove: function() {

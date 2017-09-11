@@ -50,6 +50,17 @@ class PageElement extends DataObject {
         return $classes;
     }
 
+    public function onBeforeWrite() {
+        parent::onBeforeWrite();
+
+        $list = $this->Children()->Sort("SortOrder")->toArray();
+        $count = count($list);
+
+        for ($i = 0; $i < $count; $i++) { 
+            $this->Children()->Add($list[$i], array("SortOrder" => $i));
+        }
+    }
+
     public function getChildrenGridField() {
         $comp = new GridFieldAddNewMultiClass();
         $comp->setClasses($this->getAllowedPageElements());

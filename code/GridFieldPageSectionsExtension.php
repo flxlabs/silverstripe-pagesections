@@ -9,6 +9,7 @@ class GridFieldPageSectionsExtension implements
 	GridField_SaveHandler
 {
 
+	protected $page;
 	protected $sortField;
 
 	protected static $allowed_actions = array(
@@ -20,11 +21,14 @@ class GridFieldPageSectionsExtension implements
 	);
 
 
-	public function __construct($sortField = 'Sort') {
-		//parent::__construct();
+	public function __construct($page, $sortField = "SortOrder") {
+		$this->page = $page;
 		$this->sortField = $sortField;
 	}
 
+	public function getPage() {
+		return $this->page;
+	}
 	public function getSortField() {
 		return $this->sortField;
 	}
@@ -58,19 +62,13 @@ class GridFieldPageSectionsExtension implements
 		$field->setAttribute("data-url-movetopage", $field->Link("movetopage"));
 
 		return array();
-
 	}
 
 	public function augmentColumns($gridField, &$columns) {
-		$state = $gridField->getState();
-
-		// Insert column for row sorting
-		if (!in_array("Reorder", $columns) && $state->GridFieldOrderableRows->enabled) {
+		if (!in_array("Reorder", $columns)) {
 			array_splice($columns, 0, 0, "Reorder");
 		}
 
-		// Insert columns for level
-		if (!isset($state->open)) $state->open = array();
 		if (!in_array("TreeNav", $columns)) {
 			array_splice($columns, 1, 0, "TreeNav");
 		}
@@ -78,6 +76,24 @@ class GridFieldPageSectionsExtension implements
 		if (!in_array("Actions", $columns)) {
 			array_push($columns, "Actions");
 		}
+
+		// Insert grid state initial data
+		$state = $gridField->getState();
+		if (!isset($state->open)) {
+			$state->open = array();
+		}
+	}
+
+	public function getColumnsHandled($gridField) {
+		return array(
+			"Reorder",
+			"TreeNav",
+			"Actions",
+		);
+	}
+
+	public function getColumnMetadata($gridField, $columnName) {
+		return array("title" => "");
 	}
 
 	public function getColumnAttributes($gridField, $record, $columnName) {
@@ -102,23 +118,17 @@ class GridFieldPageSectionsExtension implements
 				"data-class" => $record->ClassName,
 				"data-level" => strval($record->_Level),
 				"data-group" => strval($record->_GroupId),
+				"data-parent" => $record->_Parent ? strval($record->_Parent->ID) : "",
 				"data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			);
 		}
 
-		else return array();
-	}
-
-	public function getColumnMetadata($gridField, $columnName) {
-		return array("title" => "");
-	}
-
-	public function getColumnsHandled($gridField) {
-		return array(
-			"Reorder",
-			"TreeNav",
-			"Actions",
-		);
+		// Handle the actions column
+		else if ($columnName == "Actions") {
+			return array(
+				"class" => "col-actions",
+			);
+		}
 	}
 
 	public function getColumnContent($gridField, $record, $columnName) {
@@ -208,13 +218,13 @@ class GridFieldPageSectionsExtension implements
 		}
 		$list = array_reverse($list);
 
-		$curr = $state->open;
+		$opens = $state->open;
 		foreach ($list as $item) {
-			if (!isset($curr->{$item->ID})) {
+			if (!isset($opens->{$item->ID})) {
 				return false;
 			}
 
-			$curr = $curr->{$item->ID}->open;
+			$opens = $opens->{$item->ID};
 		}
 
 		return true;
@@ -229,17 +239,13 @@ class GridFieldPageSectionsExtension implements
 		$list = array_reverse($list);
 
 		$i = 0;
-		$curr = $state->open;
+		$opens = $state->open;
 		foreach ($list as $item) {
-			if (!isset($curr->{$item->ID})) {
-				$curr->{$item->ID} = array(
-					"level" => $i,
-					"open" => array(),
-				);
+			if (!isset($opens->{$item->ID})) {
+				$opens->{$item->ID} = array();
 			}
 
-			$i++;
-			$curr = $curr->{$item->ID}->open;
+			$opens = $opens->{$item->ID};
 		}
 	}
 	private function closeElement($state, $element) {
@@ -251,72 +257,111 @@ class GridFieldPageSectionsExtension implements
 		}
 		$list = array_reverse($list);
 
-		$curr = $state->open;
+		$opens = $state->open;
 		foreach ($list as $item) {
-			$curr = $curr->{$item->ID}->open;
+			$opens = $opens->{$item->ID};
 		}
 
-		unset($curr->{$element->ID});
+		unset($opens->{$element->ID});
 	}
 
 	public function getManipulatedData(GridField $gridField, SS_List $dataList) {
-		$state = $gridField->getState(true);
-		$opens = $state->open->toArray();
-		$list = $dataList->toArray();
-		$groupId = 0;
+		$list = $dataList->sort($this->getSortField())->toArray();
 
+		$state = $gridField->getState(true);
+		$opens = $state->open;
+
+		$tree = array();
 		$arr = array();
 		foreach ($list as $item) {
-			$item->_GroupId = $groupId % 2;
 			$item->_Level = 0;
 			$item->_Open = false;
-			$groupId++;
+			$item->_Tree = array($item->ID);
 
-			$arr[] = $item;
-			if (isset($opens[$item->ID])) {
-				$item->_Open = true;
-				$cArr = $this->getOpens($item, $opens[$item->ID]);
-				$arr = array_merge($arr, $cArr);
-			}
+			$this->getManipulatedItem($arr, $tree, $opens, $item, 1);
 		}
+
+		$state->tree = $tree;
 
 		return ArrayList::create($arr);
 	}
 
-	// Add element and all it's open children
-	private function getOpens($item, $openInfo) {
-		$arr = array();
+	private function getManipulatedItem(&$arr, &$tree, $opens, $item, $level) {
+		$arr[] = $item;
+
+		$newTree = array();
+		$node = array(
+			"id" => $item->ID,
+			"open" => isset($opens->{$item->ID}),
+			"tree" => &$newTree,
+		);
+		$tree[] = $node;
+
+		// We're done here if the item isn't open
+		if (!isset($opens->{$item->ID})) return;
+
 		$sort = $this->getSortField();
-		$level = $openInfo["level"];
-		$opens = $openInfo["open"];
 
 		// Get all children and insert them into the list
 		$children = $item->Children()->Sort($sort);
 		foreach ($children as $child) {
-			$child->_Level = $level + 1;
-			$child->_GroupId = $item->_GroupId;
+			$child->_Level = $level;
 			$child->_Parent = $item;
 			$child->_Open = false;
-			$arr[] = $child;
+			$child->_Tree = array_merge($item->_Tree, array($child->ID));
 
-			if (isset($opens[$child->ID])) {
-				$child->_Open = true;
-			  $cArr = $this->getOpens($child, $opens[$child->ID]);  
-			  $arr = array_merge($arr, $cArr);
-			}
+			$this->getManipulatedItem($arr, $newTree, $opens->{$item->ID}, $child, $level + 1);
 		}
 
-		return $arr;
+		$item->_Open = true;
 	}
 
 	public function handleSave(GridField $gridField, DataObjectInterface $record) {
-		//if (!$this->immediateUpdate) {
+		/*if (!$this->immediateUpdate) {
 			$value = $gridField->Value();
 			$sortedIDs = $this->getSortedIDs($value);
 			if ($sortedIDs) {
 				$this->executeReorder($gridField, $sortedIDs);
 			}
-		//}
+		}*/
+	}
+
+	public function handleReorder(GridField $gridField, SS_HTTPRequest $request) {
+		$vars = $request->postVars();
+
+		$type = $vars["type"];
+		$sort = intval($vars["sort"]);
+
+		$item = PageElement::get()->byID($vars["id"]);
+		$parent = PageElement::get()->byID($vars["parent"]);
+		$newParent = PageElement::get()->byID($vars["newParent"]);
+
+		if ($parent) {
+			$parent->Children()->Remove($item);
+		} else {
+			$gridField->getList()->Remove($item);
+		}
+
+		if ($type == "child") {
+			if ($newParent) {
+				$newParent->Children()->Add($item);
+			} else {
+				$gridField->getList()->Add($item);
+			}
+		} else {
+			$num = $type == "before" ? -1 : 1;
+			$sortBy = $this->getSortField();
+
+			if ($newParent) {
+				$newParent->Children()->Add($item, array($sortBy => $sort + $num));
+				$newParent->write();
+			} else {
+				$gridField->getList()->Add($item, array($sortBy => $sort + $num));
+				$this->getPage()->write();
+			}
+		}
+
+		return $gridField->FieldHolder();
 	}
 
 	public function handleAdd(GridField $gridField, SS_HTTPRequest $request) {
