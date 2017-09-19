@@ -83,7 +83,9 @@ class PageSectionsExtension extends DataExtension {
 
 	public function PageSection($name = "Main") {
 		$elements = $this->owner->getVersionedRelation("PageSection" . $name);
-		if (!$elements) return;
-		return $this->owner->renderWith("PageSection", array("Elements" => $elements->sort("SortOrder")));
+		return $this->owner->renderWith(
+			"RenderChildren",
+			array("Elements" => $elements, "ParentList" => strval($this->owner->ID))
+		);
 	}
 }
