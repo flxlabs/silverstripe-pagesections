@@ -62,30 +62,23 @@ class PageElement extends DataObject {
     }
 
     public function getChildrenGridField() {
-        $comp = new GridFieldAddNewMultiClass();
-        $comp->setClasses($this->getAllowedPageElements());
+        $addNewButton = new GridFieldAddNewMultiClass();
+        $addNewButton->setClasses($this->getAllowedPageElements());
+
         $autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
         $autoCompl->setResultsFormat('$Title ($ID)');
         $autoCompl->setSearchList(PageElement::get()->exclude("ID", $this->getParentIDs()));
-        $f = new GridField(
-            'Children',
-            'Children',
-            $this->Children(),
-            GridFieldConfig::create()
-            ->addComponent(new GridFieldButtonRow('before'))
-            ->addComponent($autoCompl)
-            ->addComponent($comp)
+
+        $config = GridFieldConfig::create()
+            ->addComponent(new GridFieldButtonRow("before"))
             ->addComponent(new GridFieldToolbarHeader())
-            ->addComponent(new GridFieldDataColumns())
-            //->addComponent(new GridFieldOrderableRows('SortOrder'))
-            ->addComponent(new GridFieldEditButton())
-            ->addComponent(new GridFieldDeleteAction(true))
-            ->addComponent(new GridFieldDeleteAction(false))
-            //->addComponent(new GridFieldPageSectionsExtension())
-            ->addComponent(new GridFieldDetailForm())
-            ->addComponent($pagination = new GridFieldPaginator(PHP_INT_MAX))
-        );
-        return $f;
+            ->addComponent($dataColumns = new GridFieldDataColumns())
+            ->addComponent($autoCompl)
+            ->addComponent($addNewButton)
+            ->addComponent(new GridFieldPageSectionsExtension($this->owner))
+            ->addComponent(new GridFieldDetailForm());
+ 
+        return new GridField("Children", "Children", $this->Children(), $config);
     }
 
     public function getGridFieldPreview() {
