@@ -56,8 +56,8 @@ class PageElement extends DataObject {
         $list = $this->Children()->Sort("SortOrder")->toArray();
         $count = count($list);
 
-        for ($i = 0; $i < $count; $i++) { 
-            $this->Children()->Add($list[$i], array("SortOrder" => $i));
+        for ($i = 1; $i <= $count; $i++) { 
+            $this->Children()->Add($list[$i - 1], array("SortOrder" => $i * 2));
         }
     }
 

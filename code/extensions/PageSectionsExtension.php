@@ -44,8 +44,8 @@ class PageSectionsExtension extends DataExtension {
 			$list = $this->owner->$name()->Sort("SortOrder")->toArray();
 			$count = count($list);
 
-			for ($i = 0; $i < $count; $i++) { 
-					$this->owner->$name()->Add($list[$i], array("SortOrder" => $i));
+			for ($i = 1; $i <= $count; $i++) { 
+					$this->owner->$name()->Add($list[$i - 1], array("SortOrder" => $i * 2));
 			}
 		}
 	}

@@ -1,9 +1,16 @@
 (function($) {
 	$.entwine("ss", function($) {
-		/**
-		 * Orderable rows
-		 */
 
+		// Recursively hide a data-grid row and it's children
+		var hideRow = function($row) {
+			var id = $row.data("id");
+			$("tr.ss-gridfield-item > .col-treenav[data-parent=" + id + "]").each(function() {
+				hideRow($(this).parent());
+			});
+			$row.hide();
+		};
+
+		// Hide our custom context menu when not needed
 		$(document).on("mousedown", function (event) {
 			$parents = $(event.target).parents(".treenav-menu");
 			if ($parents.length == 0) {
@@ -120,15 +127,30 @@
 								$drop = $(this);
 
 								var type = "before";
-								if ($drop.hasClass("middle"))
+								var childOrder = 0;
+
+								var $treenav = $this.find(".col-treenav");
+								var $reorder = $this.find(".col-reorder");
+
+								if ($drop.hasClass("middle")) {
 									type = "child";
-								else if ($drop.hasClass("after"))
-									type = "after";
+									childOrder = 1000000;
+								} else if ($drop.hasClass("after")) {
+									// If the current element is open, then dragging the other element to the
+									// "after" slot means it becomes a child of this element, otherwise it
+									// has to actually go after this element.
+									if ($treenav.find("button").hasClass("is-open")) {
+										type = "child";
+										childOrder = -1000000;
+									} else {
+										type = "after";
+									}
+								}
 
 								var id = ui.draggable.data("id");
 								var parent = ui.draggable.find(".col-treenav").data("parent");
-								var newParent = type === "child" ? $this.data("id") : $this.find(".col-treenav").data("parent");
-								var sort = $this.find(".col-reorder").data("sort");
+								var newParent = type === "child" ? $this.data("id") : $treenav.data("parent");
+								var sort = type === "child" ? childOrder : $reorder.data("sort");
 
 								grid.reload({
 									url: grid.data("url-reorder"),
@@ -153,19 +175,49 @@
 						});
 					});
 
+
+
 					$this.draggable({
 						revert: "invalid",
 						helper: function() {
 							var clone = $this.clone().css("z-index", 200).find(".ui-droppable").remove().end();
 							// Timeout is needed otherwise the draggable position is messed up
-							setTimeout(function() { $this.hide(); }, 1);
+							setTimeout(function() {
+								hideRow($this);
+							}, 1);
 							return clone;
 						},
 						start: function() {
-							$(".ui-droppable").show();
+							var element = $this.data("class");
+							$(".ui-droppable").each(function() {
+								var $drop = $(this);
+								var $treenav = $drop.parent().siblings(".col-treenav");
+
+								// Check if we're allowed to drop the element on the specified drop point.
+								// Depending on where we drop it (before, middle or after) we have to either
+								// check our allowed children, or the allowed children of our parent row.
+								if ($drop.hasClass("before") || 
+										($drop.hasClass("after") && !$treenav.find("button").hasClass("is-open"))) {
+
+									var $parent = $treenav.parent().siblings("[data-id=" + 
+										$treenav.data("parent") + "]").first();
+
+									var allowed = $parent.find(".col-treenav").data("allowed-elements");
+									if (allowed && !allowed[element]) return;
+								} else {
+									var allowed = $treenav.data("allowed-elements");
+									if (!allowed[element]) return;
+								}
+
+								$(this).show();
+							});
 						},
 						stop: function(event, ui) {
 							$(".ui-droppable").hide();
+							// Show the previous elements. If the user made an invalid movement then
+							// we want this to show anyways. If he did something valid the grid will
+							// refresh so we don't care if it's visible behind the loading icon.
+							$("tr.ss-gridfield-item").show();
 						},
 					});
 				});

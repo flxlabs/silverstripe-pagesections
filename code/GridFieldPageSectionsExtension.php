@@ -5,8 +5,7 @@ class GridFieldPageSectionsExtension implements
 	GridField_ActionProvider,
 	GridField_DataManipulator,
 	GridField_HTMLProvider,
-	GridField_URLHandler,
-	GridField_SaveHandler
+	GridField_URLHandler
 {
 
 	protected $page;
@@ -114,10 +113,9 @@ class GridFieldPageSectionsExtension implements
 			}
 
 			return array(
-				"class" => "col-treenav group" . $record->_GroupId,
+				"class" => "col-treenav",
 				"data-class" => $record->ClassName,
 				"data-level" => strval($record->_Level),
-				"data-group" => strval($record->_GroupId),
 				"data-parent" => $record->_Parent ? strval($record->_Parent->ID) : "",
 				"data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			);
@@ -271,31 +269,19 @@ class GridFieldPageSectionsExtension implements
 		$state = $gridField->getState(true);
 		$opens = $state->open;
 
-		$tree = array();
 		$arr = array();
 		foreach ($list as $item) {
 			$item->_Level = 0;
 			$item->_Open = false;
-			$item->_Tree = array($item->ID);
 
-			$this->getManipulatedItem($arr, $tree, $opens, $item, 1);
+			$this->getManipulatedItem($arr, $opens, $item, 1);
 		}
-
-		$state->tree = $tree;
 
 		return ArrayList::create($arr);
 	}
 
-	private function getManipulatedItem(&$arr, &$tree, $opens, $item, $level) {
+	private function getManipulatedItem(&$arr, $opens, $item, $level) {
 		$arr[] = $item;
-
-		$newTree = array();
-		$node = array(
-			"id" => $item->ID,
-			"open" => isset($opens->{$item->ID}),
-			"tree" => &$newTree,
-		);
-		$tree[] = $node;
 
 		// We're done here if the item isn't open
 		if (!isset($opens->{$item->ID})) return;
@@ -308,22 +294,11 @@ class GridFieldPageSectionsExtension implements
 			$child->_Level = $level;
 			$child->_Parent = $item;
 			$child->_Open = false;
-			$child->_Tree = array_merge($item->_Tree, array($child->ID));
 
-			$this->getManipulatedItem($arr, $newTree, $opens->{$item->ID}, $child, $level + 1);
+			$this->getManipulatedItem($arr, $opens->{$item->ID}, $child, $level + 1);
 		}
 
 		$item->_Open = true;
-	}
-
-	public function handleSave(GridField $gridField, DataObjectInterface $record) {
-		/*if (!$this->immediateUpdate) {
-			$value = $gridField->Value();
-			$sortedIDs = $this->getSortedIDs($value);
-			if ($sortedIDs) {
-				$this->executeReorder($gridField, $sortedIDs);
-			}
-		}*/
 	}
 
 	public function handleReorder(GridField $gridField, SS_HTTPRequest $request) {
@@ -336,27 +311,44 @@ class GridFieldPageSectionsExtension implements
 		$parent = PageElement::get()->byID($vars["parent"]);
 		$newParent = PageElement::get()->byID($vars["newParent"]);
 
+		$parentClass = "";
+		if ($newParent) {
+			$allowed = in_array($item->ClassName, $newParent->getAllowedPageElements());
+			$parentClass = $newParent->ClassName;
+		} else {
+			$allowed = in_array($item->ClassName, $this->getPage()->getAllowedPageElements());
+			$parentClass = $this->getPage()->ClassName;
+		}
+		if (!$allowed) {
+			Controller::curr()->getResponse()->setStatusCode(
+				200,
+				"The type " . $item->ClassName . " is not allowed as a child of " . $parentClass
+			);
+			return $gridField->FieldHolder();
+		}
+
 		if ($parent) {
 			$parent->Children()->Remove($item);
 		} else {
 			$gridField->getList()->Remove($item);
 		}
 
+		$num = $type == "before" ? -1 : 1;
+		$sortBy = $this->getSortField();
+		$sortArr = array($sortBy => $sort + $num);
+
 		if ($type == "child") {
 			if ($newParent) {
-				$newParent->Children()->Add($item);
+				$newParent->Children()->Add($item, $sortArr);
 			} else {
-				$gridField->getList()->Add($item);
+				$gridField->getList()->Add($item, $sortArr);
 			}
 		} else {
-			$num = $type == "before" ? -1 : 1;
-			$sortBy = $this->getSortField();
-
 			if ($newParent) {
-				$newParent->Children()->Add($item, array($sortBy => $sort + $num));
+				$newParent->Children()->Add($item, $sortArr);
 				$newParent->write();
 			} else {
-				$gridField->getList()->Add($item, array($sortBy => $sort + $num));
+				$gridField->getList()->Add($item, $sortArr);
 				$this->getPage()->write();
 			}
 		}
@@ -371,7 +363,7 @@ class GridFieldPageSectionsExtension implements
 		$obj = DataObject::get_by_id("PageElement", $id);
 		if (!in_array($type, $obj->getAllowedPageElements())) {
 			Controller::curr()->getResponse()->setStatusCode(
-				400,
+				200,
 				"The type " . $type . " is not allowed as a child of " . $obj->ClassName
 			);
 			return $gridField->FieldHolder();
