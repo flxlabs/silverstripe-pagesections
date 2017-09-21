@@ -40,28 +40,28 @@ of the page in a structered/limited way.
 
 1. Add the following extensions to your `mysite/_config/config.yaml` on any pages 
 where you wish to have page sections:
-```
-Page:
-  extensions:
-    - PageSectionsExtension
-    - VersionedRelationsExtension
-```
-This will by default add **one** page section called `Main` to your page(s)
-> **Make sure that the *VersionedRelationsExtension* comes after the *PageSectionsExtension***
+   ```
+   Page:
+     extensions:
+       - PageSectionsExtension
+       - VersionedRelationsExtension
+   ```
+   This will by default add **one** page section called `Main` to your page(s)
+   > **Make sure that the *VersionedRelationsExtension* comes after the *PageSectionsExtension***
 
 1. If you want more than one page section add the following to your `mysite/_config/config.yaml`:
-```
-Page:
-  extensions:
-    - PageSectionsExtension
-    - VersionedRelationsExtension
-  page_sections:
-  	- Top
-  	- Middle
-  	- Bottom
-```
-Each of the listed names under the `page_sections` key will add a page section of that name to 
-the page. This will also override the default `Main` page section.
+   ```
+   Page:
+     extensions:
+       - PageSectionsExtension
+       - VersionedRelationsExtension
+     page_sections:
+  	   - Top
+  	   - Middle
+  	   - Bottom
+   ```
+   Each of the listed names under the `page_sections` key will add a page section of that name to 
+   the page. This will also override the default `Main` page section.
 
 1. Hit up `/dev/build?flush=1` in your browser to rebuild the database. You should see that new
 relations are created for each of your page classes that you added page sections to.
@@ -85,32 +85,32 @@ Below we will demonstrate how to create a simple page element.
 1. Create a new file in your `mysite/code` folder called `TextElement.php`
 
 1. Add the following code to that file:
-```php
-<?php
-class TextElement extends PageElement  {
-	public static $singular_name = 'Text';
-	public static $plural_name = 'Texts';
-    
-    private static $db = array(
-        'Content' => 'HTMLText',
-    );
-    
-    public function getCMSFields() {
-        $fields = parent::getCMSFields();
-        $fields->removeByName('Children');
+   ```php
+   <?php
+   class TextElement extends PageElement  {
+     public static $singular_name = 'Text';
+     public static $plural_name = 'Texts';
+
+     private static $db = array(
+         'Content' => 'HTMLText',
+     );
+
+     public function getCMSFields() {
+         $fields = parent::getCMSFields();
+         $fields->removeByName('Children');
         
-        return $fields;
-    }
+         return $fields;
+     }
 
-    public static function getAllowedPageElements() {
-        return array();
-    }
+     public static function getAllowedPageElements() {
+         return array();
+     }
 
-    public function getGridFieldPreview() {
-        return $this->Content;
-    }
-}
-```
+     public function getGridFieldPreview() {
+         return $this->Content;
+     }
+   }
+   ```
 
 1. Go to `/dev/build?flush=1` in your browser to load the new class and create database entries.
 
@@ -144,23 +144,23 @@ You can use the following variables/function in any of your page element templat
 Following is an example building on the `TextElement` which was added above.
 
 1. Add a file called `PageElement.ss` to your `/themes/{name}/templates` folder.
-**This is the main template file for all your page sections.**  
-As an example let's use the following content:
-```
-<div className="$ClassName $Page.ClassName" style="margin-left: {$Parents.Count}em">
-	<h1>$Title</h1>
-	$Layout
-	<div>
-		$RenderChildren($ParentList)
-	</div>
-</div>
-```
+   **This is the main template file for all your page sections.**  
+   As an example let's use the following content:
+   ```
+    <div className="$ClassName $Page.ClassName" style="margin-left: {$Parents.Count}em">
+      <h1>$Title</h1>
+      $Layout
+      <div>
+        $RenderChildren($ParentList)
+      </div>
+    </div>
+   ```
 
 1. Add a file called `TextElement.ss` to your `/themes/{name}/templates/Layout` folder.
-Now let's add the following content to that file:
-```
-$Content
-```
+   Now let's add the following content to that file:
+   ```
+   $Content
+   ```
 
 Following the above two steps will add a template for all page elements, as well as a specific
 layout template for the `TextElement` page element.
