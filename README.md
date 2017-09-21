@@ -144,8 +144,9 @@ You can use the following variables/function in any of your page element templat
 
 Following is an example building on the `TextElement` which was added above.
 
-1. Add a file called `PageElement.ss` to your `/themes/{name}/templates` folder.
+1. Add a file called `PageElement.ss` to your `/themes/{name}/templates` folder.  
    **This is the main template file for all your page sections.**  
+   
    As an example let's use the following content:
    ```
     <div className="$ClassName $Page.ClassName" style="margin-left: {$Parents.Count}em">
