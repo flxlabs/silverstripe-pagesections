@@ -132,7 +132,8 @@ we just created will already render on your page, but most likely not the way yo
 There are several ways to customize the look of page elements, analog to how SilverStripe
 page templates work.
 
-You can use the following variables/function in any of your page element template files:
+You can use the following variables/function in any of your page element template files:  
+
 | Variable/Function | Description |
 |---|---|
 | $ClassName | This is the classname of the current page element. |
