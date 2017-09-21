@@ -7,11 +7,15 @@ class TextElement extends PageElement  {
         'Content' => 'HTMLText',
     );
     
-    public function getCMSFields(){
+    public function getCMSFields() {
         $fields = parent::getCMSFields();
         $fields->removeByName('Children');
         
         return $fields;
+    }
+
+    public static function getAllowedPageElements() {
+        return array();
     }
 
     public function getGridFieldPreview() {
