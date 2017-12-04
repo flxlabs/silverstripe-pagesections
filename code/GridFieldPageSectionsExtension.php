@@ -375,6 +375,9 @@ class GridFieldPageSectionsExtension implements
 
 		$obj->Children()->Add($child);
 
+		$state = $gridField->getState(true);
+		$this->openElement($state, $obj);
+
 		return $gridField->FieldHolder();
 	}
 
