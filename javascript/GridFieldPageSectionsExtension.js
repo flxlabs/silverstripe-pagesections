@@ -50,11 +50,11 @@
 				var grid = this.getGridField();
 				var id = grid.data("id");
 				var rowId = $target.parents(".ss-gridfield-item").data("id");
-				var $treeNav = $target.parents(".col-treenav").first();
+				var $treeNav = $target.hasClass("col-treenav") ? $target : 
+					$target.parents(".col-treenav").first();
 
-				if ($treeNav.length <= 0) {
-					return;
-				}
+				// If we don't have a col-treenav the user clicked on another column
+				if ($treeNav.length <= 0) return;
 				event.preventDefault();
 
 				var parentId = null;
