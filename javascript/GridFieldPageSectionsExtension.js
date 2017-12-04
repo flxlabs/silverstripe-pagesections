@@ -45,8 +45,6 @@
 		// Show context menu
 		$(".ss-gridfield-pagesections tbody").entwine({
 			oncontextmenu: function(event) {
-				event.preventDefault();
-
 				$target = $(event.target);
 
 				var grid = this.getGridField();
@@ -56,7 +54,11 @@
 				var parentId = null;
 				if ($treeNav.data("level") > 0) {
 					parentId = $treeNav.parents(".ss-gridfield-item").prev().data("id");
+
+				if ($treeNav.length <= 0) {
+					return;
 				}
+				event.preventDefault();
 
 				var elems = $treeNav.data("allowed-elements");
 				$menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
