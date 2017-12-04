@@ -90,8 +90,9 @@
 				$.each(elems, function(key, value) {
 					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});
-				$menu.append("<li class='header'>--------------------</li>");
-				$menu.append("<li data-type='__REMOVE__'>Remove</li>");
+				$menu.append("<li class='header options'>Options</li>");
+				$menu.append("<li data-type='__REMOVE__'>Remove from " + 
+					(parentId ? parentName : "page") + "</li>");
 				$menu.append("<li data-type='__DELETE__'>Delete</li>");
 				$menu.show();
 			},

@@ -2,42 +2,42 @@
  * Tree Nav
  */
 
- .treenav-menu {
-    display: none;
-    z-index: 1000;
-    position: fixed;
-    overflow: hidden;
-    border: 1px solid #CCC;
-    white-space: nowrap;
-    font-family: sans-serif;
-    background: #FFF;
-    color: #333;
-    border-radius: 5px;
-    padding: 0;
+.treenav-menu {
+	display: none;
+	z-index: 1000;
+	position: fixed;
+	overflow: hidden;
+	border: 1px solid #CCC;
+	white-space: nowrap;
+	font-family: sans-serif;
+	background: #FFF;
+	color: #333;
+	border-radius: 5px;
+	padding: 0;
 }
 
 .treenav-menu li {
-    padding: 8px 12px;
-    cursor: pointer;
-    list-style-type: none;
-    transition: all .3s ease;
+	padding: 8px 12px 8px 2em;
+	cursor: pointer;
+	list-style-type: none;
+	transition: all .3s ease;
 }
-
 .treenav-menu li:hover {
-    background-color: #FEFAD5;
-}
-
-.treenav-menu li.header:hover {
-    background-color: none;
+	background-color: #FEFAD5;
 }
 
 .treenav-menu li.header {
 	font-weight: bolder;
 	cursor: default;
+	border-bottom: 1px solid #CCC;
+	padding-left: 8px;
+}
+.treenav-menu li.header:hover {
+	background: none;
 }
 
-.treenav-menu li.header:hover {
-    background: none;
+.treenav-menu li.options {
+	border-top: 1px solid #CCC;
 }
 
 
@@ -91,7 +91,7 @@
 .ss-gridfield-pagesections .col-treenav > button > span {
 	margin-right: 30px !important;
 	text-overflow: ellipsis;
-  	white-space: nowrap;
+	white-space: nowrap;
 	overflow-x: hidden;
 }
 
