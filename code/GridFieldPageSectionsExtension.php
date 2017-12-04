@@ -321,7 +321,7 @@ class GridFieldPageSectionsExtension implements
 		}
 		if (!$allowed) {
 			Controller::curr()->getResponse()->setStatusCode(
-				200,
+				400,
 				"The type " . $item->ClassName . " is not allowed as a child of " . $parentClass
 			);
 			return $gridField->FieldHolder();
@@ -360,10 +360,17 @@ class GridFieldPageSectionsExtension implements
 		$id = intval($request->postVar("id"));
 		$type = $request->postVar("type");
 
-		$obj = DataObject::get_by_id("PageElement", $id);
+		$obj = $gridField->getManipulatedList()->filter("ID", $id)->first();
+		if (!$obj) {
+			Controller::curr()->getResponse()->setStatusCode(
+				400,
+				"Could not find element in the current list"
+			);
+			return $gridField->FieldHolder();
+		}
 		if (!in_array($type, $obj->getAllowedPageElements())) {
 			Controller::curr()->getResponse()->setStatusCode(
-				200,
+				400,
 				"The type " . $type . " is not allowed as a child of " . $obj->ClassName
 			);
 			return $gridField->FieldHolder();
