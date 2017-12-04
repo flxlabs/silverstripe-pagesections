@@ -45,17 +45,32 @@
 		// Show context menu
 		$(".ss-gridfield-pagesections tbody").entwine({
 			oncontextmenu: function(event) {
-				event.preventDefault();
-
 				$target = $(event.target);
 
 				var grid = this.getGridField();
 				var id = grid.data("id");
 				var rowId = $target.parents(".ss-gridfield-item").data("id");
 				var $treeNav = $target.parents(".col-treenav").first();
+
+				if ($treeNav.length <= 0) {
+					return;
+				}
+				event.preventDefault();
+
 				var parentId = null;
-				if ($treeNav.data("level") > 0) {
-					parentId = $treeNav.parents(".ss-gridfield-item").prev().data("id");
+				var parentName = null;
+				var level = $treeNav.data("level");
+				if (level > 0) {
+					// Go up through the rows and find the first row with lower level (=parent)
+					$parent = $treeNav.parents(".ss-gridfield-item").prev();
+					while ($parent.length > 0 && 
+							$parent.find(".col-treenav").data("level") >= level) {
+						$parent = $parent.prev();
+					}
+					if ($parent != null) {
+						parentId = $parent.data("id");
+						parentName = $parent.find(".col-treenav > span").html();
+					}
 				}
 
 				var elems = $treeNav.data("allowed-elements");
@@ -75,8 +90,9 @@
 				$.each(elems, function(key, value) {
 					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});
-				$menu.append("<li class='header'>--------------------</li>");
-				$menu.append("<li data-type='__REMOVE__'>Remove</li>");
+				$menu.append("<li class='header options'>Options</li>");
+				$menu.append("<li data-type='__REMOVE__'>Remove from " + 
+					(parentId ? parentName : "page") + "</li>");
 				$menu.append("<li data-type='__DELETE__'>Delete</li>");
 				$menu.show();
 			},

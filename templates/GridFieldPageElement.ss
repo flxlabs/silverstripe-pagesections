@@ -1,1 +1,1 @@
-$ButtonField $Title
+$ButtonField <span>$Title</span>
