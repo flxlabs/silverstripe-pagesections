@@ -51,14 +51,27 @@
 				var id = grid.data("id");
 				var rowId = $target.parents(".ss-gridfield-item").data("id");
 				var $treeNav = $target.parents(".col-treenav").first();
-				var parentId = null;
-				if ($treeNav.data("level") > 0) {
-					parentId = $treeNav.parents(".ss-gridfield-item").prev().data("id");
 
 				if ($treeNav.length <= 0) {
 					return;
 				}
 				event.preventDefault();
+
+				var parentId = null;
+				var parentName = null;
+				var level = $treeNav.data("level");
+				if (level > 0) {
+					// Go up through the rows and find the first row with lower level (=parent)
+					$parent = $treeNav.parents(".ss-gridfield-item").prev();
+					while ($parent.length > 0 && 
+							$parent.find(".col-treenav").data("level") >= level) {
+						$parent = $parent.prev();
+					}
+					if ($parent != null) {
+						parentId = $parent.data("id");
+						parentName = $parent.find(".col-treenav > span").html();
+					}
+				}
 
 				var elems = $treeNav.data("allowed-elements");
 				$menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
