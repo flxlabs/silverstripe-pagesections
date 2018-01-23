@@ -1,6 +1,6 @@
 {
 	"name": "flxlabs/silverstripe-pagesections",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Adds configurable page sections and elements to your SilverStripe project.",
 	"type": "silverstripe-module",
 	"homepage": "http://github.com/flxlabs/silverstripe-pagesections",
