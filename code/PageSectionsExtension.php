@@ -61,7 +61,7 @@ class PageSectionsExtension extends DataExtension {
 			
 			if ($this->owner->ID) {
 				$addNewButton = new GridFieldAddNewMultiClass();
-				$addNewButton->setClasses($this->getAllowedPageElements());
+				$addNewButton->setClasses($this->owner->getAllowedPageElements());
 
 				$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
 				$autoCompl->setResultsFormat('$Title ($ID)');
