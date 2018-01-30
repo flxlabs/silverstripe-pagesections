@@ -164,7 +164,7 @@ class GridFieldPageSectionsExtension implements
 
 			return ViewableData::create()->customise(array(
 				"ButtonField" => $field,
-				"Title" => $record->Title,
+				"Title" => $record->i18n_singular_name(),
 			))->renderWith("GridFieldPageElement");
 		}
 
@@ -173,7 +173,7 @@ class GridFieldPageSectionsExtension implements
 			$temp = $record;
 			while ($temp->_Parent) {
 				$temp = $temp->_Parent;
-				$link = Controller::join_links("item", $temp->ID, 
+				$link = Controller::join_links("item", $temp->ID,
 					"ItemEditForm", "field", "Children", $link
 				);
 			}
