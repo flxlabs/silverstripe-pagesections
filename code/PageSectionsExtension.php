@@ -1,16 +1,27 @@
 <?php
+
+namespace PageSections;
+
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\Forms\GridField\GridFieldButtonRow;
+use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\ORM\DataExtension;
+
+use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
+
 class PageSectionsExtension extends DataExtension {
 
 	// Generate the needed relations on the class
-	public function extraStatics($class = null, $extensionClass = null) {
-		$versioned_many_many = array();
+	public static function get_extra_config($class = null, $extensionClass = null) {
+		$many_many = array();
 		$many_many_extraFields = array();
-
-		// Check if the VersionedRelationsExtension is already loaded
-		if (Config::inst()->get($class, "__versioned", Config::EXCLUDE_EXTRA_SOURCES)) {
-			user_error("VersionedRelationsExtension was loaded before PageSectionsExtension on class '$class'. ".
-				"Please correct the order in your config file to ensure that PageSectionsExtension is loaded first.", E_USER_ERROR);
-		}
 
 		// Get all the sections that should be added
 		$sections = Config::inst()->get($class, "page_sections", Config::EXCLUDE_EXTRA_SOURCES);
@@ -18,19 +29,24 @@ class PageSectionsExtension extends DataExtension {
 
 		foreach ($sections as $section) {
 			$name = "PageSection".$section;
-			$versioned_many_many[$name] = "PageElement";
+			$many_many[$name] = PageElement::class;
 			$many_many_extraFields[$name] = array("SortOrder" => "Int");
+			$owns[] = $name;
 		}
 
 		// Create the relations for our sections
-		Config::inst()->update($class, "versioned_many_many", $versioned_many_many);
-		Config::inst()->update($class, "many_many_extraFields", $many_many_extraFields);
-		return array();
+		//Config::inst()->update($class, "many_many", $many_many);
+		//Config::inst()->update($class, "many_many_extraFields", $many_many_extraFields);
+		Config::modify()->merge($class, "owns", $owns);
+		return array(
+			"many_many" => $many_many,
+			"many_many_extraFields" => $many_many_extraFields,
+		);
 	}
 	
 	public static function getAllowedPageElements() {
-		$classes = array_values(ClassInfo::subclassesFor("PageElement"));
-		$classes = array_diff($classes, ["PageElement"]);
+		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
+		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
 	}
 
@@ -82,7 +98,7 @@ class PageSectionsExtension extends DataExtension {
 	}
 
 	public function PageSection($name = "Main") {
-		$elements = $this->owner->getVersionedRelation("PageSection" . $name);
+		$elements = $this->owner->{"PageSection" . $name}();
 		return $this->owner->renderWith(
 			"RenderChildren",
 			array("Elements" => $elements, "ParentList" => strval($this->owner->ID))

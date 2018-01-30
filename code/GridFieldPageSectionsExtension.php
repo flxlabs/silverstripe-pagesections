@@ -1,5 +1,22 @@
 <?php
 
+namespace PageSections;
+
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Forms\GridField\GridField_ColumnProvider;
+use SilverStripe\Forms\GridField\GridField_ActionProvider;
+use SilverStripe\Forms\GridField\GridField_DataManipulator;
+use SilverStripe\Forms\GridField\GridField_HTMLProvider;
+use SilverStripe\Forms\GridField\GridField_URLHandler;
+use SilverStripe\Forms\GridField\GridField_FormAction;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\ORM\SS_List;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\View\Requirements;
+use SilverStripe\View\ViewableData;
+
 class GridFieldPageSectionsExtension implements
 	GridField_ColumnProvider,
 	GridField_ActionProvider,
@@ -109,7 +126,7 @@ class GridFieldPageSectionsExtension implements
 			$classes = $record->getAllowedPageElements();
 			$elems = array();
 			foreach ($classes as $class) {
-				$elems[$class] = $class::$singular_name;
+				$elems[$class] = $class::getSingularName();
 			}
 
 			return array(
@@ -301,7 +318,7 @@ class GridFieldPageSectionsExtension implements
 		$item->_Open = true;
 	}
 
-	public function handleReorder(GridField $gridField, SS_HTTPRequest $request) {
+	public function handleReorder(GridField $gridField, HTTPRequest $request) {
 		$vars = $request->postVars();
 
 		$type = $vars["type"];
@@ -356,7 +373,7 @@ class GridFieldPageSectionsExtension implements
 		return $gridField->FieldHolder();
 	}
 
-	public function handleAdd(GridField $gridField, SS_HTTPRequest $request) {
+	public function handleAdd(GridField $gridField, HTTPRequest $request) {
 		$id = intval($request->postVar("id"));
 		$type = $request->postVar("type");
 
@@ -388,12 +405,12 @@ class GridFieldPageSectionsExtension implements
 		return $gridField->FieldHolder();
 	}
 
-	public function handleRemove(GridField $gridField, SS_HTTPRequest $request) {
+	public function handleRemove(GridField $gridField, HTTPRequest $request) {
 		$id = intval($request->postVar("id"));
-		$obj = DataObject::get_by_id("PageElement", $id);
+		$obj = DataObject::get_by_id(PageElement::class, $id);
 
 		$parentId = intval($request->postVar("parentId"));
-		$parentObj = DataObject::get_by_id("PageElement", $parentId);
+		$parentObj = DataObject::get_by_id(PageElement::class, $parentId);
 
 		// Detach it from this parent (from the page if we're top level)
 		if (!$parentObj) {
@@ -405,9 +422,9 @@ class GridFieldPageSectionsExtension implements
 		return $gridField->FieldHolder();
 	}
 
-	public function handleDelete(GridField $gridField, SS_HTTPRequest $request) {
+	public function handleDelete(GridField $gridField, HTTPRequest $request) {
 		$id = intval($request->postVar("id"));
-		$obj = DataObject::get_by_id("PageElement", $id);
+		$obj = DataObject::get_by_id(PageElement::class, $id);
 
 		// Close the element in case it's open to avoid errors
 		$state = $gridField->getState(true);

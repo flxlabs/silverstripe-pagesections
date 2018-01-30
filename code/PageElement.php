@@ -1,14 +1,38 @@
 <?php
+
+namespace PageSections;
+
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\Forms\GridField\GridFieldButtonRow;
+use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Member;
+
+use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
+
 class PageElement extends DataObject {
-	public static $singular_name = 'Element';
-	public static $plural_name = 'Elements';
-	public function getSingularName() { return static::$singular_name; }
-	public function getPluralName() { return static::$plural_name; }
+	
+	protected static $singularName = 'Element';
+	protected static $pluralName = 'Elements';
+
+	public static function getSingularName() {
+		return static::$singularName;
+	}
+	public static function getPluralName() {
+		return static::$pluralName;
+	}
 
 	function canView($member = null) { return true; }
 	function canEdit($member = null) { return true; }
 	function canDelete($member = null) { return true; }
-	function canCreate($member = null) { return true; }
+	function canCreate($member = null, $context = array()) { return true; }
 
 	private static $can_be_root = true;
 
@@ -16,12 +40,12 @@ class PageElement extends DataObject {
 		'Title' => 'Varchar(255)',
 	);
 
-	private static $versioned_many_many = array(
-		'Children' => 'PageElement',
+	private static $many_many = array(
+		'Children' => PageElement::class,
 	);
 
-	private static $versioned_belongs_many_many = array(
-		'Parents' => 'PageElement',
+	private static $belongs_many_many = array(
+		'Parents' => PageElement::class,
 		'Pages' => 'Page',
 	);
 
@@ -31,22 +55,26 @@ class PageElement extends DataObject {
 		),
 	);
 
-	public static $summary_fields = array(
+	private static $owns = [
+    "Children",
+  ];
+
+	private static $summary_fields = array(
 		'SingularName',
 		'ID',
 		'GridFieldPreview',
 	);
 
-	public static $searchable_fields = array(
+	private static $searchable_fields = array(
 		'ClassName',
 		'Title',
 		'ID'
 	);
 
 	public static function getAllowedPageElements() {
-		$classes = array_values(ClassInfo::subclassesFor('PageElement'));
+		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		// remove
-		$classes = array_diff($classes, ["PageElement"]);
+		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
 	}
 
