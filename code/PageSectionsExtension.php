@@ -27,7 +27,7 @@ class PageSectionsExtension extends DataExtension {
 		Config::inst()->update($class, "many_many_extraFields", $many_many_extraFields);
 		return array();
 	}
-	
+
 	public static function getAllowedPageElements() {
 		$classes = array_values(ClassInfo::subclassesFor("PageElement"));
 		$classes = array_diff($classes, ["PageElement"]);
@@ -44,12 +44,12 @@ class PageSectionsExtension extends DataExtension {
 			$list = $this->owner->$name()->Sort("SortOrder")->toArray();
 			$count = count($list);
 
-			for ($i = 1; $i <= $count; $i++) { 
+			for ($i = 1; $i <= $count; $i++) {
 					$this->owner->$name()->Add($list[$i - 1], array("SortOrder" => $i * 2));
 			}
 		}
 	}
-	
+
 	public function updateCMSFields(FieldList $fields) {
 		$sections = $this->owner->config()->get("page_sections");
 		if (!$sections) $sections = array("Main");
@@ -58,7 +58,7 @@ class PageSectionsExtension extends DataExtension {
 			$name = "PageSection".$section;
 
 			$fields->removeByName($name);
-			
+
 			if ($this->owner->ID) {
 				$addNewButton = new GridFieldAddNewMultiClass();
 				$addNewButton->setClasses($this->owner->getAllowedPageElements());
@@ -74,6 +74,8 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent($addNewButton)
 					->addComponent(new GridFieldPageSectionsExtension($this->owner))
 					->addComponent(new GridFieldDetailForm());
+				$dataColumns = $config->getComponentByType('GridFieldDataColumns');
+				$dataColumns->setFieldCasting(array('GridFieldPreview' => 'HTMLText->RAW'));
 
 				$f = new GridField($name, $section, $this->owner->$name(), $config);
 				$fields->addFieldToTab("Root.PageSections", $f);
@@ -82,7 +84,7 @@ class PageSectionsExtension extends DataExtension {
 	}
 
 	public function PageSection($name = "Main") {
-		$elements = $this->owner->getVersionedRelation("PageSection" . $name);
+		$elements = $this->owner->{"PageSection" . $name}();
 		return $this->owner->renderWith(
 			"RenderChildren",
 			array("Elements" => $elements, "ParentList" => strval($this->owner->ID))
