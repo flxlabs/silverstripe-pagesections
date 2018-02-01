@@ -1,6 +1,6 @@
 ---
 Name: pagesections
 ---
-PageSections\PageElement:
+FlxLabs\PageSections\PageElement:
   extensions:
     - SilverStripe\Versioned\Versioned

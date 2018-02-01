@@ -43,15 +43,19 @@
 
 .ss-gridfield-pagesections .col-treenav {
 	height: 100%;
-	padding: 0 !important;
+	padding-left: 0;
+	/*padding: 0 !important;*/
 }
 
 .ss-gridfield-pagesections .col-treenav > button {
-	//width: 100% !important;
+	/*width: 100% !important;*/
 	height: 100% !important;
 	font-weight: bold !important;
 	/*font-size: 150% !important;*/
 	color: black !important;
+	border: none;
+	background: transparent;
+	padding-right: 0;
 }
 
 .ss-gridfield-pagesections .col-treenav > button, .ss-gridfield-pagesections .col-treenav > button > span {

@@ -1,6 +1,6 @@
 <?php
 
-namespace PageSections;
+namespace FlxLabs\PageSections;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
@@ -11,16 +11,21 @@ use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
+use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
+use UncleCheese\BetterButtons\Actions\BetterButtonPrevNextAction;
+use UncleCheese\BetterButtons\Buttons\BetterButton_SaveAndClose;
+use UncleCheese\BetterButtons\Buttons\BetterButton_Save;
 
 class PageElement extends DataObject {
 	
-	protected static $singularName = 'Element';
-	protected static $pluralName = 'Elements';
+	protected static $singularName = "Element";
+	protected static $pluralName = "Elements";
 
 	public static function getSingularName() {
 		return static::$singularName;
@@ -37,21 +42,21 @@ class PageElement extends DataObject {
 	private static $can_be_root = true;
 
 	private static $db = array(
-		'Title' => 'Varchar(255)',
+		"Name" => "Varchar(255)",
 	);
 
 	private static $many_many = array(
-		'Children' => PageElement::class,
+		"Children" => PageElement::class,
 	);
 
 	private static $belongs_many_many = array(
-		'Parents' => PageElement::class,
-		'Pages' => 'Page',
+		"Parents" => PageElement::class,
+		"Pages" => SiteTree::class,
 	);
 
 	private static $many_many_extraFields = array(
-		'Children' => array(
-			'SortOrder' => 'Int',
+		"Children" => array(
+			"SortOrder" => 'Int',
 		),
 	);
 	
@@ -60,15 +65,15 @@ class PageElement extends DataObject {
   ];
 
 	private static $summary_fields = array(
-		'SingularName',
-		'ID',
-		'GridFieldPreview',
+		"SingularName",
+		"ID",
+		"GridFieldPreview",
 	);
 
 	private static $searchable_fields = array(
-		'ClassName',
-		'Title',
-		'ID'
+		"ClassName",
+		"Name",
+		"ID",
 	);
 
 	public static function getAllowedPageElements() {
@@ -89,12 +94,24 @@ class PageElement extends DataObject {
 		}
 	}
 
+	public function onAfterWrite() {
+		$stage = Versioned::get_stage();
+
+		foreach ($this->Parents() as $parent) {	
+			$parent->copyVersionToStage($stage, $stage, true);
+		}
+
+		foreach ($this->Pages() as $page) {
+			$page->copyVersionToStage($stage, $stage, true);
+		}
+	}
+
 	public function getChildrenGridField() {
 		$addNewButton = new GridFieldAddNewMultiClass();
 		$addNewButton->setClasses($this->getAllowedPageElements());
 
 		$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
-		$autoCompl->setResultsFormat('$Title ($ID)');
+		$autoCompl->setResultsFormat('$Name ($ID)');
 		$autoCompl->setSearchList(PageElement::get()->exclude("ID", $this->getParentIDs()));
 
 		$config = GridFieldConfig::create()
@@ -111,7 +128,7 @@ class PageElement extends DataObject {
 	}
 
 	public function getGridFieldPreview() {
-		return $this->Title;
+		return $this->Name;
 	}
 
 	public function getCMSFields() {
@@ -135,7 +152,7 @@ class PageElement extends DataObject {
 		return $IDArr;
 	}
 
-	public function renderChildren($parents) {
+	public function renderChildren($parents = null) {
 		return $this->renderWith(
 			"RenderChildren",
 			array("Elements" => $this->Children(), "ParentList" => strval($this->ID) . "," . $parents)
@@ -155,20 +172,5 @@ class PageElement extends DataObject {
 			array_reverse($this->getClassAncestry()),
 			array("ParentList" => $parentList, "Parents" => $parents, "Page" => $page)
 		);
-	}
-
-	public function getBetterButtonsUtils() {
-		$fieldList = FieldList::create(array(
-			BetterButtonPrevNextAction::create(),
-		));
-		return $fieldList;
-	}
-
-	public function getBetterButtonsActions() {
-		$fieldList = FieldList::create(array(
-			BetterButton_SaveAndClose::create(),
-			BetterButton_Save::create(),
-		));
-		return $fieldList;
 	}
 }

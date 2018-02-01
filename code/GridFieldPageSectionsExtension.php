@@ -1,6 +1,6 @@
 <?php
 
-namespace PageSections;
+namespace FlxLabs\PageSections;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
@@ -394,7 +394,7 @@ class GridFieldPageSectionsExtension implements
 		}
 
 		$child = $type::create();
-		$child->Title = "New " . $type;
+		$child->Name = "New " . $type;
 		$child->write();
 
 		$obj->Children()->Add($child);

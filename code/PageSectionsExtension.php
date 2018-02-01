@@ -1,6 +1,6 @@
 <?php
 
-namespace PageSections;
+namespace FlxLabs\PageSections;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
@@ -13,6 +13,7 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 
@@ -35,12 +36,10 @@ class PageSectionsExtension extends DataExtension {
 		}
 
 		// Create the relations for our sections
-		//Config::inst()->update($class, "many_many", $many_many);
-		//Config::inst()->update($class, "many_many_extraFields", $many_many_extraFields);
-		Config::modify()->merge($class, "owns", $owns);
 		return array(
 			"many_many" => $many_many,
 			"many_many_extraFields" => $many_many_extraFields,
+			"owns" => $owns,
 		);
 	}
 
@@ -51,6 +50,8 @@ class PageSectionsExtension extends DataExtension {
 	}
 
 	public function onBeforeWrite() {
+		parent::onBeforeWrite();
+
 		$sections = $this->owner->config()->get("page_sections");
 		if (!$sections) $sections = array("Main");
 
@@ -80,7 +81,7 @@ class PageSectionsExtension extends DataExtension {
 				$addNewButton->setClasses($this->owner->getAllowedPageElements());
 
 				$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
-				$autoCompl->setResultsFormat('$Title ($ID)');
+				$autoCompl->setResultsFormat('$Name ($ID)');
 
 				$config = GridFieldConfig::create()
 					->addComponent(new GridFieldButtonRow("before"))
@@ -98,8 +99,8 @@ class PageSectionsExtension extends DataExtension {
 		}
 	}
 
-	public function PageSection($name = "Main") {
-		$elements = $this->owner->{"PageSection" . $name}();
+	public function RenderPageSection($name = "Main") {
+		$elements = $this->owner->{"PageSection" . $name}()->Sort("SortOrder");
 		return $this->owner->renderWith(
 			"RenderChildren",
 			array("Elements" => $elements, "ParentList" => strval($this->owner->ID))
