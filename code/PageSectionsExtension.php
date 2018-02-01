@@ -43,7 +43,7 @@ class PageSectionsExtension extends DataExtension {
 			"many_many_extraFields" => $many_many_extraFields,
 		);
 	}
-	
+
 	public static function getAllowedPageElements() {
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
@@ -60,12 +60,12 @@ class PageSectionsExtension extends DataExtension {
 			$list = $this->owner->$name()->Sort("SortOrder")->toArray();
 			$count = count($list);
 
-			for ($i = 1; $i <= $count; $i++) { 
+			for ($i = 1; $i <= $count; $i++) {
 					$this->owner->$name()->Add($list[$i - 1], array("SortOrder" => $i * 2));
 			}
 		}
 	}
-	
+
 	public function updateCMSFields(FieldList $fields) {
 		$sections = $this->owner->config()->get("page_sections");
 		if (!$sections) $sections = array("Main");
@@ -74,7 +74,7 @@ class PageSectionsExtension extends DataExtension {
 			$name = "PageSection".$section;
 
 			$fields->removeByName($name);
-			
+
 			if ($this->owner->ID) {
 				$addNewButton = new GridFieldAddNewMultiClass();
 				$addNewButton->setClasses($this->owner->getAllowedPageElements());
@@ -90,6 +90,7 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent($addNewButton)
 					->addComponent(new GridFieldPageSectionsExtension($this->owner))
 					->addComponent(new GridFieldDetailForm());
+				$dataColumns->setFieldCasting(array("GridFieldPreview" => "HTMLText->RAW"));
 
 				$f = new GridField($name, $section, $this->owner->$name(), $config);
 				$fields->addFieldToTab("Root.PageSections", $f);

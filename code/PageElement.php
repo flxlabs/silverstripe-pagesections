@@ -54,7 +54,7 @@ class PageElement extends DataObject {
 			'SortOrder' => 'Int',
 		),
 	);
-
+	
 	private static $owns = [
     "Children",
   ];
@@ -84,7 +84,7 @@ class PageElement extends DataObject {
 		$list = $this->Children()->Sort("SortOrder")->toArray();
 		$count = count($list);
 
-		for ($i = 1; $i <= $count; $i++) { 
+		for ($i = 1; $i <= $count; $i++) {
 			$this->Children()->Add($list[$i - 1], array("SortOrder" => $i * 2));
 		}
 	}
@@ -105,12 +105,13 @@ class PageElement extends DataObject {
 			->addComponent($addNewButton)
 			->addComponent(new GridFieldPageSectionsExtension($this->owner))
 			->addComponent(new GridFieldDetailForm());
- 
+		$dataColumns->setFieldCasting(array("GridFieldPreview" => "HTMLText->RAW"));
+
 		return new GridField("Children", "Children", $this->Children(), $config);
 	}
 
 	public function getGridFieldPreview() {
-		return null;
+		return $this->Title;
 	}
 
 	public function getCMSFields() {
@@ -125,7 +126,7 @@ class PageElement extends DataObject {
 
 		return $fields;
 	}
-	
+
 	public function getParentIDs() {
 		$IDArr = array($this->ID);
 		foreach($this->Parents() as $parent) {
@@ -145,7 +146,7 @@ class PageElement extends DataObject {
 		$parents = ArrayList::create();
 		$splits = explode(",", $parentList);
 		$num = count($splits);
-		for ($i = 0; $i < $num - 1; $i++) { 
+		for ($i = 0; $i < $num - 1; $i++) {
 			$parents->add(PageElement::get()->byID($splits[$i]));
 		}
 		$page = SiteTree::get()->byID($splits[$num - 1]);
@@ -154,5 +155,20 @@ class PageElement extends DataObject {
 			array_reverse($this->getClassAncestry()),
 			array("ParentList" => $parentList, "Parents" => $parents, "Page" => $page)
 		);
+	}
+
+	public function getBetterButtonsUtils() {
+		$fieldList = FieldList::create(array(
+			BetterButtonPrevNextAction::create(),
+		));
+		return $fieldList;
+	}
+
+	public function getBetterButtonsActions() {
+		$fieldList = FieldList::create(array(
+			BetterButton_SaveAndClose::create(),
+			BetterButton_Save::create(),
+		));
+		return $fieldList;
 	}
 }
