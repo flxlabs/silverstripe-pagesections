@@ -17,7 +17,7 @@
 	},
 	"require": {
 		"silverstripe/framework": "~3.6",
-		"flxlabs/silverstripe-versionedrelations": "^0.1.9"
+		"flxlabs/silverstripe-versionedrelations": "^0.1.10"
 	},
 	"extra": {
 		"installer-name": "pagesections"
