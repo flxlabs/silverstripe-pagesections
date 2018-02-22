@@ -80,6 +80,19 @@ class GridFieldPageSectionsExtension implements
 		$state = $gridField->getState();
 		if (!isset($state->open)) {
 			$state->open = array();
+
+			// Open all elements by default
+			$list = array();
+			$newList = $gridField->getManipulatedList();
+			while (count($list) < count($newList)) {
+				foreach ($newList as $item) {
+					if ($item->isOpenByDefault()) {
+						$this->openElement($state, $item);
+					}
+				}
+				$list = $newList;
+				$newList = $gridField->getManipulatedList();
+			}
 		}
 	}
 

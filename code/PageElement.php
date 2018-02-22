@@ -2,8 +2,10 @@
 class PageElement extends DataObject {
 	public static $singular_name = 'Element';
 	public static $plural_name = 'Elements';
+	public static $default_is_open = true;
 	public function getSingularName() { return static::$singular_name; }
 	public function getPluralName() { return static::$plural_name; }
+	public function isOpenByDefault() { return static::$default_is_open; }
 
 	function canView($member = null) { return true; }
 	function canEdit($member = null) { return true; }
