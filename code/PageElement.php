@@ -23,7 +23,8 @@ use UncleCheese\BetterButtons\Buttons\BetterButton_SaveAndClose;
 use UncleCheese\BetterButtons\Buttons\BetterButton_Save;
 
 class PageElement extends DataObject {
-	
+
+	private static $table_name = "FLXLabs_PageElement";
 	protected static $singularName = "Element";
 	protected static $pluralName = "Elements";
 
@@ -46,12 +47,16 @@ class PageElement extends DataObject {
 	);
 
 	private static $many_many = array(
-		"Children" => PageElement::class,
+		"Children" => array(
+			"through" => PageElementSelfRel::class,
+			"from" => "Parent",
+			"to" => "Child",
+		)
 	);
 
 	private static $belongs_many_many = array(
-		"Parents" => PageElement::class,
-		"Pages" => SiteTree::class,
+		"Parents" => PageElement::class . ".Children",
+		"Pages" => "Page.PageSectionMain",
 	);
 
 	private static $many_many_extraFields = array(
@@ -59,7 +64,7 @@ class PageElement extends DataObject {
 			"SortOrder" => 'Int',
 		),
 	);
-	
+
 	private static $owns = [
     "Children",
   ];
@@ -83,28 +88,29 @@ class PageElement extends DataObject {
 		return $classes;
 	}
 
-	public function onBeforeWrite() {
-		parent::onBeforeWrite();
+	// public function onBeforeWrite() {
+	// 	parent::onBeforeWrite();
 
-		$list = $this->Children()->Sort("SortOrder")->toArray();
-		$count = count($list);
+	// 	$list = $this->Children()->Sort("SortOrder")->toArray();
+	// 	$this->Children()->RemoveAll();
+	// 	$count = count($list);
 
-		for ($i = 1; $i <= $count; $i++) {
-			$this->Children()->Add($list[$i - 1], array("SortOrder" => $i * 2));
-		}
-	}
+	// 	for ($i = 1; $i <= $count; $i++) {
+	// 		$this->Children()->Add($list[$i - 1], array("SortOrder" => $i * 2));
+	// 	}
+	// }
 
-	public function onAfterWrite() {
-		$stage = Versioned::get_stage();
+	// public function onAfterWrite() {
+	// 	$stage = Versioned::get_stage();
 
-		foreach ($this->Parents() as $parent) {	
-			$parent->copyVersionToStage($stage, $stage, true);
-		}
+	// 	foreach ($this->Parents() as $parent) {
+	// 		$parent->copyVersionToStage($stage, $stage, true);
+	// 	}
 
-		foreach ($this->Pages() as $page) {
-			$page->copyVersionToStage($stage, $stage, true);
-		}
-	}
+	// 	foreach ($this->Pages() as $page) {
+	// 		$page->copyVersionToStage($stage, $stage, true);
+	// 	}
+	// }
 
 	public function getChildrenGridField() {
 		$addNewButton = new GridFieldAddNewMultiClass();

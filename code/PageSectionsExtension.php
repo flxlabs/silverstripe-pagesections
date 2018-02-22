@@ -22,7 +22,6 @@ class PageSectionsExtension extends DataExtension {
 	// Generate the needed relations on the class
 	public static function get_extra_config($class = null, $extensionClass = null) {
 		$many_many = array();
-		$many_many_extraFields = array();
 
 		// Get all the sections that should be added
 		$sections = Config::inst()->get($class, "page_sections", Config::EXCLUDE_EXTRA_SOURCES);
@@ -30,15 +29,19 @@ class PageSectionsExtension extends DataExtension {
 
 		foreach ($sections as $section) {
 			$name = "PageSection".$section;
-			$many_many[$name] = PageElement::class;
-			$many_many_extraFields[$name] = array("SortOrder" => "Int");
+			// $many_many[$name] = PageElement::class;
+			$many_many[$name] = array(
+				"through" => PageSectionPageElementRel::class,
+				"from" => "PageSection",
+				"to" => "Element",
+			);
+
 			$owns[] = $name;
 		}
 
 		// Create the relations for our sections
 		return array(
 			"many_many" => $many_many,
-			"many_many_extraFields" => $many_many_extraFields,
 			"owns" => $owns,
 		);
 	}
@@ -49,23 +52,24 @@ class PageSectionsExtension extends DataExtension {
 		return $classes;
 	}
 
-	public function onBeforeWrite() {
-		parent::onBeforeWrite();
+	// public function onBeforeWrite() {
+	// 	parent::onBeforeWrite();
 
-		$sections = $this->owner->config()->get("page_sections");
-		if (!$sections) $sections = array("Main");
+	// 	$sections = $this->owner->config()->get("page_sections");
+	// 	if (!$sections) $sections = array("Main");
 
-		foreach ($sections as $section) {
-			$name = "PageSection".$section;
+	// 	foreach ($sections as $section) {
+	// 		$name = "PageSection".$section;
 
-			$list = $this->owner->$name()->Sort("SortOrder")->toArray();
-			$count = count($list);
+	// 		$list = $this->owner->$name()->Sort("SortOrder")->toArray();
+	// 		$this->owner->$name()->RemoveAll();
+	// 		$count = count($list);
 
-			for ($i = 1; $i <= $count; $i++) {
-					$this->owner->$name()->Add($list[$i - 1], array("SortOrder" => $i * 2));
-			}
-		}
-	}
+	// 		 for ($i = 1; $i <= $count; $i++) {
+	// 		 	$this->owner->$name()->Add($list[$i - 1], array("SortOrder" => $i * 2));
+	// 		 }
+	// 	}
+	// }
 
 	public function updateCMSFields(FieldList $fields) {
 		$sections = $this->owner->config()->get("page_sections");

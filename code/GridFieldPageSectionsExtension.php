@@ -363,10 +363,10 @@ class GridFieldPageSectionsExtension implements
 		} else {
 			if ($newParent) {
 				$newParent->Children()->Add($item, $sortArr);
-				$newParent->write();
+				$newParent->writeWithoutVersion();
 			} else {
 				$gridField->getList()->Add($item, $sortArr);
-				$this->getPage()->write();
+				$this->getPage()->writeWithoutVersion();
 			}
 		}
 
