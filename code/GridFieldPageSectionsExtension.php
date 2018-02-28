@@ -158,10 +158,10 @@ class GridFieldPageSectionsExtension implements
 			$field = null;
 
 			if ($record->Children() && $record->Children()->Count() > 0) {
-				$icon = ($open === true ? '<span class="is-open">▼</span>'
-					: '<span class="is-closed">▶</span>');
+				$icon = ($open === true ? '<svg width="9" height="7" xmlns="http://www.w3.org/2000/svg"><path d="M1.907.678h5.5a1 1 0 0 1 .817 1.576l-2.75 3.9a1 1 0 0 1-1.634 0l-2.75-3.9A1 1 0 0 1 1.907.678z" fill="#4A4A4A" fill-rule="evenodd"/></svg>'
+					: '<svg width="7" height="9" xmlns="http://www.w3.org/2000/svg"><path d="M.428 7.406V1.907a1 1 0 0 1 1.576-.817l3.9 2.75a1 1 0 0 1 0 1.634l-3.9 2.75a1 1 0 0 1-1.576-.818z" fill="#4A4A4A" fill-rule="evenodd"/></svg>');
 			} else {
-				$icon = '<span class="is-end">◼</span>';
+				$icon = '<svg width="6" height="6" xmlns="http://www.w3.org/2000/svg"><circle fill="#4A4A4A" cx="3" cy="3" r="3" fill-rule="evenodd"/></svg>';
 			}
 
 			$field = GridField_FormAction::create(

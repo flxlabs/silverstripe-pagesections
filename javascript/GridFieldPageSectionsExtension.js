@@ -50,7 +50,7 @@
 				var grid = this.getGridField();
 				var id = grid.data("id");
 				var rowId = $target.parents(".ss-gridfield-item").data("id");
-				var $treeNav = $target.hasClass("col-treenav") ? $target : 
+				var $treeNav = $target.hasClass("col-treenav") ? $target :
 					$target.parents(".col-treenav").first();
 
 				// If we don't have a col-treenav the user clicked on another column
@@ -63,7 +63,7 @@
 				if (level > 0) {
 					// Go up through the rows and find the first row with lower level (=parent)
 					$parent = $treeNav.parents(".ss-gridfield-item").prev();
-					while ($parent.length > 0 && 
+					while ($parent.length > 0 &&
 							$parent.find(".col-treenav").data("level") >= level) {
 						$parent = $parent.prev();
 					}
@@ -91,7 +91,7 @@
 					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});
 				$menu.append("<li class='header options'>Options</li>");
-				$menu.append("<li data-type='__REMOVE__'>Remove from " + 
+				$menu.append("<li data-type='__REMOVE__'>Remove from " +
 					(parentId ? parentName : "page") + "</li>");
 				$menu.append("<li data-type='__DELETE__'>Delete</li>");
 				$menu.show();
@@ -133,11 +133,13 @@
 
 				$("tr.ss-gridfield-item").each(function() {
 					var $this = $(this);
+					var icon = "<svg width='20' height='15' xmlns='http://www.w3.org/2000/svg'><path d='M10.957 10.882v2.367a1.21 1.21 0 0 1-1.905.988l-8.54-6.02a1.21 1.21 0 0 1 0-1.976l8.54-6.02a1.21 1.21 0 0 1 1.906.988v2.418h7.254c.668 0 1.21.542 1.21 1.21v4.836a1.21 1.21 0 0 1-1.21 1.209h-7.255z' fill='#4A4A4A' fill-rule='evenodd'/></svg>"
 
 					$col = $this.find(".col-reorder");
-					$col.append("<div class='before'></div><div class='middle'></div><div class='after'></div>");
+					$col.append("<div class='before'>" + icon + "</div><div class='middle'>" + icon + "</div><div class='after'>" + icon + "</div>");
 					$col.find("div").each(function() {
 						$(this).droppable({
+							hoverClass: "state-active",
 							tolerance: "pointer",
 							drop: function(event, ui) {
 								$drop = $(this);
@@ -155,12 +157,12 @@
 									// If the current element is open, then dragging the other element to the
 									// "after" slot means it becomes a child of this element, otherwise it
 									// has to actually go after this element.
-									if ($treenav.find("button").hasClass("is-open")) {
-										type = "child";
-										childOrder = -1000000;
-									} else {
-										type = "after";
-									}
+										if ($treenav.find("button").hasClass("is-open")) {
+											type = "child";
+											childOrder = -1000000;
+										} else {
+											type = "after";
+										}
 								}
 
 								var id = ui.draggable.data("id");
@@ -195,13 +197,17 @@
 
 					$this.draggable({
 						revert: "invalid",
+						cursor: "crosshair",
+						cursorAt: { top: -15, left: -15 },
+						activeClass: "state-hover",
 						helper: function() {
-							var clone = $this.clone().css("z-index", 200).find(".ui-droppable").remove().end();
+							var $helper =  $("<div class='col-treenav__draggable'>" + $this.find(".col-treenav__title").text() + "</div>")
+							//var clone = $this.clone().css("z-index", 200).find(".ui-droppable").remove().end();
 							// Timeout is needed otherwise the draggable position is messed up
 							setTimeout(function() {
 								hideRow($this);
 							}, 1);
-							return clone;
+							return $helper;
 						},
 						start: function() {
 							var element = $this.data("class");
@@ -212,10 +218,10 @@
 								// Check if we're allowed to drop the element on the specified drop point.
 								// Depending on where we drop it (before, middle or after) we have to either
 								// check our allowed children, or the allowed children of our parent row.
-								if ($drop.hasClass("before") || 
+								if ($drop.hasClass("before") ||
 										($drop.hasClass("after") && !$treenav.find("button").hasClass("is-open"))) {
 
-									var $parent = $treenav.parent().siblings("[data-id=" + 
+									var $parent = $treenav.parent().siblings("[data-id=" +
 										$treenav.data("parent") + "]").first();
 
 									var allowed = $parent.find(".col-treenav").data("allowed-elements");
