@@ -51,6 +51,7 @@ class GridFieldPageSectionsExtension implements
 		$moduleDir = self::getModuleDir();
 		Requirements::css($moduleDir . "/css/GridFieldPageSectionsExtension.css");
 		Requirements::javascript($moduleDir . "/javascript/GridFieldPageSectionsExtension.js");
+		Requirements::add_i18n_javascript($moduleDir . '/javascript/lang', false, true);
 
 		$id = rand(1000000, 9999999);
 		$field->addExtraClass("ss-gridfield-pagesections");
@@ -87,8 +88,7 @@ class GridFieldPageSectionsExtension implements
 			$newList = $gridField->getManipulatedList();
 			while (count($list) < count($newList)) {
 				foreach ($newList as $item) {
-					//var_dump($item->Children());die;
-					if ($item->isOpenByDefault() && $item->Children()->Count) {
+					if ($item->isOpenByDefault() && $item->Children()->Count()) {
 						$this->openElement($state, $item);
 					}
 				}
@@ -185,6 +185,10 @@ class GridFieldPageSectionsExtension implements
 				array("element" => $record)
 			);
 			$field->addExtraClass("level".$level . ($open ? " is-open" : " is-closed"));
+			if (!$record->Children()->Count()) {
+				$field->addExtraClass(" is-end");
+				$field->setDisabled(true);
+			}
 			$field->setButtonContent($icon);
 			$field->setForm($gridField->getForm());
 

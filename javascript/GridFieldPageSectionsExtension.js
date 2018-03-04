@@ -69,7 +69,7 @@
 					}
 					if ($parent != null) {
 						parentId = $parent.data("id");
-						parentName = $parent.find(".col-treenav > span").html();
+						parentName = $parent.find(".col-treenav .col-treenav__title").html();
 					}
 				}
 
@@ -86,7 +86,7 @@
 					rowId: rowId,
 					parentId: parentId,
 				});
-				$menu.append("<li class='header'>Add a child</li>");
+				$menu.append("<li class='header'>" + ss.i18n._t('PageSections.GridField.AddAChild','Add a child') + "</li>");
 				$.each(elems, function(key, value) {
 					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
 				});

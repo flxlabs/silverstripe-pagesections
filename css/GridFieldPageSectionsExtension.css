@@ -70,6 +70,20 @@
 	position: relative;
 }
 
+.cms table.ss-gridfield-table tbody td.col-treenav button.ui-state-disabled {
+	opacity: 1;
+	filter: Alpha(Opacity=100);
+	background-image: none;
+	background: none;
+	box-shadow: none;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.ui-state-disabled:active {
+	border: none;
+	background: none;
+	box-shadow: none;
+}
+
 .cms table.ss-gridfield-table tbody td.col-treenav button svg {
 	position: absolute;
 	left: 50%;
