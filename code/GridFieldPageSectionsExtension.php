@@ -16,7 +16,6 @@ class GridFieldPageSectionsExtension implements
 		"handleRemove",
 		"handleDelete",
 		"handleReorder",
-		"handleMoveToPage"
 	);
 
 
@@ -39,7 +38,6 @@ class GridFieldPageSectionsExtension implements
 			"POST remove"     => "handleRemove",
 			"POST delete"     => "handleDelete",
 			"POST reorder"    => "handleReorder",
-			"POST movetopage" => "handleMoveToPage"
 		);
 	}
 
@@ -70,12 +68,12 @@ class GridFieldPageSectionsExtension implements
 			array_splice($columns, 0, 0, "Reorder");
 		}
 
-		if (!in_array("TreeNav", $columns)) {
-			array_splice($columns, 1, 0, "TreeNav");
+		if (!in_array("Actions", $columns)) {
+			array_splice($columns, 1, 0, "Actions");
 		}
 
-		if (!in_array("Actions", $columns)) {
-			array_push($columns, "Actions");
+		if (!in_array("TreeNav", $columns)) {
+			array_splice($columns, 2, 0, "TreeNav");
 		}
 
 		// Insert grid state initial data
@@ -101,8 +99,8 @@ class GridFieldPageSectionsExtension implements
 	public function getColumnsHandled($gridField) {
 		return array(
 			"Reorder",
-			"TreeNav",
 			"Actions",
+			"TreeNav",
 		);
 	}
 
