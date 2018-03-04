@@ -170,6 +170,11 @@
 								var newParent = type === "child" ? $this.data("id") : $treenav.data("parent");
 								var sort = type === "child" ? childOrder : $reorder.data("sort");
 
+								// we alter the state of the published / saved buttons
+								$('.cms-edit-form .Actions #Form_EditForm_action_publish').button({
+									showingAlternate: true
+								});
+
 								grid.reload({
 									url: grid.data("url-reorder"),
 									data: [{
@@ -193,20 +198,23 @@
 						});
 					});
 
-
-
 					$this.draggable({
 						revert: "invalid",
 						cursor: "crosshair",
 						cursorAt: { top: -15, left: -15 },
-						activeClass: "state-hover",
+						activeClass: "state-active",
+						hoverClass: "state-active",
+						tolerance: "pointer",
+						greedy: true,
 						helper: function() {
-							var $helper =  $("<div class='col-treenav__draggable'>" + $this.find(".col-treenav__title").text() + "</div>")
-							//var clone = $this.clone().css("z-index", 200).find(".ui-droppable").remove().end();
-							// Timeout is needed otherwise the draggable position is messed up
-							setTimeout(function() {
-								hideRow($this);
-							}, 1);
+							var $tr = $this.parents("tr.ss-gridfield-item");
+							var $helper =  $(
+								"<div class='col-treenav__draggable'>" +
+								$this.find(".col-treenav__title").text() +
+								"</div>"
+							)
+							$this.css("opacity", 0.6)
+
 							return $helper;
 						},
 						start: function() {
@@ -214,15 +222,49 @@
 							$(".ui-droppable").each(function() {
 								var $drop = $(this);
 								var $treenav = $drop.parent().siblings(".col-treenav");
+								var isOpen = $treenav.find("button").hasClass("is-open");
+								var $tr = $drop.parents("tr.ss-gridfield-item");
 
 								// Check if we're allowed to drop the element on the specified drop point.
-								// Depending on where we drop it (before, middle or after) we have to either
-								// check our allowed children, or the allowed children of our parent row.
-								if ($drop.hasClass("before") ||
-										($drop.hasClass("after") && !$treenav.find("button").hasClass("is-open"))) {
+									// dont enable dropping on itself
+								if ($tr.data("id") == $this.data("id")) return
 
-									var $parent = $treenav.parent().siblings("[data-id=" +
-										$treenav.data("parent") + "]").first();
+								// dont enable dropping on .before of itself
+								if ($drop.hasClass("before") && $tr.prev().data("id") == $this.data("id")) return
+								// Depending on where we drop it (before, middle or after) we have to either
+								// don't show middle if open
+								if (
+									$drop.hasClass("middle") &&
+									isOpen
+								) {
+									return;
+								}
+								// let's handle level 0 if not open
+								else if (
+									$treenav.data("level") == 0 &&
+									(
+										$drop.hasClass("before") ||
+										(
+											$drop.hasClass("after") &&
+											!isOpen
+										)
+									)
+								) {
+									var allowed = $treenav.data("allowed-page-elements");
+									console.log(allowed, element, $treenav)
+									if (!allowed[element]) return;
+								}
+								// check our allowed children, or the allowed children of our parent row.
+								else if (
+									$drop.hasClass("before") ||
+									(
+										$drop.hasClass("after") &&
+										!isOpen
+									)
+								) {
+									var $parent = $treenav.parent().siblings(
+										"[data-id=" + $treenav.data("parent") + "]"
+									).first();
 
 									var allowed = $parent.find(".col-treenav").data("allowed-elements");
 									if (allowed && !allowed[element]) return;
@@ -239,7 +281,7 @@
 							// Show the previous elements. If the user made an invalid movement then
 							// we want this to show anyways. If he did something valid the grid will
 							// refresh so we don't care if it's visible behind the loading icon.
-							$("tr.ss-gridfield-item").show();
+							$("tr.ss-gridfield-item").css("opacity", "")
 						},
 					});
 				});

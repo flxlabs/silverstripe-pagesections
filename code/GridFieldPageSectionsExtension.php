@@ -20,8 +20,9 @@ class GridFieldPageSectionsExtension implements
 	);
 
 
-	public function __construct($page, $sortField = "SortOrder") {
+	public function __construct($page, $allowedElementsOnPage = array(), $sortField = "SortOrder") {
 		$this->page = $page;
+		$this->allowedElementsOnPage = $allowedElementsOnPage;
 		$this->sortField = $sortField;
 	}
 
@@ -81,12 +82,13 @@ class GridFieldPageSectionsExtension implements
 		if (!isset($state->open)) {
 			$state->open = array();
 
-			// Open all elements by default
+			// Open all elements by default if has children
 			$list = array();
 			$newList = $gridField->getManipulatedList();
 			while (count($list) < count($newList)) {
 				foreach ($newList as $item) {
-					if ($item->isOpenByDefault()) {
+					//var_dump($item->Children());die;
+					if ($item->isOpenByDefault() && $item->Children()->Count) {
 						$this->openElement($state, $item);
 					}
 				}
@@ -125,12 +127,23 @@ class GridFieldPageSectionsExtension implements
 				$elems[$class] = $class::$singular_name;
 			}
 
+			// if element has no parent we need to
+			// know the allowed elements of the page
+			if (!$record->_Parent) {
+				$pageClasses = $this->allowedElementsOnPage;
+				$pageElems = array();
+				foreach ($pageClasses as $class) {
+					$pageElems[$class] = $class::$singular_name;
+				}
+			}
+
 			return array(
-				"class" => "col-treenav",
-				"data-class" => $record->ClassName,
-				"data-level" => strval($record->_Level),
-				"data-parent" => $record->_Parent ? strval($record->_Parent->ID) : "",
-				"data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
+				"class"                      => "col-treenav",
+				"data-class"                 => $record->ClassName,
+				"data-level"                 => strval($record->_Level),
+				"data-parent"                => $record->_Parent ? strval($record->_Parent->ID) : "",
+				"data-allowed-page-elements" => !$record->_Parent ? json_encode($pageElems, JSON_UNESCAPED_UNICODE) : "",
+				"data-allowed-elements"      => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			);
 		}
 

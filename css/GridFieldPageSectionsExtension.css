@@ -112,6 +112,10 @@
 	box-shadow: 0 0 1px #ccc;
 }
 
+.col-treenav__draggable.state-active {
+	border: 1px solid #417505;
+}
+
 .col-treenav__draggable:before {
 	position: absolute;
 	content: "";
@@ -122,10 +126,6 @@
 	border: 3px solid #4a4a4a;
 	border-radius: 50%;
 	box-sizing: border-box;
-}
-
-.col-treenav__draggable.state-hover {
-	background: #A8CB7F;
 }
 
 .ss-gridfield-pagesections thead tr th.col-Reorder span {
@@ -162,7 +162,7 @@
 .ss-gridfield-pagesections .col-reorder .ui-droppable {
 	position: absolute;
 	left: 100%;
-	width: 500%;
+	width: 100vw;
 	z-index: 100;
 	display: none;
 }
@@ -181,8 +181,7 @@
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.before {
 	top: 0;
-	height: 25%;
-	background-color: rgba(0, 100, 0, 0.4);
+	height: 50%;
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.before svg {
@@ -194,7 +193,6 @@
 	right: 0;
 	top: 0;
 	height: 100%;
-	background-color: rgba(0, 0, 100, 0.4);
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.middle svg {
@@ -204,17 +202,16 @@
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.after {
-	bottom: 0;
-	height: 25%;
-	background-color: rgba(0, 100, 0, 0.4);
+	bottom: -1px;
+	height: 50%;
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.after svg {
 	top: 100%;
+	margin-top: -1px;
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.state-active {
-	background: pink !important;
 	z-index: 200;
 }
 
