@@ -77,7 +77,7 @@ class PageElement extends DataObject {
 			->addComponent($dataColumns = new GridFieldDataColumns())
 			->addComponent($autoCompl)
 			->addComponent($addNewButton)
-			->addComponent(new GridFieldPageSectionsExtension($this->owner))
+			->addComponent(new GridFieldPageSectionsExtension($this->owner, $this->owner->getAllowedPageElements()))
 			->addComponent(new GridFieldDetailForm())
 			->addComponent(new GridFieldFooter());
 		$dataColumns->setFieldCasting(array('GridFieldPreview' => 'HTMLText->RAW'));

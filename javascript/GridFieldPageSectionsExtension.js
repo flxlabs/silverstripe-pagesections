@@ -170,11 +170,6 @@
 								var newParent = type === "child" ? $this.data("id") : $treenav.data("parent");
 								var sort = type === "child" ? childOrder : $reorder.data("sort");
 
-								// we alter the state of the published / saved buttons
-								$('.cms-edit-form .Actions #Form_EditForm_action_publish').button({
-									showingAlternate: true
-								});
-
 								grid.reload({
 									url: grid.data("url-reorder"),
 									data: [{
@@ -194,6 +189,12 @@
 										value: sort,
 									}],
 								});
+								// we alter the state of the published / saved buttons
+								$('.cms-edit-form .Actions #Form_EditForm_action_publish').button({
+									showingAlternate: true
+								});
+								$('.cms-preview').entwine('.ss.preview').changeState('StageLink');
+
 							},
 						});
 					});
@@ -250,8 +251,7 @@
 										)
 									)
 								) {
-									var allowed = $treenav.data("allowed-page-elements");
-									console.log(allowed, element, $treenav)
+									var allowed = $treenav.data("allowed-parent-elements");
 									if (!allowed[element]) return;
 								}
 								// check our allowed children, or the allowed children of our parent row.
