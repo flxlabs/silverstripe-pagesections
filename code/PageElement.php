@@ -63,8 +63,9 @@ class PageElement extends DataObject {
 	}
 
 	public function getChildrenGridField() {
+		$allowedElements = $this->getAllowedPageElements();
 		$addNewButton = new GridFieldAddNewMultiClass();
-		$addNewButton->setClasses($this->getAllowedPageElements());
+		$addNewButton->setClasses($allowedElements);
 
 		$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
 		$autoCompl->setResultsFormat('$Title ($ID)');
@@ -77,7 +78,8 @@ class PageElement extends DataObject {
 			->addComponent($autoCompl)
 			->addComponent($addNewButton)
 			->addComponent(new GridFieldPageSectionsExtension($this->owner))
-			->addComponent(new GridFieldDetailForm());
+			->addComponent(new GridFieldDetailForm())
+			->addComponent(new GridFieldFooter());
 		$dataColumns->setFieldCasting(array('GridFieldPreview' => 'HTMLText->RAW'));
 
 		return new GridField("Children", "Children", $this->Children(), $config);

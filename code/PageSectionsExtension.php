@@ -28,7 +28,7 @@ class PageSectionsExtension extends DataExtension {
 		return array();
 	}
 
-	public static function getAllowedPageElements() {
+	public static function getAllowedPageElements($sectionName = "Main") {
 		$classes = array_values(ClassInfo::subclassesFor("PageElement"));
 		$classes = array_diff($classes, ["PageElement"]);
 		return $classes;
@@ -61,8 +61,9 @@ class PageSectionsExtension extends DataExtension {
 			$fields->removeByName($name);
 
 			if ($this->owner->ID) {
+				$allowedElements = $this->owner->getAllowedPageElements($section);
 				$addNewButton = new GridFieldAddNewMultiClass();
-				$addNewButton->setClasses($this->owner->getAllowedPageElements());
+				$addNewButton->setClasses($allowedElements);
 
 				$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
 				$autoCompl->setResultsFormat('$Title ($ID)');
@@ -74,7 +75,8 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent($autoCompl)
 					->addComponent($addNewButton)
 					->addComponent(new GridFieldPageSectionsExtension($this->owner))
-					->addComponent(new GridFieldDetailForm());
+					->addComponent(new GridFieldDetailForm())
+					->addComponent(new GridFieldFooter());
 				$dataColumns = $config->getComponentByType('GridFieldDataColumns');
 				$dataColumns->setFieldCasting(array('GridFieldPreview' => 'HTMLText->RAW'));
 
