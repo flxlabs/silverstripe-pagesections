@@ -40,92 +40,153 @@
 	border-top: 1px solid #CCC;
 }
 
-
-.ss-gridfield-pagesections .col-treenav {
+/* hierarchical gridfield */
+.cms table.ss-gridfield-table tr {
 	height: 100%;
-	padding: 0 !important;
 }
 
-.ss-gridfield-pagesections .col-treenav > button {
-	//width: 100% !important;
-	height: 100% !important;
-	font-weight: bold !important;
-	/*font-size: 150% !important;*/
-	color: black !important;
-}
-
-.ss-gridfield-pagesections .col-treenav > button, .ss-gridfield-pagesections .col-treenav > button > span {
-	padding: 0 !important;
-	margin: 0 !important;
-	text-align: left !important;
-}
-
-.ss-gridfield-pagesections .col-treenav > button:focus {
-	background: none !important;
-	box-shadow: none!important;
-	border: none !important;
-	background-color: none !important;
-}
-
-.ss-gridfield-pagesections .col-treenav > button > span > span.is-closed{
-
-	font-size: 100%;
-}
-
-.ss-gridfield-pagesections .col-treenav > button > span > span.is-open{
-	font-size: 96%;
-	margin-left: -0.1em;
-}
-
-.ss-gridfield-pagesections .col-treenav > button > span > span.is-end{
-	font-size: 110%;
-	margin-left: -0.1em;
-}
-
-.ss-gridfield-pagesections .col-treenav > button > span > span {
-	margin-right: 1em;
-	text-transform: capitalize;
+.cms table.ss-gridfield-table tbody td.col-treenav {
+	padding: 0;
+	height: 100%;
 	vertical-align: middle;
 }
 
-.ss-gridfield-pagesections .col-treenav > button > span {
-	margin-right: 30px !important;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow-x: hidden;
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__inner {
+	display: flex;
+	height: 100%;
+	flex-flow: row nowrap;
+	justify-content: flex-start;
+	align-items: center;
 }
 
-.ss-gridfield-pagesections .col-treenav > button.level0 > span {
-	margin-left: 1em !important;
-}
-.ss-gridfield-pagesections .col-treenav > button.level1 > span {
-	margin-left: 2em !important;
-}
-.ss-gridfield-pagesections .col-treenav > button.level2 > span {
-	margin-left: 4em !important;
-}
-.ss-gridfield-pagesections .col-treenav > button.level3 > span {
-	margin-left: 6em !important;
-}
-.ss-gridfield-pagesections .col-treenav > button.level4 > span {
-	margin-left: 8em !important;
-
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__text {
+	padding: 8px 8px 8px 0;
 }
 
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__classname {
+	font-size: 87%;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__title {
+	font-weight: bold;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button {
+	width: 2em;
+	height: 100%;
+	display: block;
+	float: left;
+	margin: 0 0.5em 0 0;
+	padding: 0;
+	border-radius: 0;
+	position: relative;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.ui-state-disabled {
+	opacity: 1;
+	filter: Alpha(Opacity=100);
+	background-image: none;
+	background: none;
+	box-shadow: none;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.ui-state-disabled:active {
+	border: none;
+	background: none;
+	box-shadow: none;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button svg {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.level1 {
+	margin-left: 2em;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.level2 {
+	margin-left: 4em;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.level3 {
+	margin-left: 6em;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.level4 {
+	margin-left: 8em;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.level5 {
+	margin-left: 10em;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav button.level6 {
+	margin-left: 12em;
+}
+
+/**
+ * action col
+ */
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tr td.col-actions {
+	width: 68px;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td.col-actions a.view-link, .cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td.col-actions a.edit-link {
+	margin-top: -5px;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td button.col-actions__button {
+	margin: 2px;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td button.col-actions__button .ui-button-text {
+	line-height: 0;
+	padding: 0;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td button.col-actions__button .col-actions__button__icon svg {
+	display: block;
+}
 
 /**
  * Orderable rows
  */
+.col-treenav__draggable {
+	z-index: 300;
+	background: #f6f7f8;
+	padding: 2px 4px;
+	border-radius: 2px;
+	box-shadow: 0 0 1px #ccc;
+}
+
+.col-treenav__draggable.state-active {
+	border: 1px solid #417505;
+}
+
+.col-treenav__draggable:before {
+	position: absolute;
+	content: "";
+	left: -19px;
+	top: -19px;
+	width: 8px;
+	height: 8px;
+	border: 3px solid #4a4a4a;
+	border-radius: 50%;
+	box-sizing: border-box;
+}
 
 .ss-gridfield-pagesections thead tr th.col-Reorder span {
 	padding: 0 !important;
 	margin-left: 8px;
 }
 
-.ss-gridfield-pagesections .col-reorder {
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tr td.col-reorder {
 	position: relative;
-	padding: 0 !important;
-	width: 16px !important;
+	padding: 0;
+	width: 16px;
 }
 
 .ss-gridfield-pagesections .col-reorder .handle {
@@ -150,26 +211,60 @@
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable {
 	position: absolute;
-	left: 0;
-	width: 100%;
+	left: 100%;
+	width: 100vw;
 	z-index: 100;
 	display: none;
 }
 
+.ss-gridfield-pagesections .col-reorder .ui-droppable svg {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	z-index: 100;
+	transform: translate(0, -50%);
+}
+
+.ss-gridfield-pagesections .col-reorder .ui-droppable svg path {
+	fill: #A8CB7F;
+}
+
 .ss-gridfield-pagesections .col-reorder .ui-droppable.before {
 	top: 0;
-	height: 25%;
-	background-color: rgba(0, 100, 0, 0.4);
+	height: 50%;
+}
+
+.ss-gridfield-pagesections .col-reorder .ui-droppable.before svg {
+	top: 0;
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.middle {
-	top: 25%;
-	height: 50%;
-	background-color: rgba(0, 0, 100, 0.4);
+	left: auto;
+	right: 0;
+	top: 0;
+	height: 100%;
+}
+
+.ss-gridfield-pagesections .col-reorder .ui-droppable.middle svg {
+	left: auto;
+	right: 0;
+	transform: scale(-1) translate(0, 50%);
 }
 
 .ss-gridfield-pagesections .col-reorder .ui-droppable.after {
-	bottom: 0;
-	height: 25%;
-	background-color: rgba(0, 100, 0, 0.4);
+	bottom: -1px;
+	height: 50%;
+}
+
+.ss-gridfield-pagesections .col-reorder .ui-droppable.after svg {
+	top: 100%;
+	margin-top: -1px;
+}
+
+.ss-gridfield-pagesections .col-reorder .ui-droppable.state-active {
+	z-index: 200;
+}
+
+.ss-gridfield-pagesections .col-reorder .ui-droppable.state-active  svg path {
+	fill: #417505;
 }

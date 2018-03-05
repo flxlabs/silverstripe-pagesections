@@ -16,7 +16,6 @@ class GridFieldPageSectionsExtension implements
 		"handleRemove",
 		"handleDelete",
 		"handleReorder",
-		"handleMoveToPage"
 	);
 
 
@@ -38,7 +37,6 @@ class GridFieldPageSectionsExtension implements
 			"POST remove"     => "handleRemove",
 			"POST delete"     => "handleDelete",
 			"POST reorder"    => "handleReorder",
-			"POST movetopage" => "handleMoveToPage"
 		);
 	}
 
@@ -50,6 +48,7 @@ class GridFieldPageSectionsExtension implements
 		$moduleDir = self::getModuleDir();
 		Requirements::css($moduleDir . "/css/GridFieldPageSectionsExtension.css");
 		Requirements::javascript($moduleDir . "/javascript/GridFieldPageSectionsExtension.js");
+		Requirements::add_i18n_javascript($moduleDir . '/javascript/lang', false, true);
 
 		$id = rand(1000000, 9999999);
 		$field->addExtraClass("ss-gridfield-pagesections");
@@ -73,7 +72,7 @@ class GridFieldPageSectionsExtension implements
 		}
 
 		if (!in_array("Actions", $columns)) {
-			array_push($columns, "Actions");
+			array_splice($columns, 2, 0, "Actions");
 		}
 
 		// Insert grid state initial data
@@ -81,12 +80,12 @@ class GridFieldPageSectionsExtension implements
 		if (!isset($state->open)) {
 			$state->open = array();
 
-			// Open all elements by default
+			// Open all elements by default if has children
 			$list = array();
 			$newList = $gridField->getManipulatedList();
 			while (count($list) < count($newList)) {
 				foreach ($newList as $item) {
-					if ($item->isOpenByDefault()) {
+					if ($item->isOpenByDefault() && $item->Children()->Count()) {
 						$this->openElement($state, $item);
 					}
 				}
@@ -99,8 +98,8 @@ class GridFieldPageSectionsExtension implements
 	public function getColumnsHandled($gridField) {
 		return array(
 			"Reorder",
-			"TreeNav",
 			"Actions",
+			"TreeNav",
 		);
 	}
 
@@ -125,12 +124,23 @@ class GridFieldPageSectionsExtension implements
 				$elems[$class] = $class::$singular_name;
 			}
 
+			// if element has no parent we need to
+			// know the allowed elements of the page
+			if (!$record->_Parent) {
+				$parentClasses = $this->page->getAllowedPageElements();
+				$parentElems = array();
+				foreach ($parentClasses as $class) {
+					$parentElems[$class] = $class::$singular_name;
+				}
+			}
+
 			return array(
-				"class" => "col-treenav",
-				"data-class" => $record->ClassName,
-				"data-level" => strval($record->_Level),
-				"data-parent" => $record->_Parent ? strval($record->_Parent->ID) : "",
-				"data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
+				"class"                        => "col-treenav",
+				"data-class"                   => $record->ClassName,
+				"data-level"                   => strval($record->_Level),
+				"data-parent"                  => $record->_Parent ? strval($record->_Parent->ID) : "",
+				"data-allowed-parent-elements" => !$record->_Parent ? json_encode($parentElems, JSON_UNESCAPED_UNICODE) : "",
+				"data-allowed-elements"        => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			);
 		}
 
@@ -158,10 +168,10 @@ class GridFieldPageSectionsExtension implements
 			$field = null;
 
 			if ($record->Children() && $record->Children()->Count() > 0) {
-				$icon = ($open === true ? '<span class="is-open">▼</span>'
-					: '<span class="is-closed">▶</span>');
+				$icon = ($open === true ? '<svg width="9" height="7" xmlns="http://www.w3.org/2000/svg"><path d="M1.907.678h5.5a1 1 0 0 1 .817 1.576l-2.75 3.9a1 1 0 0 1-1.634 0l-2.75-3.9A1 1 0 0 1 1.907.678z" fill="#4A4A4A" fill-rule="evenodd"/></svg>'
+					: '<svg width="7" height="9" xmlns="http://www.w3.org/2000/svg"><path d="M.428 7.406V1.907a1 1 0 0 1 1.576-.817l3.9 2.75a1 1 0 0 1 0 1.634l-3.9 2.75a1 1 0 0 1-1.576-.818z" fill="#4A4A4A" fill-rule="evenodd"/></svg>');
 			} else {
-				$icon = '<span class="is-end">◼</span>';
+				$icon = '<svg width="6" height="6" xmlns="http://www.w3.org/2000/svg"><circle fill="#4A4A4A" cx="3" cy="3" r="3" fill-rule="evenodd"/></svg>';
 			}
 
 			$field = GridField_FormAction::create(
@@ -172,12 +182,19 @@ class GridFieldPageSectionsExtension implements
 				array("element" => $record)
 			);
 			$field->addExtraClass("level".$level . ($open ? " is-open" : " is-closed"));
+			if (!$record->Children()->Count()) {
+				$field->addExtraClass(" is-end");
+				$field->setDisabled(true);
+			}
 			$field->setButtonContent($icon);
 			$field->setForm($gridField->getForm());
 
 			return ViewableData::create()->customise(array(
 				"ButtonField" => $field,
-				"Title" => $record->i18n_singular_name(),
+				"ID"          => $record->ID,
+				"UsedCount"   => $record->Parents()->Count() + $record->Pages()->Count(),
+				"ClassName"   => $record->i18n_singular_name(),
+				"Title"       => $record->Title,
 			))->renderWith("GridFieldPageElement");
 		}
 
@@ -191,7 +208,60 @@ class GridFieldPageSectionsExtension implements
 				);
 			}
 			$link = Controller::join_links($gridField->link(), $link);
-			return "<a href='$link'>Edit</a>";
+			$data = new ArrayData(array(
+				'Link' => $link
+			));
+			$editButton = $data->renderWith('GridFieldEditButton');
+
+			$classes = $record->getAllowedPageElements();
+			$elems = array();
+			foreach ($classes as $class) {
+				$elems[$class] = $class::$singular_name;
+			}
+			$addButton = GridField_FormAction::create(
+				$gridField,
+				"AddAction".$record->ID,
+				null,
+				null,
+				null
+			);
+			$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
+			$addButton->addExtraClass("col-actions__button add-button");
+			if (!count($elems)) {
+				$addButton->setDisabled(true);
+			}
+			$addButton->setButtonContent('<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+				<g fill="none" fill-rule="evenodd">
+					<circle fill="#488304" cx="8" cy="8" r="8"/>
+					<path d="M8 4v8M4 8h8" stroke="#FFF" stroke-width="2" stroke-linecap="square"/>
+				</g>
+			</svg>');
+
+			$deleteButton = GridField_FormAction::create(
+				$gridField,
+				"DeleteAction".$record->ID,
+				null,
+				null,
+				null
+			);
+			$deleteButton->setAttribute("data-used-count", $record->Parents()->Count() + $record->Pages()->Count());
+			$deleteButton->addExtraClass("col-actions__button delete-button");
+
+			$deleteButton->setButtonContent('<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+				<g fill="none" fill-rule="evenodd">
+					<circle fill="#880919" cx="8" cy="8" r="8"/>
+					<path d="M4 8h8" stroke="#FFF" stroke-width="2" stroke-linecap="square"/>
+				</g>
+			</svg>');
+
+			return ViewableData::create()->customise(array(
+				"EditButton"     => $editButton,
+				"AddButton"    => $addButton,
+				"DeleteButton" => $deleteButton,
+				"ParentID"     => $record->_Parent ? $record->_Parent->ID : $this->page->ID,
+			))->renderWith("GridFieldPageSectionsActionColumn");
+
+			return $ret;
 		}
 	}
 
