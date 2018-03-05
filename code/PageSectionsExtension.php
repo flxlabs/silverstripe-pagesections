@@ -74,7 +74,7 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent($dataColumns = new GridFieldDataColumns())
 					->addComponent($autoCompl)
 					->addComponent($addNewButton)
-					->addComponent(new GridFieldPageSectionsExtension($this->owner, $allowedElements))
+					->addComponent(new GridFieldPageSectionsExtension($this->owner))
 					->addComponent(new GridFieldDetailForm())
 					->addComponent(new GridFieldFooter());
 				$dataColumns = $config->getComponentByType('GridFieldDataColumns');

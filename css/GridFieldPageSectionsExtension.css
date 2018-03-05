@@ -59,6 +59,18 @@
 	align-items: center;
 }
 
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__text {
+	padding: 8px 8px 8px 0;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__classname {
+	font-size: 87%;
+}
+
+.cms table.ss-gridfield-table tbody td.col-treenav .col-treenav__title {
+	font-weight: bold;
+}
+
 .cms table.ss-gridfield-table tbody td.col-treenav button {
 	width: 2em;
 	height: 100%;
@@ -113,6 +125,30 @@
 
 .cms table.ss-gridfield-table tbody td.col-treenav button.level6 {
 	margin-left: 12em;
+}
+
+/**
+ * action col
+ */
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tr td.col-actions {
+	width: 68px;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td.col-actions a.view-link, .cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td.col-actions a.edit-link {
+	margin-top: -5px;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td button.col-actions__button {
+	margin: 2px;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td button.col-actions__button .ui-button-text {
+	line-height: 0;
+	padding: 0;
+}
+
+.cms .ss-gridfield-pagesections table.ss-gridfield-table tbody td button.col-actions__button .col-actions__button__icon svg {
+	display: block;
 }
 
 /**

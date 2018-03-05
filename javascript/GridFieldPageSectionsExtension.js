@@ -18,84 +18,8 @@
 			}
 		});
 
-		// Context menu click
-		$(document).on("click", ".treenav-menu li", function(event) {
-			var $this = $(this);
-			var $menu = $this.parents(".treenav-menu");
-			var $gridfield = $(".ss-gridfield-pagesections[data-id='" + $menu.data("grid-id") + "']").find("tbody");
-			var newType = $this.data("type");
-
-			// If we don't have a type then the user clicked a header or some random thing
-			if (!newType) return;
-
-			if (newType === "__REMOVE__") {
-				$gridfield.removeElement($menu.data("row-id"), $menu.data("parent-id"));
-			} else if (newType === "__DELETE__") {
-				if (!confirm("Are you sure you want to remove this element? All children will be orphans!"))
-					return;
-
-				$gridfield.deleteElement($menu.data("row-id"));
-			} else {
-				$gridfield.addElement($menu.data("row-id"), newType);
-			}
-
-			$this.parents(".treenav-menu").hide();
-		});
-
 		// Show context menu
 		$(".ss-gridfield-pagesections tbody").entwine({
-			oncontextmenu: function(event) {
-				$target = $(event.target);
-
-				var grid = this.getGridField();
-				var id = grid.data("id");
-				var rowId = $target.parents(".ss-gridfield-item").data("id");
-				var $treeNav = $target.hasClass("col-treenav") ? $target :
-					$target.parents(".col-treenav").first();
-
-				// If we don't have a col-treenav the user clicked on another column
-				if ($treeNav.length <= 0) return;
-				event.preventDefault();
-
-				var parentId = null;
-				var parentName = null;
-				var level = $treeNav.data("level");
-				if (level > 0) {
-					// Go up through the rows and find the first row with lower level (=parent)
-					$parent = $treeNav.parents(".ss-gridfield-item").prev();
-					while ($parent.length > 0 &&
-							$parent.find(".col-treenav").data("level") >= level) {
-						$parent = $parent.prev();
-					}
-					if ($parent != null) {
-						parentId = $parent.data("id");
-						parentName = $parent.find(".col-treenav .col-treenav__title").html();
-					}
-				}
-
-				var elems = $treeNav.data("allowed-elements");
-				$menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
-				$menu.css({
-					top: event.pageY + "px",
-					left: event.pageX + "px"
-				});
-				$(document.body).append($menu);
-
-				$menu.data({
-					gridId: id,
-					rowId: rowId,
-					parentId: parentId,
-				});
-				$menu.append("<li class='header'>" + ss.i18n._t('PageSections.GridField.AddAChild','Add a child') + "</li>");
-				$.each(elems, function(key, value) {
-					$menu.append("<li data-type='" + key + "'>" + value  + "</li>");
-				});
-				$menu.append("<li class='header options'>Options</li>");
-				$menu.append("<li data-type='__REMOVE__'>Remove from " +
-					(parentId ? parentName : "page") + "</li>");
-				$menu.append("<li data-type='__DELETE__'>Delete</li>");
-				$menu.show();
-			},
 			addElement: function(id, elemType) {
 				var grid = this.getGridField();
 
@@ -130,9 +54,78 @@
 			},
 			onadd: function() {
 				var grid = this.getGridField();
+				var thisGrid = this;
 
 				$("tr.ss-gridfield-item").each(function() {
 					var $this = $(this);
+					// actions
+					$this.find(".col-actions .add-button").click(function(event) {
+						event.preventDefault();
+						event.stopImmediatePropagation();
+						$target = $(event.target);
+						var elems = $target.data("allowed-elements");
+
+						var id = grid.data("id");
+						var rowId = $target.parents(".ss-gridfield-item").data("id");
+
+
+						var $menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
+						$menu.css({
+							top: event.pageY + "px",
+							left: event.pageX + "px"
+						});
+						$(document.body).append($menu);
+
+						$menu.append("<li class='header'>" + ss.i18n._t('PageSections.GridField.AddAChild','Add a child') + "</li>");
+						$.each(elems, function(key, value) {
+							var $li = $("<li data-type='" + key + "'>" + value  + "</li>")
+							$li.click(function() {
+								thisGrid.addElement(rowId, key);
+								$menu.remove();
+							})
+							$menu.append($li);
+						});
+						$menu.show();
+					});
+
+					$this.find(".col-actions .delete-button").click(function(event) {
+						event.preventDefault();
+						event.stopImmediatePropagation();
+
+						$target = $(event.target);
+
+						var id = grid.data("id");
+						var rowId = $target.parents(".ss-gridfield-item").data("id");
+						var parentId = $target.data("parent-id");
+
+						var $menu = $("<ul id='treenav-menu-" + id + "' class='treenav-menu' data-id='" + id + "'></ul>");
+						$menu.css({
+							top: event.pageY + "px",
+							left: event.pageX + "px"
+						});
+						$(document.body).append($menu);
+
+						$menu.append("<li class='header'>" + ss.i18n._t('PageSections.GridField.Delete','Delete') + "</li>");
+
+						var $li = $("<li data-type='__REMOVE__'>" + ss.i18n._t('PageSections.GridField.RemoveAChild','Remove') + "</li>")
+						$li.click(function() {
+							thisGrid.removeElement(rowId, $menu.data("parent-id"));
+							$menu.remove();
+						})
+						$menu.append($li);
+						if ($target.data("used-count") < 2) {
+							var $li = $("<li>" + ss.i18n._t('PageSections.GridField.DeleteAChild','Finally delete') + "</li>")
+							$li.click(function() {
+								thisGrid.deleteElement(rowId, $menu.data("parent-id"));
+								$menu.remove();
+							})
+							$menu.append($li);
+						}
+
+						$menu.show();
+					});
+
+					// reorder
 					var icon = "<svg width='20' height='15' xmlns='http://www.w3.org/2000/svg'><path d='M10.957 10.882v2.367a1.21 1.21 0 0 1-1.905.988l-8.54-6.02a1.21 1.21 0 0 1 0-1.976l8.54-6.02a1.21 1.21 0 0 1 1.906.988v2.418h7.254c.668 0 1.21.542 1.21 1.21v4.836a1.21 1.21 0 0 1-1.21 1.209h-7.255z' fill='#4A4A4A' fill-rule='evenodd'/></svg>"
 
 					$col = $this.find(".col-reorder");

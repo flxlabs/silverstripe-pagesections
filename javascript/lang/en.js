@@ -4,6 +4,9 @@ if (typeof(ss) === 'undefined' || typeof(ss.i18n) === 'undefined') {
   }
 } else {
   ss.i18n.addDictionary('en', {
-    "PageSections.GridField.AddAChild": "Add a child",
-});
+      "PageSections.GridField.AddAChild": "Add a child",
+      "PageSections.GridField.Delete": "Delete",
+      "PageSections.GridField.DeleteAChild": "Finally delete",
+      "PageSections.GridField.RemoveAChild": "Remove",
+  });
 }
