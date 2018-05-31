@@ -1,6 +1,6 @@
 <?php
 
-namespace FlxLabs\PageSections;
+namespace FLXLabs\PageSections;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
@@ -24,7 +24,8 @@ use UncleCheese\BetterButtons\Buttons\BetterButton_Save;
 
 class PageElement extends DataObject {
 
-	private static $table_name = "FLXLabs_PageElement";
+	private static $table_name = "FLXLabs_PageSections_PageElement";
+
 	protected static $singularName = "Element";
 	protected static $pluralName = "Elements";
 
@@ -38,48 +39,47 @@ class PageElement extends DataObject {
 	function canView($member = null) { return true; }
 	function canEdit($member = null) { return true; }
 	function canDelete($member = null) { return true; }
-	function canCreate($member = null, $context = array()) { return true; }
+	function canCreate($member = null, $context = []) { return true; }
 
 	private static $can_be_root = true;
 
-	private static $db = array(
+	private static $db = [
 		"Name" => "Varchar(255)",
-	);
+	];
 
-	private static $many_many = array(
-		"Children" => array(
+	private static $many_many = [
+		"Children" => [
 			"through" => PageElementSelfRel::class,
 			"from" => "Parent",
 			"to" => "Child",
-		)
-	);
+		]
+	];
 
-	private static $belongs_many_many = array(
-		"Parents" => PageElement::class . ".Children",
-		"Pages" => "Page.PageSectionMain",
-	);
+	private static $belongs_many_many = [
+		"Parents" => PageElement::class . ".Children"
+	];
 
-	private static $many_many_extraFields = array(
-		"Children" => array(
+	private static $many_many_extraFields = [
+		"Children" => [
 			"SortOrder" => 'Int',
-		),
-	);
+		],
+	];
 
 	private static $owns = [
-    "Children",
-  ];
+		"Children",
+	];
 
-	private static $summary_fields = array(
+	private static $summary_fields = [
 		"SingularName",
 		"ID",
 		"GridFieldPreview",
-	);
+	];
 
-	private static $searchable_fields = array(
+	private static $searchable_fields = [
 		"ClassName",
 		"Name",
 		"ID",
-	);
+	];
 
 	public static function getAllowedPageElements() {
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
@@ -96,7 +96,7 @@ class PageElement extends DataObject {
 	// 	$count = count($list);
 
 	// 	for ($i = 1; $i <= $count; $i++) {
-	// 		$this->Children()->Add($list[$i - 1], array("SortOrder" => $i * 2));
+	// 		$this->Children()->Add($list[$i - 1], ["SortOrder" => $i * 2]);
 	// 	}
 	// }
 
@@ -128,7 +128,7 @@ class PageElement extends DataObject {
 			->addComponent($addNewButton)
 			->addComponent(new GridFieldPageSectionsExtension($this->owner))
 			->addComponent(new GridFieldDetailForm());
-		$dataColumns->setFieldCasting(array("GridFieldPreview" => "HTMLText->RAW"));
+		$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
 
 		return new GridField("Children", "Children", $this->Children(), $config);
 	}
@@ -151,7 +151,7 @@ class PageElement extends DataObject {
 	}
 
 	public function getParentIDs() {
-		$IDArr = array($this->ID);
+		$IDArr = [$this->ID];
 		foreach($this->Parents() as $parent) {
 			$IDArr = array_merge($IDArr, $parent->getParentIDs());
 		}
@@ -161,7 +161,7 @@ class PageElement extends DataObject {
 	public function renderChildren($parents = null) {
 		return $this->renderWith(
 			"RenderChildren",
-			array("Elements" => $this->Children(), "ParentList" => strval($this->ID) . "," . $parents)
+			["Elements" => $this->Children(), "ParentList" => strval($this->ID) . "," . $parents]
 		);
 	}
 
@@ -176,7 +176,7 @@ class PageElement extends DataObject {
 
 		return $this->renderWith(
 			array_reverse($this->getClassAncestry()),
-			array("ParentList" => $parentList, "Parents" => $parents, "Page" => $page)
+			["ParentList" => $parentList, "Parents" => $parents, "Page" => $page]
 		);
 	}
 }

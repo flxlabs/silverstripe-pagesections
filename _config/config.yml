@@ -1,12 +1,12 @@
 ---
 Name: pagesections
 ---
-FlxLabs\PageSections\PageElement:
+FLXLabs\PageSections\PageElement:
   extensions:
     - SilverStripe\Versioned\Versioned
-FlxLabs\PageSections\PageElementSelfRel:
+FLXLabs\PageSections\PageElementSelfRel:
   extensions:
     - SilverStripe\Versioned\Versioned
-FlxLabs\PageSections\PageSectionPageElementRel:
+FLXLabs\PageSections\PageSectionPageElementRel:
   extensions:
     - SilverStripe\Versioned\Versioned

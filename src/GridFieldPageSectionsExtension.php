@@ -1,6 +1,6 @@
 <?php
 
-namespace FlxLabs\PageSections;
+namespace FLXLabs\PageSections;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
@@ -28,13 +28,13 @@ class GridFieldPageSectionsExtension implements
 	protected $page;
 	protected $sortField;
 
-	protected static $allowed_actions = array(
+	protected static $allowed_actions = [
 		"handleAdd",
 		"handleRemove",
 		"handleDelete",
 		"handleReorder",
 		"handleMoveToPage"
-	);
+	];
 
 
 	public function __construct($page, $sortField = "SortOrder") {
@@ -50,13 +50,13 @@ class GridFieldPageSectionsExtension implements
 	}
 
 	public function getURLHandlers($grid) {
-		return array(
+		return [
 			"POST add"        => "handleAdd",
 			"POST remove"     => "handleRemove",
 			"POST delete"     => "handleDelete",
 			"POST reorder"    => "handleReorder",
 			"POST movetopage" => "handleMoveToPage"
-		);
+		];
 	}
 
 	public static function getModuleDir() {
@@ -77,7 +77,7 @@ class GridFieldPageSectionsExtension implements
 		$field->setAttribute("data-url-reorder", $field->Link("reorder"));
 		$field->setAttribute("data-url-movetopage", $field->Link("movetopage"));
 
-		return array();
+		return [];
 	}
 
 	public function augmentColumns($gridField, &$columns) {
@@ -96,53 +96,53 @@ class GridFieldPageSectionsExtension implements
 		// Insert grid state initial data
 		$state = $gridField->getState();
 		if (!isset($state->open)) {
-			$state->open = array();
+			$state->open = [];
 		}
 	}
 
 	public function getColumnsHandled($gridField) {
-		return array(
+		return [
 			"Reorder",
 			"TreeNav",
 			"Actions",
-		);
+		];
 	}
 
 	public function getColumnMetadata($gridField, $columnName) {
-		return array("title" => "");
+		return ["title" => ""];
 	}
 
 	public function getColumnAttributes($gridField, $record, $columnName) {
 		// Handle reorder column
 		if ($columnName == "Reorder") {
-			return array(
+			return [
 				"class" => "col-reorder",
 				"data-sort" => $record->getField($this->getSortField()),
-			);
+			];
 		}
 
 		// Handle tree nav column
 		else if ($columnName == "TreeNav") {
 			$classes = $record->getAllowedPageElements();
-			$elems = array();
+			$elems = [];
 			foreach ($classes as $class) {
 				$elems[$class] = $class::getSingularName();
 			}
 
-			return array(
+			return [
 				"class" => "col-treenav",
 				"data-class" => $record->ClassName,
 				"data-level" => strval($record->_Level),
 				"data-parent" => $record->_Parent ? strval($record->_Parent->ID) : "",
 				"data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
-			);
+			];
 		}
 
 		// Handle the actions column
 		else if ($columnName == "Actions") {
-			return array(
+			return [
 				"class" => "col-actions",
-			);
+			];
 		}
 	}
 
@@ -173,16 +173,16 @@ class GridFieldPageSectionsExtension implements
 				"TreeNavAction".$record->ID,
 				null,
 				"dotreenav",
-				array("element" => $record)
+				["element" => $record]
 			);
 			$field->addExtraClass("level".$level . ($open ? " is-open" : " is-closed"));
 			$field->setButtonContent($icon);
 			$field->setForm($gridField->getForm());
 
-			return ViewableData::create()->customise(array(
+			return ViewableData::create()->customise([
 				"ButtonField" => $field,
 				"Title" => $record->i18n_singular_name(),
-			))->renderWith("GridFieldPageElement");
+			])->renderWith("GridFieldPageElement");
 		}
 
 		else if ($columnName == "Actions") {
@@ -200,7 +200,7 @@ class GridFieldPageSectionsExtension implements
 	}
 
 	public function getActions($gridField) {
-		return array("dotreenav");
+		return ["dotreenav"];
 	}
 
 	public function handleAction(GridField $gridField, $actionName, $arguments, $data) {
@@ -225,7 +225,7 @@ class GridFieldPageSectionsExtension implements
 	}
 
 	private function isOpen($state, $element) {
-		$list = array();
+		$list = [];
 		$base = $element;
 		while ($base) {
 			$list[] = $base;
@@ -245,7 +245,7 @@ class GridFieldPageSectionsExtension implements
 		return true;
 	}
 	private function openElement($state, $element) {
-		$list = array();
+		$list = [];
 		$base = $element;
 		while ($base) {
 			$list[] = $base;
@@ -257,14 +257,14 @@ class GridFieldPageSectionsExtension implements
 		$opens = $state->open;
 		foreach ($list as $item) {
 			if (!isset($opens->{$item->ID})) {
-				$opens->{$item->ID} = array();
+				$opens->{$item->ID} = [];
 			}
 
 			$opens = $opens->{$item->ID};
 		}
 	}
 	private function closeElement($state, $element) {
-		$list = array();
+		$list = [];
 		$base = $element->_Parent;
 		while ($base) {
 			$list[] = $base;
@@ -286,7 +286,7 @@ class GridFieldPageSectionsExtension implements
 		$state = $gridField->getState(true);
 		$opens = $state->open;
 
-		$arr = array();
+		$arr = [];
 		foreach ($list as $item) {
 			$item->_Level = 0;
 			$item->_Open = false;
@@ -352,7 +352,7 @@ class GridFieldPageSectionsExtension implements
 
 		$num = $type == "before" ? -1 : 1;
 		$sortBy = $this->getSortField();
-		$sortArr = array($sortBy => $sort + $num);
+		$sortArr = [$sortBy => $sort + $num];
 
 		if ($type == "child") {
 			if ($newParent) {

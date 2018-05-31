@@ -1,22 +1,22 @@
 <?php
 
-namespace FlxLabs\PageSections;
+namespace FLXLabs\PageSections;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\ORM\DataObject;
 
 class PageSectionPageElementRel extends DataObject {
 
-	private static $table_name = "FLXLabs_PageSectionPageElementRel";
+	private static $table_name = "FLXLabs_PageSections_PageSectionPageElementRel";
 
-	private static $db = array(
+	private static $db = [
 		"SortOrder" => "Int",
-	);
+	];
 
-	private static $has_one = array(
+	private static $has_one = [
 		"PageSection" => "Page",
 		"Element" => PageElement::class,
-	);
+	];
 
 
 	public function onBeforeWrite() {
