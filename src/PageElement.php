@@ -45,6 +45,7 @@ class PageElement extends DataObject {
 
 	private static $db = [
 		"Name" => "Varchar(255)",
+		"__Counter" => "Int"
 	];
 
 	private static $many_many = [
@@ -56,7 +57,8 @@ class PageElement extends DataObject {
 	];
 
 	private static $belongs_many_many = [
-		"Parents" => PageElement::class . ".Children"
+		"Parents" => PageElement::class . ".Children",
+		"PageSections" => PageSection::class . ".Elements",
 	];
 
 	private static $many_many_extraFields = [
@@ -66,6 +68,10 @@ class PageElement extends DataObject {
 	];
 
 	private static $owns = [
+		"Children",
+	];
+
+	private static $cascade_deletes = [
 		"Children",
 	];
 
@@ -88,29 +94,37 @@ class PageElement extends DataObject {
 		return $classes;
 	}
 
-	// public function onBeforeWrite() {
-	// 	parent::onBeforeWrite();
+	public function onBeforeWrite() {
+		parent::onBeforeWrite();
 
-	// 	$list = $this->Children()->Sort("SortOrder")->toArray();
-	// 	$this->Children()->RemoveAll();
-	// 	$count = count($list);
+		$elems = $this->Children()->Sort("SortOrder")->Column("ID");
+		$count = count($elems);
+		for ($i = 0; $i < $count; $i++) {
+			$this->Children()->Add($elems[$i], [ "SortOrder" => ($i + 1) * 2, "__NewOrder" => true ]);
+		}
+	}
 
-	// 	for ($i = 1; $i <= $count; $i++) {
-	// 		$this->Children()->Add($list[$i - 1], ["SortOrder" => $i * 2]);
-	// 	}
-	// }
+	public function onAfterWrite() {
+		parent::onAfterWrite();
 
-	// public function onAfterWrite() {
-	// 	$stage = Versioned::get_stage();
+		if (Versioned::get_stage() == Versioned::DRAFT) {
+			foreach ($this->PageSections() as $section) {
+				$section->__Counter++;
+				$section->write();
+			}
+		}
+	}
 
-	// 	foreach ($this->Parents() as $parent) {
-	// 		$parent->copyVersionToStage($stage, $stage, true);
-	// 	}
-
-	// 	foreach ($this->Pages() as $page) {
-	// 		$page->copyVersionToStage($stage, $stage, true);
-	// 	}
-	// }
+	public function onAfterDelete() {
+		parent::onAfterDelete();
+		
+		if (Versioned::get_stage() == Versioned::DRAFT) {
+			foreach ($this->PageSections() as $section) {
+				$section->__Counter++;
+				$section->write();
+			}
+		}
+	}
 
 	public function getChildrenGridField() {
 		$addNewButton = new GridFieldAddNewMultiClass();
@@ -141,6 +155,7 @@ class PageElement extends DataObject {
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Pages');
 		$fields->removeByName('Parents');
+		$fields->removeByName('__Counter');
 
 		$fields->removeByName("Children");
 		if ($this->ID && count(static::getAllowedPageElements())) {

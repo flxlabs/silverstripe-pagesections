@@ -4,6 +4,9 @@ Name: pagesections
 FLXLabs\PageSections\PageElement:
   extensions:
     - SilverStripe\Versioned\Versioned
+FLXLabs\PageSections\PageSection:
+  extensions:
+    - SilverStripe\Versioned\Versioned
 FLXLabs\PageSections\PageElementSelfRel:
   extensions:
     - SilverStripe\Versioned\Versioned

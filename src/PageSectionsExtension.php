@@ -22,21 +22,19 @@ class PageSectionsExtension extends DataExtension {
 
 	// Generate the needed relations on the class
 	public static function get_extra_config($class = null, $extensionClass = null) {
-		$many_many = [];
+		$has_one = [];
 		$owns = [];
 		$cascade_deletes = [];
 
 		// Get all the sections that should be added
 		$sections = Config::inst()->get($class, "page_sections", Config::EXCLUDE_EXTRA_SOURCES);
-		if (!$sections) $sections = ["Main"];
+		if (!$sections) {
+			$sections = ["Main"];
+		}
 
 		foreach ($sections as $section) {
 			$name = "PageSection".$section;
-			$many_many[$name] = [
-				"through" => PageSectionPageElementRel::class,
-				"from" => "PageSection",
-				"to" => "Element",
-			];
+			$has_one[$name] = PageSection::class;
 
 			$owns[] = $name;
 			$cascade_deletes[] = $name;
@@ -44,7 +42,8 @@ class PageSectionsExtension extends DataExtension {
 
 		// Create the relations for our sections
 		return [
-			"many_many" => $many_many,
+			"db" => ["__PageSectionCounter" => "Int"],
+			"has_one" => $has_one,
 			"owns" => $owns,
 			"cascade_deletes" => $cascade_deletes,
 		];
@@ -56,28 +55,34 @@ class PageSectionsExtension extends DataExtension {
 		return $classes;
 	}
 
-	// public function onBeforeWrite() {
-	// 	parent::onBeforeWrite();
+	public function onBeforeWrite() {
+		parent::onBeforeWrite();
 
-	// 	$sections = $this->owner->config()->get("page_sections");
-	// 	if (!$sections) $sections = ["Main"];
+		if ($this->owner->ID) {
+			$sections = $this->owner->config()->get("page_sections");
+			if (!$sections) {
+				$sections = ["Main"];
+			}
 
-	// 	foreach ($sections as $section) {
-	// 		$name = "PageSection".$section;
+			foreach ($sections as $section) {
+				$name = "PageSection".$section;
 
-	// 		$list = $this->owner->$name()->Sort("SortOrder")->toArray();
-	// 		$this->owner->$name()->RemoveAll();
-	// 		$count = count($list);
-
-	// 		 for ($i = 1; $i <= $count; $i++) {
-	// 		 	$this->owner->$name()->Add($list[$i - 1], ["SortOrder" => $i * 2]);
-	// 		 }
-	// 	}
-	// }
+				// Create a page section if we don't have one yet
+				if (!$this->owner->$name()->ID) {
+					$section = PageSection::create();
+					$section->PageID = $this->owner->ID;
+					$section->write();
+					$this->owner->$name = $section;
+				}
+			}
+		}
+	}
 
 	public function updateCMSFields(FieldList $fields) {
 		$sections = $this->owner->config()->get("page_sections");
-		if (!$sections) $sections = ["Main"];
+		if (!$sections) {
+			$sections = ["Main"];
+		}
 
 		foreach ($sections as $section) {
 			$name = "PageSection".$section;
@@ -101,14 +106,14 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent(new GridFieldDetailForm());
 				$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
 
-				$f = new GridField($name, $section, $this->owner->$name(), $config);
+				$f = new GridField($name, $section, $this->owner->$name()->Elements(), $config);
 				$fields->addFieldToTab("Root.PageSections", $f);
 			}
 		}
 	}
 
 	public function RenderPageSection($name = "Main") {
-		$elements = $this->owner->{"PageSection" . $name}()->Sort("SortOrder");
+		$elements = $this->owner->{"PageSection" . $name}()->Elements()->Sort("SortOrder");
 		return $this->owner->renderWith(
 			"RenderChildren",
 			["Elements" => $elements, "ParentList" => strval($this->owner->ID)]
