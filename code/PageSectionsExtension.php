@@ -93,4 +93,8 @@ class PageSectionsExtension extends DataExtension {
 			array("Elements" => $elements, "ParentList" => strval($this->owner->ID))
 		);
 	}
+
+	public function getIsPublished() { 
+		return DBField::create_field("HTMLText", $this->owner->latestPublished() ? "Published" : "Draft");
+	}
 }

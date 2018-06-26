@@ -1,4 +1,5 @@
 <?php
+
 class PageElement extends DataObject {
 	public static $singular_name = 'Element';
 	public static $plural_name = 'Elements';
@@ -98,6 +99,14 @@ class PageElement extends DataObject {
 		if ($this->ID && count(static::getAllowedPageElements())) {
 			$fields->addFieldToTab('Root.PageSections', $this->getChildrenGridField());
 		}
+
+		$fields->addFieldsToTab("Root.Pages", ReadonlyField::create("Version", "Version", $this->Version));
+		$config = GridFieldConfig_Base::create()
+			->removeComponentsByType(GridFieldDataColumns::class)
+			->addComponent($dataColumns = new GridFieldDataColumns());
+		$dataColumns->setDisplayFields(["Title" => "Title", "getIsPublished" => "Is Published"]);
+		$gridField = GridField::create("Pages", "Pages", $this->Pages(), $config);
+		$fields->addFieldToTab("Root.Pages", $gridField);
 
 		return $fields;
 	}
