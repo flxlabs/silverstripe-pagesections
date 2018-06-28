@@ -2,7 +2,7 @@
 class PageSectionsExtension extends DataExtension {
 
 	// Generate the needed relations on the class
-	public function extraStatics($class = null, $extensionClass = null) {
+	public static function get_extra_config($class = null, $extensionClass = null, $args) {
 		$versioned_many_many = array();
 		$many_many_extraFields = array();
 
@@ -20,6 +20,11 @@ class PageSectionsExtension extends DataExtension {
 			$name = "PageSection".$section;
 			$versioned_many_many[$name] = "PageElement";
 			$many_many_extraFields[$name] = array("SortOrder" => "Int");
+
+			// Add the inverse relation to the PageElement class
+			Config::inst()->update(PageElement::class, "versioned_belongs_many_many", array(
+				$class . "_" . $name => $class . "." . $name
+			));
 		}
 
 		// Create the relations for our sections
@@ -94,7 +99,7 @@ class PageSectionsExtension extends DataExtension {
 		);
 	}
 
-	public function getIsPublished() { 
+	public function getPublishState() { 
 		return DBField::create_field("HTMLText", $this->owner->latestPublished() ? "Published" : "Draft");
 	}
 }

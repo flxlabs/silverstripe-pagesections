@@ -192,7 +192,7 @@ class GridFieldPageSectionsExtension implements
 			return ViewableData::create()->customise(array(
 				"ButtonField" => $field,
 				"ID"          => $record->ID,
-				"UsedCount"   => $record->Parents()->Count() + $record->Pages()->Count(),
+				"UsedCount"   => $record->Parents()->Count() + $record->getAllPages()->Count(),
 				"ClassName"   => $record->i18n_singular_name(),
 				"Title"       => $record->Title,
 			))->renderWith("GridFieldPageElement");
@@ -244,7 +244,10 @@ class GridFieldPageSectionsExtension implements
 				null,
 				null
 			);
-			$deleteButton->setAttribute("data-used-count", $record->Parents()->Count() + $record->Pages()->Count());
+			$deleteButton->setAttribute(
+				"data-used-count", 
+				$record->Parents()->Count() + $record->getAllPages()->Count()
+			);
 			$deleteButton->addExtraClass("col-actions__button delete-button");
 
 			$deleteButton->setButtonContent('<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
