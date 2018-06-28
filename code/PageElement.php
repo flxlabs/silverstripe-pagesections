@@ -1,4 +1,5 @@
 <?php
+
 class PageElement extends DataObject {
 	public static $singular_name = 'Element';
 	public static $plural_name = 'Elements';
@@ -24,7 +25,6 @@ class PageElement extends DataObject {
 
 	private static $versioned_belongs_many_many = array(
 		'Parents' => 'PageElement',
-		'Pages' => 'Page',
 	);
 
 	private static $many_many_extraFields = array(
@@ -41,6 +41,10 @@ class PageElement extends DataObject {
 		'ClassName',
 		'Title',
 		'ID'
+	);
+
+	private static $better_buttons_actions = array (
+		'publishOnAllPages',
 	);
 
 	public static function getAllowedPageElements() {
@@ -89,16 +93,83 @@ class PageElement extends DataObject {
 		return $this->Title;
 	}
 
+	// Get all the versioned_belongs_many_many that might have been added by
+	// additional page sections from various pages. (Also contains "Parent" relation)
+	public function getVersionedBelongsManyMany() {
+		return Config::inst()->get($this->getClassName(), "versioned_belongs_many_many");
+	}
+
+	// Gets all the pages that this page element is on, plus
+	// adds an __PageSectionName attribute to the page object so we
+	// know which section this element is in.
+	public function getAllPages() {
+		$pages = ArrayList::create();
+		foreach ($this->getVersionedBelongsManyMany() as $name => $relation) {
+			// Skip any relations that probably aren't from page sections
+			$splits = explode("_", $name);
+			if (count($splits) < 2 || mb_substr($splits[1], 0, 11) !== "PageSection") {
+				continue;
+			}
+
+			// Add all pages (and the page section that this element is in)
+			foreach ($this->$name() as $page) {
+				$stage = Versioned::current_stage();
+				Versioned::reading_stage(Versioned::get_live_stage());
+
+				$oldPage = DataObject::get_by_id($page->ClassName, $page->ID);
+
+				$page->__PageSectionName = mb_substr($splits[1], 11);
+				$page->__PageElementVersion = $page->$splits[1]()->filter("ID", $this->ID)->First()->Version;
+				$page->__PageElementPublishedVersion = $oldPage->$splits[1]()->filter("ID", $this->ID)->First()->Version;
+				$pages->add($page);
+
+				Versioned::reading_stage($stage);
+			}
+		}
+		return $pages;
+	}
+
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->removeByName('Pages');
 		$fields->removeByName('Parents');
 
 		$fields->removeByName("Children");
 		if ($this->ID && count(static::getAllowedPageElements())) {
-			$fields->addFieldToTab('Root.PageSections', $this->getChildrenGridField());
+			$fields->addFieldToTab('Root.Children', $this->getChildrenGridField());
 		}
 
+		// Add our newest version as a readonly field
+		$fields->addFieldsToTab(
+			"Root.Main", 
+			ReadonlyField::create("Version", "Version", $this->Version),
+			"Title"
+		);
+
+		// Create an array of all the pages this element is on
+		$pages = $this->getAllPages();
+
+		// Remove default fields
+		foreach ($this->getVersionedBelongsManyMany() as $name => $rel) {
+			$fields->removeByName($name);
+		}
+
+		$config = GridFieldConfig_Base::create()
+			->removeComponentsByType(GridFieldDataColumns::class)
+			->addComponent($dataColumns = new GridFieldDataColumns())
+			->addComponent(new GridFieldDetailForm())
+			->addComponent(new GridFieldEditButton());
+		$dataColumns->setDisplayFields([
+			"ID" => "ID",
+			"ClassName" => "Type",
+			"Title" => "Title",
+			"__PageSectionName" => "PageSection",
+			"__PageElementVersion" => "Element version",
+			"__PageElementPublishedVersion" => "Published element version",
+			"getPublishState" => "Page state",
+		]);
+		$gridField = GridField::create("Pages", "Pages", $pages, $config);
+		$fields->addFieldToTab("Root.Pages", $gridField);
+		
 		return $fields;
 	}
 
@@ -143,7 +214,16 @@ class PageElement extends DataObject {
 		$fieldList = FieldList::create(array(
 			BetterButton_SaveAndClose::create(),
 			BetterButton_Save::create(),
+			BetterButtonCustomAction::create('publishOnAllPages', 'Publish on all pages')
+				->setRedirectType(BetterButtonCustomAction::REFRESH)
 		));
 		return $fieldList;
+	}
+
+	public function publishOnAllPages() {
+		foreach ($this->getAllPages() as $page) {
+			$page->publish(Versioned::current_stage(), Versioned::get_live_stage());
+		}
+		return 'Published on all pages';
 	}
 }

@@ -1,25 +1,25 @@
 {
-	"name": "flxlabs/silverstripe-pagesections",
-	"version": "0.1.6",
-	"description": "Adds configurable page sections and elements to your SilverStripe project.",
-	"type": "silverstripe-module",
-	"homepage": "http://github.com/flxlabs/silverstripe-pagesections",
-	"keywords": ["silverstripe", "sections", "elements", "page sections", "page elements"],
-	"license": "MIT",
-	"authors": [
-		{
-			"name": "Marco Crespi",
-			"email": "mrc@flxlabs.com"
-		}
-	],
-	"support": {
-		"issues": "http://github.com/flxlabs/silverstripe-pagesections/issues"
-	},
-	"require": {
-		"silverstripe/framework": "~3.6",
-		"flxlabs/silverstripe-versionedrelations": "^0.1.10"
-	},
-	"extra": {
-		"installer-name": "pagesections"
-	}
+    "name": "flxlabs/silverstripe-pagesections",
+    "version": "0.2.0",
+    "description": "Adds configurable page sections and elements to your SilverStripe project.",
+    "type": "silverstripe-module",
+    "homepage": "http://github.com/flxlabs/silverstripe-pagesections",
+    "keywords": ["silverstripe", "sections", "elements", "page sections", "page elements"],
+    "license": "MIT",
+    "authors": [{
+        "name": "Marco Crespi",
+        "email": "mrc@flxlabs.com"
+    }],
+    "support": {
+        "issues": "http://github.com/flxlabs/silverstripe-pagesections/issues"
+    },
+    "require": {
+        "silverstripe/framework": "~3.7",
+        "flxlabs/silverstripe-versionedrelations": "^0.1.14",
+        "symbiote/silverstripe-gridfieldextensions": "^2.0.2",
+        "unclecheese/betterbuttons": "^1.3.14"
+    },
+    "extra": {
+        "installer-name": "pagesections"
+    }
 }
