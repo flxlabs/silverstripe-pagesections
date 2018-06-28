@@ -155,7 +155,9 @@ class PageElement extends DataObject {
 
 		$config = GridFieldConfig_Base::create()
 			->removeComponentsByType(GridFieldDataColumns::class)
-			->addComponent($dataColumns = new GridFieldDataColumns());
+			->addComponent($dataColumns = new GridFieldDataColumns())
+			->addComponent(new GridFieldDetailForm())
+			->addComponent(new GridFieldEditButton());
 		$dataColumns->setDisplayFields([
 			"ID" => "ID",
 			"ClassName" => "Type",
