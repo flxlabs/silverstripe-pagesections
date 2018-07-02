@@ -7,23 +7,23 @@ use FLXLabs\PageSections\PageElement;
 class ImageElement extends PageElement  {
 	protected static $singularName = 'Image';
 	protected static $pluralName = 'Images';
-    
-    private static $has_one = array(
-        'Image' => Image::class,
-    );
-    
-    public function getCMSFields(){
-        $fields = parent::getCMSFields();
-        $fields->removeByName('Children');
-        
-        $fields->addFieldToTab(
-            'Root.Main',    
-            $uploadField = new UploadField(
-                $name = 'Image',
-                $title = 'Upload an image'
-            )
-        );
-        
-        return $fields;
-    }
+	
+	private static $has_one = array(
+		'Image' => Image::class,
+	);
+	
+	public function getCMSFields(){
+		$fields = parent::getCMSFields();
+		$fields->removeByName('Children');
+		
+		$fields->addFieldToTab(
+			'Root.Main',    
+			$uploadField = new UploadField(
+				$name = 'Image',
+				$title = 'Upload an image'
+			)
+		);
+		
+		return $fields;
+	}
 }

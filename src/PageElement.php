@@ -174,11 +174,11 @@ class PageElement extends DataObject {
 			$page = $section->Page();
 			$stage = Versioned::get_stage();
 			Versioned::set_stage(Versioned::LIVE);
-			$publishedElem = DataObject::get_by_id($section->ClassName, $section->ID)
-				->Elements()->filter("ID", $this->ID)->First();
+			$pubSection = DataObject::get_by_id($section->ClassName, $section->ID);
+			$pubElem = $pubSection ? $pubSection->Elements()->filter("ID", $this->ID)->First() : null;
 			$page->__PageSection = $section;
 			$page->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
-			$page->__PageElementPublishedVersion = $publishedElem ? $publishedElem->Version : "Not published";
+			$page->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
 			Versioned::set_stage($stage);
 			$pages->add($page);
 		}

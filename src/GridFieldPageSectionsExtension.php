@@ -69,7 +69,7 @@ class GridFieldPageSectionsExtension implements
 		Requirements::add_i18n_javascript($moduleDir . '/javascript/lang', false, true);
 
 		$id = rand(1000000, 9999999);
-		$field->addExtraClass("ss-gridfield-pagesections");
+		$field->addExtraClass("ss-gridfield-pagesections pagesection-" . $id);
 		$field->setAttribute("data-id", $id);
 		$field->setAttribute("data-url-add", $field->Link("add"));
 		$field->setAttribute("data-url-remove", $field->Link("remove"));

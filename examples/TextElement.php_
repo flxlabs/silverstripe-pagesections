@@ -5,23 +5,23 @@ use FLXLabs\PageSections\PageElement;
 class TextElement extends PageElement  {
 	protected static $singularName = 'Text';
 	protected static $pluralName = 'Texts';
-    
-    private static $db = array(
-        'Content' => 'HTMLText',
-    );
-    
-    public function getCMSFields() {
-        $fields = parent::getCMSFields();
-        $fields->removeByName('Children');
-        
-        return $fields;
-    }
+	
+	private static $db = array(
+		'Content' => 'HTMLText',
+	);
+	
+	public function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->removeByName('Children');
+		
+		return $fields;
+	}
 
-    public static function getAllowedPageElements() {
-        return array();
-    }
+	public static function getAllowedPageElements() {
+		return array();
+	}
 
-    public function getGridFieldPreview() {
-        return $this->Content;
-    }
+	public function getGridFieldPreview() {
+		return $this->Content;
+	}
 }

@@ -67,8 +67,9 @@
 				var grid = this.getGridField();
 				var thisGrid = this;
 
-				$("tr.ss-gridfield-item").each(function () {
+				this.find("tr.ss-gridfield-item").each(function () {
 					var $this = $(this);
+
 					// actions
 					$this.find(".col-actions .add-button").click(function (event) {
 						event.preventDefault();
@@ -215,7 +216,6 @@
 						tolerance: "pointer",
 						greedy: true,
 						helper: function () {
-							var $tr = $this.parents("tr.ss-gridfield-item");
 							var $helper = $(
 								"<div class='col-treenav__draggable'>" +
 								$this.find(".col-treenav__title").text() +
