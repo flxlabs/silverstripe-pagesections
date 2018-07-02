@@ -5,7 +5,6 @@ namespace FLXLabs\PageSections;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldButtonRow;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
@@ -18,6 +17,7 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
+use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 
 class PageSectionsExtension extends DataExtension {
 
@@ -108,14 +108,11 @@ class PageSectionsExtension extends DataExtension {
 				$addNewButton = new GridFieldAddNewMultiClass();
 				$addNewButton->setClasses($this->owner->getAllowedPageElements());
 
-				$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
-				$autoCompl->setResultsFormat('$Name ($ID)');
-
 				$config = GridFieldConfig::create()
 					->addComponent(new GridFieldButtonRow("before"))
 					->addComponent(new GridFieldToolbarHeader())
 					->addComponent($dataColumns = new GridFieldDataColumns())
-					->addComponent($autoCompl)
+					->addComponent(new GridFieldAddExistingSearchButton('buttons-before-right'))
 					->addComponent($addNewButton)
 					->addComponent(new GridFieldPageSectionsExtension($this->owner))
 					->addComponent(new GridFieldDetailForm());

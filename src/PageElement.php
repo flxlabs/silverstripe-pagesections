@@ -6,7 +6,6 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldButtonRow;
@@ -22,10 +21,12 @@ use SilverStripe\Security\Member;
 use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
+use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 use UncleCheese\BetterButtons\Actions\PrevNext;
 use UncleCheese\BetterButtons\Actions\CustomAction;
 use UncleCheese\BetterButtons\Buttons\Save;
 use UncleCheese\BetterButtons\Buttons\SaveAndClose;
+use SilverStripe\Forms\Tab;
 
 class PageElement extends DataObject {
 
@@ -143,8 +144,7 @@ class PageElement extends DataObject {
 		$addNewButton = new GridFieldAddNewMultiClass();
 		$addNewButton->setClasses($this->getAllowedPageElements());
 
-		$autoCompl = new GridFieldAddExistingAutocompleter('buttons-before-right');
-		$autoCompl->setResultsFormat('$Name ($ID)');
+		$autoCompl = new GridFieldAddExistingSearchButton('buttons-before-right');
 		$autoCompl->setSearchList(PageElement::get()->exclude("ID", $this->getParentIDs()));
 
 		$config = GridFieldConfig::create()
@@ -158,7 +158,7 @@ class PageElement extends DataObject {
 			->addComponent(new GridFieldFooter());
 		$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
 
-		return new GridField("Children", "Children", $this->Children(), $config);
+		return GridField::create("Child", "Children", $this->Children(), $config);
 	}
 
 	public function getGridFieldPreview() {
@@ -193,8 +193,8 @@ class PageElement extends DataObject {
 		$fields->removeByName('__Counter');
 
 		$fields->removeByName("Children");
-		if ($this->ID && count(static::getAllowedPageElements())) {
-			$fields->addFieldToTab('Root.PageSections', $this->getChildrenGridField());
+		if ($this->ID && count(static::getAllowedPageElements()) > 0) {
+			$fields->insertAfter("Main", Tab::create("Child", "Children", $this->getChildrenGridField()));
 		}
 
 		// Add our newest version as a readonly field
