@@ -1,7 +1,10 @@
 <?php
+
+use FLXLabs\PageSections\PageElement;
+
 class TextElement extends PageElement  {
-	public static $singular_name = 'Text';
-	public static $plural_name = 'Texts';
+	protected static $singularName = 'Text';
+	protected static $pluralName = 'Texts';
     
     private static $db = array(
         'Content' => 'HTMLText',

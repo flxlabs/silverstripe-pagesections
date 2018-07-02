@@ -14,6 +14,7 @@ use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\SiteTree;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
@@ -38,6 +39,11 @@ class PageSectionsExtension extends DataExtension {
 
 			$owns[] = $name;
 			$cascade_deletes[] = $name;
+
+			// Add the inverse relation to the PageElement class
+			/*Config::inst()->update(PageElement::class, "versioned_belongs_many_many", array(
+				$class . "_" . $name => $class . "." . $name
+			));*/
 		}
 
 		// Create the relations for our sections
@@ -53,6 +59,14 @@ class PageSectionsExtension extends DataExtension {
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
+	}
+
+	public function getPageSectionNames() {
+		$sections = Config::inst()->get($this->owner->ClassName, "page_sections", Config::EXCLUDE_EXTRA_SOURCES);
+		if (!$sections) {
+			$sections = ["Main"];
+		}
+		return $sections;
 	}
 
 	public function onBeforeWrite() {
@@ -71,6 +85,7 @@ class PageSectionsExtension extends DataExtension {
 				if (!$this->owner->$name()->ID) {
 					$section = PageSection::create();
 					$section->PageID = $this->owner->ID;
+					$section->__isNew = true;
 					$section->write();
 					$this->owner->$name = $section;
 				}
@@ -118,5 +133,9 @@ class PageSectionsExtension extends DataExtension {
 			"RenderChildren",
 			["Elements" => $elements, "ParentList" => strval($this->owner->ID)]
 		);
+	}
+
+	public function getPublishState() { 
+		return DBField::create_field("HTMLText", $this->owner->latestPublished() ? "Published" : "Draft");
 	}
 }

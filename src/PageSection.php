@@ -58,7 +58,7 @@ class PageSection extends DataObject {
 	public function onAfterWrite() {
 		parent::onAfterWrite();
 
-		if (Versioned::get_stage() == Versioned::DRAFT) {
+		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT) {
 			$this->Page()->__PageSectionCounter++;
 			$this->Page()->write();
 		}
@@ -84,5 +84,16 @@ class PageSection extends DataObject {
 		$form->setFields($fields);
 
 		return $form->forTemplate();
+	}
+
+	// Gets the name of this section from the page it is on
+	public function getName() {
+		$page = $this->Page();
+		foreach ($page->getPageSectionNames() as $sectionName) {
+			if ($page->{"PageSection" . $sectionName . "ID"} === $this->ID) {
+				return $sectionName;
+			}
+		}
+		return null;
 	}
 }
