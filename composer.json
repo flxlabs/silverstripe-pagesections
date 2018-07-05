@@ -20,7 +20,7 @@
   "require": {
     "silverstripe/framework": "^4.0.1",
     "symbiote/silverstripe-gridfieldextensions": "^3",
-    "flxlabs/betterbuttons": "dev-feature/ss4-upgrade"
+    "unclecheese/betterbuttons": "dev-feature/ss4-upgrade"
   },
   "extra": {
     "installer-name": "pagesections",
