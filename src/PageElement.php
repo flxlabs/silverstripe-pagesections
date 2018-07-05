@@ -36,8 +36,6 @@ class PageElement extends DataObject {
 	protected static $pluralName = "Elements";
 	protected static $defaultIsOpen = true;
 
-	public static $overrideBetterButtons = true;
-
 	public static function getSingularName() {
 		return static::$singularName;
 	}
@@ -260,6 +258,10 @@ class PageElement extends DataObject {
 			array_reverse($this->getClassAncestry()),
 			["ParentList" => $parentList, "Parents" => $parents, "Page" => $page]
 		);
+	}
+
+	public function replaceDefaultButtons() {
+		return true;
 	}
 
 	public function getBetterButtonsUtils() {
