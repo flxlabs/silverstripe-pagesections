@@ -13,6 +13,10 @@
   "support": {
     "issues": "http://github.com/flxlabs/silverstripe-pagesections/issues"
   },
+  "repositories": [{
+    "type": "vcs",
+    "url": "https://github.com/flxlabs/silverstripe-gridfield-betterbuttons"
+  }],
   "require": {
     "silverstripe/framework": "^4.0.1",
     "symbiote/silverstripe-gridfieldextensions": "^3",
