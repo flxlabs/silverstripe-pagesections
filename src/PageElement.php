@@ -36,6 +36,8 @@ class PageElement extends DataObject {
 	protected static $pluralName = "Elements";
 	protected static $defaultIsOpen = true;
 
+	public static $overrideBetterButtons = true;
+
 	public static function getSingularName() {
 		return static::$singularName;
 	}
