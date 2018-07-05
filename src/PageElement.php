@@ -190,6 +190,7 @@ class PageElement extends DataObject {
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Pages');
 		$fields->removeByName('Parents');
+		$fields->removeByName("PageSections");
 		$fields->removeByName('__Counter');
 
 		$fields->removeByName("Children");
@@ -208,9 +209,6 @@ class PageElement extends DataObject {
 		$pages = $this->getAllPages();
 
 		if ($pages->Count() > 0) {
-			// Remove default field
-			$fields->removeByName("PageSections");
-
 			$config = GridFieldConfig_Base::create()
 				->removeComponentsByType(GridFieldDataColumns::class)
 				->addComponent($dataColumns = new GridFieldDataColumns())

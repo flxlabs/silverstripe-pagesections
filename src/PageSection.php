@@ -89,6 +89,10 @@ class PageSection extends DataObject {
 	// Gets the name of this section from the page it is on
 	public function getName() {
 		$page = $this->Page();
+		// TODO: Find out why this happens
+		if (!method_exists($page, "getPageSectionNames")) {
+			return null;
+		}
 		foreach ($page->getPageSectionNames() as $sectionName) {
 			if ($page->{"PageSection" . $sectionName . "ID"} === $this->ID) {
 				return $sectionName;
