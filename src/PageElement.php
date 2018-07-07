@@ -86,8 +86,6 @@ class PageElement extends DataObject {
 	];
 
 	private static $summary_fields = [
-		"SingularName",
-		"ID",
 		"GridFieldPreview",
 	];
 
@@ -131,7 +129,7 @@ class PageElement extends DataObject {
 
 	public function onAfterDelete() {
 		parent::onAfterDelete();
-		
+
 		if (Versioned::get_stage() == Versioned::DRAFT) {
 			foreach ($this->PageSections() as $section) {
 				$section->__Counter++;
@@ -200,7 +198,7 @@ class PageElement extends DataObject {
 
 		// Add our newest version as a readonly field
 		$fields->addFieldsToTab(
-			"Root.Main", 
+			"Root.Main",
 			ReadonlyField::create("Version", "Version", $this->Version),
 			"Title"
 		);
@@ -226,7 +224,7 @@ class PageElement extends DataObject {
 			$gridField = GridField::create("Pages", "Pages", $pages, $config);
 			$fields->addFieldToTab("Root.Pages", $gridField);
 		}
-		
+
 		return $fields;
 	}
 

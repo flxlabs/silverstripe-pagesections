@@ -1,4 +1,4 @@
-<div class="col-actions__inner">
+<div class="ss-gridfield-pagesections-actions">
 	$AddButton
 	$DeleteButton
 	$EditButton

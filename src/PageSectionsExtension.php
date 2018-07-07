@@ -116,10 +116,13 @@ class PageSectionsExtension extends DataExtension {
 					->addComponent($addNewButton)
 					->addComponent(new GridFieldPageSectionsExtension($this->owner))
 					->addComponent(new GridFieldDetailForm());
-				$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
-
+				$dataColumns
+					->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"])
+					->setDisplayFields([
+						"GridFieldPreview" => "Preview",
+					]);
 				$f = new GridField($name, $section, $this->owner->$name()->Elements(), $config);
-				$fields->addFieldToTab("Root.PageSections", $f);
+				$fields->addFieldToTab("Root.PageSections.{$section}", $f);
 			}
 		}
 	}
@@ -132,7 +135,7 @@ class PageSectionsExtension extends DataExtension {
 		);
 	}
 
-	public function getPublishState() { 
+	public function getPublishState() {
 		return DBField::create_field("HTMLText", $this->owner->latestPublished() ? "Published" : "Draft");
 	}
 }

@@ -1,1 +1,1 @@
-<span class="handle"><span class="icon"></span></span>
+<div class="handle"></div>

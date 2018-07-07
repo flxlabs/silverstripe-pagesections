@@ -84,12 +84,12 @@ class GridFieldPageSectionsExtension implements
 			array_splice($columns, 0, 0, "Reorder");
 		}
 
-		if (!in_array("TreeNav", $columns)) {
-			array_splice($columns, 1, 0, "TreeNav");
+		if (!in_array("Actions", $columns)) {
+			array_splice($columns, 1, 0, "Actions");
 		}
 
-		if (!in_array("Actions", $columns)) {
-			array_splice($columns, 2, 0, "Actions");
+		if (!in_array("TreeNav", $columns)) {
+			array_splice($columns, 2, 0, "TreeNav");
 		}
 
 		// Insert grid state initial data
@@ -184,11 +184,9 @@ class GridFieldPageSectionsExtension implements
 			$level = $record->_Level;
 			$field = null;
 
+			$icon = '';
 			if ($record->Children() && $record->Children()->Count() > 0) {
-				$icon = ($open === true ? '<svg width="9" height="7" xmlns="http://www.w3.org/2000/svg"><path d="M1.907.678h5.5a1 1 0 0 1 .817 1.576l-2.75 3.9a1 1 0 0 1-1.634 0l-2.75-3.9A1 1 0 0 1 1.907.678z" fill="#4A4A4A" fill-rule="evenodd"/></svg>'
-					: '<svg width="7" height="9" xmlns="http://www.w3.org/2000/svg"><path d="M.428 7.406V1.907a1 1 0 0 1 1.576-.817l3.9 2.75a1 1 0 0 1 0 1.634l-3.9 2.75a1 1 0 0 1-1.576-.818z" fill="#4A4A4A" fill-rule="evenodd"/></svg>');
-			} else {
-				$icon = '<svg width="6" height="6" xmlns="http://www.w3.org/2000/svg"><circle fill="#4A4A4A" cx="3" cy="3" r="3" fill-rule="evenodd"/></svg>';
+				$icon = ($open === true ? 'font-icon-down-open' : 'font-icon-right-open');
 			}
 
 			$field = GridField_FormAction::create(
@@ -203,7 +201,8 @@ class GridFieldPageSectionsExtension implements
 				$field->addExtraClass(" is-end");
 				$field->setDisabled(true);
 			}
-			$field->setButtonContent($icon);
+			$field->addExtraClass($icon);
+			$field->setButtonContent(' ');
 			$field->setForm($gridField->getForm());
 
 			return ViewableData::create()->customise([
@@ -221,9 +220,10 @@ class GridFieldPageSectionsExtension implements
 			while ($temp->_Parent) {
 				$temp = $temp->_Parent;
 				$link = Controller::join_links("item", $temp->ID,
-					"ItemEditForm", "field", "Children", $link
+					"ItemEditForm", "field", "Child", $link
 				);
 			}
+			// /admin/pages/edit/EditForm/1/field/PageSectionBottom/item/3/ItemEditForm/field/Child/item/4/edit
 			$link = Controller::join_links($gridField->link(), $link);
 			$data = new ArrayData([
 				'Link' => $link
@@ -233,7 +233,7 @@ class GridFieldPageSectionsExtension implements
 			$classes = $record->getAllowedPageElements();
 			$elems = [];
 			foreach ($classes as $class) {
-				$elems[$class] = $class::getSingularName();
+				$elems[$class] = singleton($class)->singular_name();
 			}
 			$addButton = GridField_FormAction::create(
 				$gridField,
@@ -243,16 +243,11 @@ class GridFieldPageSectionsExtension implements
 				null
 			);
 			$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
-			$addButton->addExtraClass("col-actions__button add-button");
+			$addButton->addExtraClass("col-actions__button add-button font-icon-plus");
 			if (!count($elems)) {
 				$addButton->setDisabled(true);
 			}
-			$addButton->setButtonContent('<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-				<g fill="none" fill-rule="evenodd">
-					<circle fill="#488304" cx="8" cy="8" r="8"/>
-					<path d="M8 4v8M4 8h8" stroke="#FFF" stroke-width="2" stroke-linecap="square"/>
-				</g>
-			</svg>');
+			$addButton->setButtonContent('Add');
 
 			$deleteButton = GridField_FormAction::create(
 				$gridField,
@@ -262,29 +257,22 @@ class GridFieldPageSectionsExtension implements
 				null
 			);
 			$deleteButton->setAttribute(
-				"data-used-count", 
+				"data-used-count",
 				$record->Parents()->Count() + $record->getAllPages()->Count()
 			);
 			$deleteButton->setAttribute(
-				"data-parent-id", 
+				"data-parent-id",
 				$record->_Parent ? $record->_Parent->ID : $this->page->ID
 			);
-			$deleteButton->addExtraClass("col-actions__button delete-button");
+			$deleteButton->addExtraClass("col-actions__button delete-button font-icon-trash-bin");
 
-			$deleteButton->setButtonContent('<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-				<g fill="none" fill-rule="evenodd">
-					<circle fill="#880919" cx="8" cy="8" r="8"/>
-					<path d="M4 8h8" stroke="#FFF" stroke-width="2" stroke-linecap="square"/>
-				</g>
-			</svg>');
+			$deleteButton->setButtonContent('Delete');
 
 			return ViewableData::create()->customise([
 				"EditButton"   => $editButton,
 				"AddButton"    => $addButton,
 				"DeleteButton" => $deleteButton,
 			])->renderWith("GridFieldPageSectionsActionColumn");
-
-			return $ret;
 		}
 	}
 
