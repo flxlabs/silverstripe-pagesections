@@ -26,7 +26,8 @@ class GridFieldPageSectionsExtension implements
 	GridField_URLHandler
 {
 
-	protected $page;
+	// Parent is either a Page or a PageElement
+	protected $parent;
 	protected $sortField;
 
 	protected static $allowed_actions = [
@@ -37,13 +38,13 @@ class GridFieldPageSectionsExtension implements
 	];
 
 
-	public function __construct($page, $sortField = "SortOrder") {
-		$this->page = $page;
+	public function __construct($parent, $sortField = "SortOrder") {
+		$this->parent = $parent;
 		$this->sortField = $sortField;
 	}
 
-	public function getPage() {
-		return $this->page;
+	public function getParent() {
+		return $this->parent;
 	}
 	public function getSortField() {
 		return $this->sortField;
@@ -97,7 +98,8 @@ class GridFieldPageSectionsExtension implements
 		if (!isset($state->open)) {
 			$state->open = [];
 
-			// Open all elements by default if has children
+			// Open all elements by default if they have children
+			// and the method ->isOpenByDefault() returns true
 			$list = [];
 			$newList = $gridField->getManipulatedList();
 			while (count($list) < count($newList)) {
@@ -135,29 +137,26 @@ class GridFieldPageSectionsExtension implements
 
 		// Handle tree nav column
 		else if ($columnName == "TreeNav") {
+			// Construct the array of all allowed child elements
 			$classes = $record->getAllowedPageElements();
 			$elems = [];
 			foreach ($classes as $class) {
 				$elems[$class] = $class::getSingularName();
 			}
 
-			// if element has no parent we need to
-			// know the allowed elements of the page
-			if (!$record->_Parent) {
-				$parentClasses = $this->page->getAllowedPageElements();
-				$parentElems = [];
-				foreach ($parentClasses as $class) {
-					$parentElems[$class] = $class::getSingularName();
-				}
-			}
+			// Find out if this record is allowed as a root record
+			// There are two cases, either this GridField is on a page,
+			// or it is on a PageElement and we're looking that the children
+			$parentClasses = $this->parent->getAllowedPageElements();
+			$isAllowedRoot = in_array($record->ClassName, $parentClasses);
 
 			return [
-				"class"                        => "col-treenav",
-				"data-class"                   => $record->ClassName,
-				"data-level"                   => strval($record->_Level),
-				"data-parent"                  => $record->_Parent ? strval($record->_Parent->ID) : "",
-				"data-allowed-parent-elements" => !$record->_Parent ? json_encode($parentElems, JSON_UNESCAPED_UNICODE) : "",
-				"data-allowed-elements"        => json_encode($elems, JSON_UNESCAPED_UNICODE),
+				"class"                 => "col-treenav",
+				"data-class"            => $record->ClassName,
+				"data-level"            => strval($record->_Level),
+				"data-parent"           => $record->_Parent ? strval($record->_Parent->ID) : "",
+				"data-allowed-root"     => $isAllowedRoot,
+				"data-allowed-elements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			];
 		}
 
@@ -184,11 +183,13 @@ class GridFieldPageSectionsExtension implements
 			$level = $record->_Level;
 			$field = null;
 
+			// Create the tree icon
 			$icon = '';
 			if ($record->Children() && $record->Children()->Count() > 0) {
 				$icon = ($open === true ? 'font-icon-down-open' : 'font-icon-right-open');
 			}
 
+			// Create the tree field
 			$field = GridField_FormAction::create(
 				$gridField,
 				"TreeNavAction".$record->ID,
@@ -215,21 +216,22 @@ class GridFieldPageSectionsExtension implements
 		}
 
 		else if ($columnName == "Actions") {
+			// Create a direct link to edit the item
 			$link = Controller::join_links("item", $record->ID, "edit");
 			$temp = $record;
+			// We need to traverse through all the parents to build the link
 			while ($temp->_Parent) {
 				$temp = $temp->_Parent;
-				$link = Controller::join_links("item", $temp->ID,
-					"ItemEditForm", "field", "Child", $link
-				);
+				$link = Controller::join_links("item", $temp->ID, "ItemEditForm", "field", "Child", $link);
 			}
-			// /admin/pages/edit/EditForm/1/field/PageSectionBottom/item/3/ItemEditForm/field/Child/item/4/edit
 			$link = Controller::join_links($gridField->link(), $link);
 			$data = new ArrayData([
 				'Link' => $link
 			]);
 			$editButton = $data->renderWith('SilverStripe\Forms\GridField\GridFieldEditButton');
 
+			// Create a button to add a new child element
+			// and save the allowed child classes on the button
 			$classes = $record->getAllowedPageElements();
 			$elems = [];
 			foreach ($classes as $class) {
@@ -249,6 +251,7 @@ class GridFieldPageSectionsExtension implements
 			}
 			$addButton->setButtonContent('Add');
 
+			// Create a button to delete and/or remove the element from the parent
 			$deleteButton = GridField_FormAction::create(
 				$gridField,
 				"DeleteAction".$record->ID,
@@ -262,7 +265,7 @@ class GridFieldPageSectionsExtension implements
 			);
 			$deleteButton->setAttribute(
 				"data-parent-id",
-				$record->_Parent ? $record->_Parent->ID : $this->page->ID
+				$record->_Parent ? $record->_Parent->ID : $this->parent->ID
 			);
 			$deleteButton->addExtraClass("col-actions__button delete-button font-icon-trash-bin");
 
@@ -284,6 +287,7 @@ class GridFieldPageSectionsExtension implements
 		if ($actionName == "dotreenav") {
 			$elem = $arguments["element"];
 
+			// Check if we have children to show
 			if ($elem->Children()->Count() == 0) {
 				Controller::curr()->getResponse()->setStatusCode(
 					200,
@@ -292,6 +296,7 @@ class GridFieldPageSectionsExtension implements
 				return;
 			}
 
+			// Change the internal GridField state to show the children
 			$state = $gridField->getState(true);
 			if ($this->isOpen($state, $elem)) {
 				$this->closeElement($state, $elem);
@@ -301,6 +306,7 @@ class GridFieldPageSectionsExtension implements
 		}
 	}
 
+	// Check if an element is currently opened
 	private function isOpen($state, $element) {
 		$list = [];
 		$base = $element;
@@ -321,6 +327,7 @@ class GridFieldPageSectionsExtension implements
 
 		return true;
 	}
+	// Open a specific element in the grid
 	private function openElement($state, $element) {
 		$list = [];
 		$base = $element;
@@ -340,6 +347,7 @@ class GridFieldPageSectionsExtension implements
 			$opens = $opens->{$item->ID};
 		}
 	}
+	// Close a specific element in the grid
 	private function closeElement($state, $element) {
 		$list = [];
 		$base = $element->_Parent;
@@ -357,6 +365,7 @@ class GridFieldPageSectionsExtension implements
 		unset($opens->{$element->ID});
 	}
 
+	// Return the data list of the GridField with all opened elements filled in
 	public function getManipulatedData(GridField $gridField, SS_List $dataList) {
 		$list = $dataList->sort($this->getSortField())->toArray();
 
@@ -405,13 +414,14 @@ class GridFieldPageSectionsExtension implements
 		$parent = PageElement::get()->byID($vars["parent"]);
 		$newParent = PageElement::get()->byID($vars["newParent"]);
 
+		// First check if the parent accepts the PageElement we're trying to move
 		$parentClass = "";
 		if ($newParent) {
 			$allowed = in_array($item->ClassName, $newParent->getAllowedPageElements());
 			$parentClass = $newParent->ClassName;
 		} else {
-			$allowed = in_array($item->ClassName, $this->getPage()->getAllowedPageElements());
-			$parentClass = $this->getPage()->ClassName;
+			$allowed = in_array($item->ClassName, $this->parent->getAllowedPageElements());
+			$parentClass = $this->parent->ClassName;
 		}
 		if (!$allowed) {
 			Controller::curr()->getResponse()->setStatusCode(

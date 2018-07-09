@@ -3,6 +3,7 @@
 namespace FLXLabs\PageSections;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FieldList;
@@ -99,5 +100,9 @@ class PageSection extends DataObject {
 			}
 		}
 		return null;
+	}
+
+	public function getAllowedPageElements($section = "Main") {
+		return $this->Page()->getAllowedPageElements($section);
 	}
 }

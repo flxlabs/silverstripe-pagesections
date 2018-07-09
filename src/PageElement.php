@@ -99,11 +99,15 @@ class PageElement extends DataObject {
 		'publishOnAllPages',
 	);
 
-	public static function getAllowedPageElements() {
+	// Returns all page element classes, without the base class
+	public static function getAllPageElementClasses() {
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
-		// remove
 		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
+	}
+
+	public function getAllowedPageElements() {
+		return self::getAllPageElementClasses();
 	}
 
 	public function onBeforeWrite() {
@@ -142,8 +146,11 @@ class PageElement extends DataObject {
 		$addNewButton = new GridFieldAddNewMultiClass();
 		$addNewButton->setClasses($this->getAllowedPageElements());
 
+		$list = PageElement::get()
+			->exclude("ID", $this->getParentIDs())
+			->filter("ClassName", $this->owner->getAllowedPageElements());
 		$autoCompl = new GridFieldAddExistingSearchButton('buttons-before-right');
-		$autoCompl->setSearchList(PageElement::get()->exclude("ID", $this->getParentIDs()));
+		$autoCompl->setSearchList($list);
 
 		$config = GridFieldConfig::create()
 			->addComponent(new GridFieldButtonRow("before"))
@@ -151,7 +158,7 @@ class PageElement extends DataObject {
 			->addComponent($dataColumns = new GridFieldDataColumns())
 			->addComponent($autoCompl)
 			->addComponent($addNewButton)
-			->addComponent(new GridFieldPageSectionsExtension($this->owner))
+			->addComponent(new GridFieldPageSectionsExtension($this))
 			->addComponent(new GridFieldDetailForm())
 			->addComponent(new GridFieldFooter());
 		$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
@@ -192,7 +199,7 @@ class PageElement extends DataObject {
 		$fields->removeByName('__Counter');
 
 		$fields->removeByName("Children");
-		if ($this->ID && count(static::getAllowedPageElements()) > 0) {
+		if ($this->ID && count($this->getAllowedPageElements()) > 0) {
 			$fields->insertAfter("Main", Tab::create("Child", "Children", $this->getChildrenGridField()));
 		}
 

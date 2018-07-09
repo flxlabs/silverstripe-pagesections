@@ -55,7 +55,7 @@ class PageSectionsExtension extends DataExtension {
 		];
 	}
 
-	public static function getAllowedPageElements() {
+	public function getAllowedPageElements($section = "Main") {
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
@@ -108,11 +108,15 @@ class PageSectionsExtension extends DataExtension {
 				$addNewButton = new GridFieldAddNewMultiClass();
 				$addNewButton->setClasses($this->owner->getAllowedPageElements());
 
+				$list = PageElement::get()->filter("ClassName", $this->owner->getAllowedPageElements());
+				$addExistingButton = new GridFieldAddExistingSearchButton('buttons-before-right');
+				$addExistingButton->setSearchList($list);
+
 				$config = GridFieldConfig::create()
 					->addComponent(new GridFieldButtonRow("before"))
 					->addComponent(new GridFieldToolbarHeader())
 					->addComponent($dataColumns = new GridFieldDataColumns())
-					->addComponent(new GridFieldAddExistingSearchButton('buttons-before-right'))
+					->addComponent($addExistingButton)
 					->addComponent($addNewButton)
 					->addComponent(new GridFieldPageSectionsExtension($this->owner))
 					->addComponent(new GridFieldDetailForm());
