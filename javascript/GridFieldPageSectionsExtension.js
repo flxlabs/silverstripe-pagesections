@@ -1,10 +1,10 @@
-(function ($) {
-	$.entwine("ss", function ($) {
+(function($) {
+	$.entwine("ss", function($) {
 		// Recursively hide a data-grid row and it's children
-		var hideRow = function ($row) {
+		var hideRow = function($row) {
 			var id = $row.data("id");
 			$("tr.ss-gridfield-item > .col-treenav[data-parent=" + id + "]").each(
-				function () {
+				function() {
 					hideRow($(this).parent());
 				}
 			);
@@ -12,7 +12,7 @@
 		};
 
 		// Hide our custom context menu when not needed
-		$(document).on("mousedown", function (event) {
+		$(document).on("mousedown", function(event) {
 			$parents = $(event.target).parents(".treenav-menu");
 			if ($parents.length == 0) {
 				$(".treenav-menu").remove();
@@ -21,12 +21,13 @@
 
 		// Show context menu
 		$(".ss-gridfield-pagesections tbody").entwine({
-			addElement: function (id, elemType) {
+			addElement: function(id, elemType) {
 				var grid = this.getGridField();
 
 				grid.reload({
 					url: grid.data("url-add"),
-					data: [{
+					data: [
+						{
 							name: "id",
 							value: id
 						},
@@ -37,42 +38,48 @@
 					]
 				});
 			},
-			removeElement: function (id, parentId) {
+			removeElement: function(id, parentId, parentType) {
 				var grid = this.getGridField();
-
 				grid.reload({
 					url: grid.data("url-remove"),
-					data: [{
+					data: [
+						{
 							name: "id",
 							value: id
 						},
 						{
 							name: "parentId",
 							value: parentId
+						},
+						{
+							name: "parentType",
+							value: parentType
 						}
 					]
 				});
 			},
-			deleteElement: function (id) {
+			deleteElement: function(id) {
 				var grid = this.getGridField();
 
 				grid.reload({
 					url: grid.data("url-delete"),
-					data: [{
-						name: "id",
-						value: id
-					}]
+					data: [
+						{
+							name: "id",
+							value: id
+						}
+					]
 				});
 			},
-			onadd: function () {
+			onadd: function() {
 				var grid = this.getGridField();
 				var thisGrid = this;
 
-				this.find("tr.ss-gridfield-item").each(function () {
+				this.find("tr.ss-gridfield-item").each(function() {
 					var $this = $(this);
 
 					// actions
-					$this.find(".col-actions .add-button").click(function (event) {
+					$this.find(".col-actions .add-button").click(function(event) {
 						event.preventDefault();
 						event.stopImmediatePropagation();
 						$target = $(event.target);
@@ -83,10 +90,10 @@
 
 						var $menu = $(
 							"<ul id='treenav-menu-" +
-							id +
-							"' class='treenav-menu' data-id='" +
-							id +
-							"'></ul>"
+								id +
+								"' class='treenav-menu' data-id='" +
+								id +
+								"'></ul>"
 						);
 						$menu.css({
 							top: event.pageY + "px",
@@ -96,12 +103,12 @@
 
 						$menu.append(
 							"<li class='header'>" +
-							ss.i18n._t("PageSections.GridField.AddAChild", "Add a child") +
-							"</li>"
+								ss.i18n._t("PageSections.GridField.AddAChild", "Add a child") +
+								"</li>"
 						);
-						$.each(elems, function (key, value) {
+						$.each(elems, function(key, value) {
 							var $li = $("<li data-type='" + key + "'>" + value + "</li>");
-							$li.click(function () {
+							$li.click(function() {
 								thisGrid.addElement(rowId, key);
 								$menu.remove();
 							});
@@ -110,7 +117,7 @@
 						$menu.show();
 					});
 
-					$this.find(".col-actions .delete-button").click(function (event) {
+					$this.find(".col-actions .delete-button").click(function(event) {
 						event.preventDefault();
 						event.stopImmediatePropagation();
 
@@ -119,13 +126,14 @@
 						var id = grid.data("id");
 						var rowId = $target.parents(".ss-gridfield-item").data("id");
 						var parentId = $target.data("parent-id");
+						var parentType = $target.data("parent-type");
 
 						var $menu = $(
 							"<ul id='treenav-menu-" +
-							id +
-							"' class='treenav-menu' data-id='" +
-							id +
-							"'></ul>"
+								id +
+								"' class='treenav-menu' data-id='" +
+								id +
+								"'></ul>"
 						);
 						$menu.css({
 							top: event.pageY + "px",
@@ -135,30 +143,30 @@
 
 						$menu.append(
 							"<li class='header'>" +
-							ss.i18n._t("PageSections.GridField.Delete", "Delete") +
-							"</li>"
+								ss.i18n._t("PageSections.GridField.Delete", "Delete") +
+								"</li>"
 						);
 
 						var $li = $(
 							"<li data-type='__REMOVE__'>" +
-							ss.i18n._t("PageSections.GridField.RemoveAChild", "Remove") +
-							"</li>"
+								ss.i18n._t("PageSections.GridField.RemoveAChild", "Remove") +
+								"</li>"
 						);
-						$li.click(function () {
-							thisGrid.removeElement(rowId, parentId);
+						$li.click(function() {
+							thisGrid.removeElement(rowId, parentId, parentType);
 							$menu.remove();
 						});
 						$menu.append($li);
 						if ($target.data("used-count") < 2) {
 							var $li = $(
 								"<li>" +
-								ss.i18n._t(
-									"PageSections.GridField.DeleteAChild",
-									"Finally delete"
-								) +
-								"</li>"
+									ss.i18n._t(
+										"PageSections.GridField.DeleteAChild",
+										"Finally delete"
+									) +
+									"</li>"
 							);
-							$li.click(function () {
+							$li.click(function() {
 								thisGrid.deleteElement(rowId, $menu.data("parent-id"));
 								$menu.remove();
 							});
@@ -175,18 +183,18 @@
 					$col = $this.find(".col-reorder");
 					$col.append(
 						"<div class='before'>" +
-						arrowIcon +
-						"</div><div class='middle'>" +
-						arrowIcon +
-						"</div><div class='after'>" +
-						arrowIcon +
-						"</div>"
+							arrowIcon +
+							"</div><div class='middle'>" +
+							arrowIcon +
+							"</div><div class='after'>" +
+							arrowIcon +
+							"</div>"
 					);
-					$col.find("div").each(function () {
+					$col.find("div").each(function() {
 						$(this).droppable({
 							hoverClass: "state-active",
 							tolerance: "pointer",
-							drop: function (event, ui) {
+							drop: function(event, ui) {
 								$drop = $(this);
 
 								var type = "before";
@@ -219,7 +227,8 @@
 
 								grid.reload({
 									url: grid.data("url-reorder"),
-									data: [{
+									data: [
+										{
 											name: "type",
 											value: type
 										},
@@ -265,19 +274,19 @@
 						hoverClass: "state-active",
 						tolerance: "pointer",
 						greedy: true,
-						helper: function () {
+						helper: function() {
 							var $helper = $(
 								"<div class='col-treenav__draggable'>" +
-								$this.find(".col-treenav__title").text() +
-								"</div>"
+									$this.find(".col-treenav__title").text() +
+									"</div>"
 							);
 							$this.css("opacity", 0.6);
 
 							return $helper;
 						},
-						start: function () {
+						start: function() {
 							var element = $this.data("class");
-							$(".ui-droppable").each(function () {
+							$(".ui-droppable").each(function() {
 								var $drop = $(this);
 								var $treenav = $drop.parent().siblings(".col-treenav");
 								var isOpen = $treenav.find("button").hasClass("is-open");
@@ -296,7 +305,8 @@
 								}
 								// dont enable dropping on .after if we are open and the next element is us
 								else if (
-									$drop.hasClass("after") && isOpen &&
+									$drop.hasClass("after") &&
+									isOpen &&
 									$tr.next().data("id") == $this.data("id")
 								) {
 									return;
@@ -336,7 +346,7 @@
 								$(this).show();
 							});
 						},
-						stop: function (event, ui) {
+						stop: function(event, ui) {
 							$(".ui-droppable").hide();
 							// Show the previous elements. If the user made an invalid movement then
 							// we want this to show anyways. If he did something valid the grid will
@@ -346,7 +356,7 @@
 					});
 				});
 			},
-			onremove: function () {
+			onremove: function() {
 				if (this.data("sortable")) {
 					this.sortable("destroy");
 				}

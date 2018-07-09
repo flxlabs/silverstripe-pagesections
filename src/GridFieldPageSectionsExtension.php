@@ -267,6 +267,11 @@ class GridFieldPageSectionsExtension implements
 				"data-parent-id",
 				$record->_Parent ? $record->_Parent->ID : $this->parent->ID
 			);
+			$deleteButton->setAttribute(
+				"data-parent-type",
+				$record->_Parent ? "element" : "section"
+			);
+
 			$deleteButton->addExtraClass("col-actions__button delete-button font-icon-trash-bin");
 
 			$deleteButton->setButtonContent('Delete');
@@ -497,12 +502,13 @@ class GridFieldPageSectionsExtension implements
 		$obj = DataObject::get_by_id(PageElement::class, $id);
 
 		$parentId = intval($request->postVar("parentId"));
-		$parentObj = DataObject::get_by_id(PageElement::class, $parentId);
+		$parentType = $request->postVar("parentType");
 
 		// Detach it from this parent (from the page section if we're top level)
-		if (!$parentObj) {
+		if ($parentType == "section") {
 			$gridField->getList()->Remove($obj);
 		} else {
+			$parentObj = DataObject::get_by_id(PageElement::class, $parentId);
 			$parentObj->Children()->Remove($obj);
 		}
 
