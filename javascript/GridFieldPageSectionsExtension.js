@@ -291,20 +291,28 @@
 								if (
 									$drop.hasClass("before") &&
 									$tr.prev().data("id") == $this.data("id")
-								)
-									return;
-								// Depending on where we drop it (before, middle or after) we have to either
-								// don't show middle if open
-								if ($drop.hasClass("middle") && isOpen) {
+								) {
 									return;
 								}
-								// let's handle level 0 if not open
+								// dont enable dropping on .after if we are open and the next element is us
+								else if (
+									$drop.hasClass("after") && isOpen &&
+									$tr.next().data("id") == $this.data("id")
+								) {
+									return;
+								}
+								// Depending on where we drop it (before, middle or after) we have to either
+								// don't show middle if open
+								else if ($drop.hasClass("middle") && isOpen) {
+									return;
+								}
+								// let's handle level 0
 								else if (
 									$treenav.data("level") == 0 &&
 									($drop.hasClass("before") ||
 										($drop.hasClass("after") && !isOpen))
 								) {
-									if (!$treenav.data("allowed-root")) return;
+									if (!$this.data("allowed-root")) return;
 								}
 								// check our allowed children, or the allowed children of our parent row.
 								else if (
