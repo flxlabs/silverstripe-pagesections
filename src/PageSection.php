@@ -18,8 +18,8 @@ use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 
-class PageSection extends DataObject {
-
+class PageSection extends DataObject
+{
 	private static $table_name = "FLXLabs_PageSections_PageSection";
 
 	private static $db = [
@@ -46,7 +46,8 @@ class PageSection extends DataObject {
 		]
 	];
 
-	public function onBeforeWrite() {
+	public function onBeforeWrite()
+	{
 		parent::onBeforeWrite();
 
 		$elems = $this->Elements()->Sort("SortOrder")->Column("ID");
@@ -56,7 +57,8 @@ class PageSection extends DataObject {
 		}
 	}
 
-	public function onAfterWrite() {
+	public function onAfterWrite()
+	{
 		parent::onAfterWrite();
 
 		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT) {
@@ -65,7 +67,8 @@ class PageSection extends DataObject {
 		}
 	}
 
-	public function forTemplate() {
+	public function forTemplate()
+	{
 		return $this->Elements()->Count();
 
 		$actions = FieldList::create();
@@ -87,8 +90,12 @@ class PageSection extends DataObject {
 		return $form->forTemplate();
 	}
 
-	// Gets the name of this section from the page it is on
-	public function getName() {
+	/**
+	 * Gets the name of this PageSection
+	 * @return string
+	 */
+	public function getName()
+	{
 		$page = $this->Page();
 		// TODO: Find out why this happens
 		if (!method_exists($page, "getPageSectionNames")) {
@@ -102,7 +109,15 @@ class PageSection extends DataObject {
 		return null;
 	}
 
-	public function getAllowedPageElements($section = "Main") {
+	/**
+	 * The classes of allowed child elements
+	 *
+	 * Gets a list of classnames which are valid child elements of this PageSection.
+	 * @param string $section The section for which to get the allowed child classes.
+	 * @return string[]
+	 */
+	public function getAllowedPageElements($section = "Main")
+	{
 		return $this->Page()->getAllowedPageElements($section);
 	}
 }

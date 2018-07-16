@@ -28,7 +28,8 @@ use UncleCheese\BetterButtons\Buttons\Save;
 use UncleCheese\BetterButtons\Buttons\SaveAndClose;
 use SilverStripe\Forms\Tab;
 
-class PageElement extends DataObject {
+class PageElement extends DataObject
+{
 
 	private static $table_name = "FLXLabs_PageSections_PageElement";
 
@@ -36,20 +37,35 @@ class PageElement extends DataObject {
 	protected static $pluralName = "Elements";
 	protected static $defaultIsOpen = true;
 
-	public static function getSingularName() {
+	public static function getSingularName()
+	{
 		return static::$singularName;
 	}
-	public static function getPluralName() {
+	public static function getPluralName()
+	{
 		return static::$pluralName;
 	}
-	public static function isOpenByDefault() {
+	public static function isOpenByDefault()
+	{
 		return static::$defaultIsOpen;
 	}
 
-	function canView($member = null) { return true; }
-	function canEdit($member = null) { return true; }
-	function canDelete($member = null) { return true; }
-	function canCreate($member = null, $context = []) { return true; }
+	public function canView($member = null)
+	{
+		return true;
+	}
+	public function canEdit($member = null)
+	{
+		return true;
+	}
+	public function canDelete($member = null)
+	{
+		return true;
+	}
+	public function canCreate($member = null, $context = [])
+	{
+		return true;
+	}
 
 	private static $can_be_root = true;
 
@@ -100,17 +116,26 @@ class PageElement extends DataObject {
 	);
 
 	// Returns all page element classes, without the base class
-	public static function getAllPageElementClasses() {
+	public static function getAllPageElementClasses()
+	{
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
 	}
 
-	public function getAllowedPageElements() {
+	/**
+	 * The classes of allowed child elements
+	 *
+	 * Gets a list of classnames which are valid child elements of this PageElement.
+	 * @return string[]
+	 */
+	public function getAllowedPageElements()
+	{
 		return self::getAllPageElementClasses();
 	}
 
-	public function onBeforeWrite() {
+	public function onBeforeWrite()
+	{
 		parent::onBeforeWrite();
 
 		$elems = $this->Children()->Sort("SortOrder")->Column("ID");
@@ -120,7 +145,8 @@ class PageElement extends DataObject {
 		}
 	}
 
-	public function onAfterWrite() {
+	public function onAfterWrite()
+	{
 		parent::onAfterWrite();
 
 		if (Versioned::get_stage() == Versioned::DRAFT) {
@@ -131,7 +157,8 @@ class PageElement extends DataObject {
 		}
 	}
 
-	public function onAfterDelete() {
+	public function onAfterDelete()
+	{
 		parent::onAfterDelete();
 
 		if (Versioned::get_stage() == Versioned::DRAFT) {
@@ -142,37 +169,35 @@ class PageElement extends DataObject {
 		}
 	}
 
-	public function getChildrenGridField() {
-		$addNewButton = new GridFieldAddNewMultiClass();
-		$addNewButton->setClasses($this->getAllowedPageElements());
-
-		$list = PageElement::get()
-			->exclude("ID", $this->getParentIDs())
-			->filter("ClassName", $this->owner->getAllowedPageElements());
-		$autoCompl = new GridFieldAddExistingSearchButton('buttons-before-right');
-		$autoCompl->setSearchList($list);
-
-		$config = GridFieldConfig::create()
-			->addComponent(new GridFieldButtonRow("before"))
-			->addComponent(new GridFieldToolbarHeader())
-			->addComponent($dataColumns = new GridFieldDataColumns())
-			->addComponent($autoCompl)
-			->addComponent($addNewButton)
-			->addComponent(new GridFieldPageSectionsExtension($this))
-			->addComponent(new GridFieldDetailForm())
-			->addComponent(new GridFieldFooter());
-		$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
-
-		return GridField::create("Child", "Children", $this->Children(), $config);
+	/**
+	 * Gets the TreeView for the children of this PageElement
+	 * @return \FLXLabs\PageSections\TreeView
+	 */
+	public function getChildrenTreeView()
+	{
+		return new TreeView("Child", "Children", $this->Children());
 	}
 
-	public function getGridFieldPreview() {
+	/**
+	 * Gets the preview of this PageElement in the GridField.
+	 * @return string
+	 */
+	public function getGridFieldPreview()
+	{
 		return $this->Name;
 	}
 
-	// Gets all the pages that this page element is on, plus adds a __PageSection
-	// attribute to the page object so we know which section this element is in.
-	public function getAllPages() {
+	/**
+	 * Gets all pages that this PageElement is rendered on.
+	 *
+	 * Adds the following properties to each page:
+	 *   __PageSection: The PageSection on the page that the PageElement is from.
+	 *   __PageElementVersion: The version of the PageElement being used.
+	 *   __PageElementPublishedVersion: The published version of the PageElement being used.
+	 * @return \Page[]
+	 */
+	public function getAllPages()
+	{
 		$pages = ArrayList::create();
 
 		foreach ($this->PageSections() as $section) {
@@ -181,9 +206,12 @@ class PageElement extends DataObject {
 			Versioned::set_stage(Versioned::LIVE);
 			$pubSection = DataObject::get_by_id($section->ClassName, $section->ID);
 			$pubElem = $pubSection ? $pubSection->Elements()->filter("ID", $this->ID)->First() : null;
+
+			// Add extra info to pages
 			$page->__PageSection = $section;
 			$page->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
 			$page->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
+			
 			Versioned::set_stage($stage);
 			$pages->add($page);
 		}
@@ -191,7 +219,21 @@ class PageElement extends DataObject {
 		return $pages;
 	}
 
-	public function getCMSFields() {
+	/**
+	 * Recursively gets all the parents of this element, in no particular order.
+	 * @return \FLXLabs\PageSections\PageElement[]
+	 */
+	public function getAllParents()
+	{
+		$parents = ArrayList::create($this->Parents()->toList());
+		foreach ($this->Parents() as $parent) {
+			$parents->merge($parent->getAllParents());
+		}
+		return $parents;
+	}
+
+	public function getCMSFields()
+	{
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Pages');
 		$fields->removeByName('Parents');
@@ -200,7 +242,10 @@ class PageElement extends DataObject {
 
 		$fields->removeByName("Children");
 		if ($this->ID && count($this->getAllowedPageElements()) > 0) {
-			$fields->insertAfter("Main", Tab::create("Child", "Children", $this->getChildrenGridField()));
+			$fields->insertAfter(
+				"Main",
+				Tab::create("Child", "Children", $this->getChildrenTreeView())
+			);
 		}
 
 		// Add our newest version as a readonly field
@@ -235,22 +280,37 @@ class PageElement extends DataObject {
 		return $fields;
 	}
 
-	public function getParentIDs() {
+	/**
+	 * Gets the list of all parents of this PageElement.
+	 * @return string[]
+	 */
+	public function getParentIDs()
+	{
 		$IDArr = [$this->ID];
-		foreach($this->Parents() as $parent) {
+		foreach ($this->Parents() as $parent) {
 			$IDArr = array_merge($IDArr, $parent->getParentIDs());
 		}
 		return $IDArr;
 	}
 
-	public function renderChildren($parents = null) {
+	/**
+	 * Renders the children of this PageElement
+	 * @param string[] $parents The list of parent IDs of this PageElement
+	 * @return string
+	 */
+	public function renderChildren($parents = null)
+	{
 		return $this->renderWith(
 			"RenderChildren",
-			["Elements" => $this->Children(), "ParentList" => strval($this->ID) . "," . $parents]
+			[
+				"Elements" => $this->Children(),
+				"ParentList" => strval($this->ID) . "," . $parents,
+			]
 		);
 	}
 
-	public function forTemplate($parentList = "") {
+	public function forTemplate($parentList = "")
+	{
 		$parents = ArrayList::create();
 		$splits = explode(",", $parentList);
 		$num = count($splits);
@@ -261,22 +321,29 @@ class PageElement extends DataObject {
 
 		return $this->renderWith(
 			array_reverse($this->getClassAncestry()),
-			["ParentList" => $parentList, "Parents" => $parents, "Page" => $page]
+			[
+				"ParentList" => $parentList,
+				"Parents" => $parents,
+				"Page" => $page,
+			]
 		);
 	}
 
-	public function replaceDefaultButtons() {
+	public function replaceDefaultButtons()
+	{
 		return true;
 	}
 
-	public function getBetterButtonsUtils() {
+	public function getBetterButtonsUtils()
+	{
 		$fieldList = FieldList::create([
 			PrevNext::create(),
 		]);
 		return $fieldList;
 	}
 
-	public function getBetterButtonsActions() {
+	public function getBetterButtonsActions()
+	{
 		$actions = FieldList::create([
 			SaveAndClose::create(),
 			CustomAction::create('publishOnAllPages', 'Publish on all pages')
@@ -285,7 +352,11 @@ class PageElement extends DataObject {
 		return $actions;
 	}
 
-	public function publishOnAllPages() {
+	/**
+	 * Publishes all pages that this PageElement is on.
+	 */
+	public function publishOnAllPages()
+	{
 		foreach ($this->getAllPages() as $page) {
 			$page->publish(Versioned::get_stage(), Versioned::LIVE);
 		}

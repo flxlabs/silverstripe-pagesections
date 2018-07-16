@@ -19,10 +19,11 @@ use SilverStripe\Versioned\Versioned;
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 
-class PageSectionsExtension extends DataExtension {
-
+class PageSectionsExtension extends DataExtension
+{
 	// Generate the needed relations on the class
-	public static function get_extra_config($class = null, $extensionClass = null) {
+	public static function get_extra_config($class = null, $extensionClass = null)
+	{
 		$has_one = [];
 		$owns = [];
 		$cascade_deletes = [];
@@ -55,13 +56,26 @@ class PageSectionsExtension extends DataExtension {
 		];
 	}
 
-	public function getAllowedPageElements($section = "Main") {
+	/**
+	 * The classes of allowed child elements
+	 *
+	 * Gets a list of classnames which are valid child elements of this PageSection.
+	 * @param string $section The section for which to get the allowed child classes.
+	 * @return string[]
+	 */
+	public function getAllowedPageElements($section = "Main")
+	{
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
 		return $classes;
 	}
 
-	public function getPageSectionNames() {
+	/**
+	 * Gets a list of the PageSection names of this page.
+	 * @return string[]
+	 */
+	public function getPageSectionNames()
+	{
 		$sections = Config::inst()->get($this->owner->ClassName, "page_sections", Config::EXCLUDE_EXTRA_SOURCES);
 		if (!$sections) {
 			$sections = ["Main"];
@@ -69,7 +83,8 @@ class PageSectionsExtension extends DataExtension {
 		return $sections;
 	}
 
-	public function onBeforeWrite() {
+	public function onBeforeWrite()
+	{
 		parent::onBeforeWrite();
 
 		if ($this->owner->ID) {
@@ -93,7 +108,8 @@ class PageSectionsExtension extends DataExtension {
 		}
 	}
 
-	public function updateCMSFields(FieldList $fields) {
+	public function updateCMSFields(FieldList $fields)
+	{
 		$sections = $this->owner->config()->get("page_sections");
 		if (!$sections) {
 			$sections = ["Main"];
@@ -105,33 +121,18 @@ class PageSectionsExtension extends DataExtension {
 			$fields->removeByName($name);
 
 			if ($this->owner->ID) {
-				$addNewButton = new GridFieldAddNewMultiClass();
-				$addNewButton->setClasses($this->owner->getAllowedPageElements());
-
-				$list = PageElement::get()->filter("ClassName", $this->owner->getAllowedPageElements());
-				$addExistingButton = new GridFieldAddExistingSearchButton('buttons-before-right');
-				$addExistingButton->setSearchList($list);
-
-				$config = GridFieldConfig::create()
-					->addComponent(new GridFieldButtonRow("before"))
-					->addComponent(new GridFieldToolbarHeader())
-					->addComponent($dataColumns = new GridFieldDataColumns())
-					->addComponent($addExistingButton)
-					->addComponent($addNewButton)
-					->addComponent(new GridFieldPageSectionsExtension($this->owner))
-					->addComponent(new GridFieldDetailForm());
-				$dataColumns
-					->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"])
-					->setDisplayFields([
-						"GridFieldPreview" => "Preview",
-					]);
-				$f = new GridField($name, $section, $this->owner->$name()->Elements(), $config);
-				$fields->addFieldToTab("Root.PageSections.{$section}", $f);
+				$tv = new TreeView($name, $section, $this->owner->$name());
+				$fields->addFieldToTab("Root.PageSections.{$section}", $tv);
 			}
 		}
 	}
 
-	public function RenderPageSection($name = "Main") {
+	/**
+	 * Renders the PageSection of this page.
+	 * @param string $name The name of the PageSection to render
+	 */
+	public function RenderPageSection($name = "Main")
+	{
 		$elements = $this->owner->{"PageSection" . $name}()->Elements()->Sort("SortOrder");
 		return $this->owner->renderWith(
 			"RenderChildren",
@@ -139,7 +140,12 @@ class PageSectionsExtension extends DataExtension {
 		);
 	}
 
-	public function getPublishState() {
+	/**
+	 * Gets the published state of the page this PageSection belongs to.
+	 * @return \SilverStripe\ORM\FieldType\DBField
+	 */
+	public function getPublishState()
+	{
 		return DBField::create_field("HTMLText", $this->owner->latestPublished() ? "Published" : "Draft");
 	}
 }

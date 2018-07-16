@@ -5,8 +5,8 @@ namespace FLXLabs\PageSections;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 
-class PageSectionPageElementRel extends DataObject {
-
+class PageSectionPageElementRel extends DataObject
+{
 	private static $table_name = "FLXLabs_PageSections_PageSectionPageElementRel";
 
 	private static $db = array(
@@ -18,7 +18,8 @@ class PageSectionPageElementRel extends DataObject {
 		"Element" => PageElement::class,
 	);
 
-	public function onBeforeWrite() {
+	public function onBeforeWrite()
+	{
 		parent::onBeforeWrite();
 
 		if (!$this->ID) {
@@ -29,7 +30,8 @@ class PageSectionPageElementRel extends DataObject {
 		}
 	}
 
-	public function onAfterWrite() {
+	public function onAfterWrite()
+	{
 		parent::onAfterWrite();
 
 		if (!$this->__NewOrder && Versioned::get_stage() == Versioned::DRAFT) {
@@ -38,7 +40,8 @@ class PageSectionPageElementRel extends DataObject {
 		}
 	}
 
-	public function onAfterDelete() {
+	public function onAfterDelete()
+	{
 		parent::onAfterDelete();
 
 		if (Versioned::get_stage() == Versioned::DRAFT) {
