@@ -2,11 +2,14 @@
 
 namespace FLXLabs\PageSections;
 
+use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\Session;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\HiddenField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormField;
 use SilverStripe\ORM\PaginatedList;
@@ -36,8 +39,8 @@ class TreeView extends FormField
 		'add',
 		'remove',
 		'delete',
-		'find',
-		'doSearch',
+		'search',
+		'detail',
 	);
 
 
@@ -353,14 +356,15 @@ class TreeView extends FormField
 	}
 
 	/**
-	 * Creates the search form for adding existing elements
-	 * @return \SilverStripe\Forms\Form
+	 * This action is called when the find existing dialog is shown.
+	 * @param \SilverStripe\Control\HTTPRequest $request
+	 * @return string
 	 */
-	public function SearchForm()
+	public function search($request)
 	{
 		$form = Form::create(
 			$this,
-			'doSearch',
+			'search',
 			$this->context->getFields(),
 			FieldList::create(
 				FormAction::create('doSearch', _t('GridFieldExtensions.SEARCH', 'Search'))
@@ -370,28 +374,125 @@ class TreeView extends FormField
 		);
 		$form->addExtraClass('stacked add-existing-search-form form--no-dividers');
 		$form->setFormMethod('GET');
+
+		// Check if we're requesting the form for the first time (we return the template)
+		// or if this is a submission (we return the form, so it calls the submitted action)
+		if (count($request->requestVars()) === 0) {
+			return $form->forAjaxTemplate();
+		}
 		return $form;
 	}
 
-	public function find($request)
+	/**
+	 * This action is called when a search is performed in the find existing dialog
+	 * @param \SilverStripe\Control\HTTPRequest $request
+	 * @return string
+	 */
+	public function doSearch($data, $form)
 	{
-		return $this->SearchForm()->forTemplate();
-	}
-
-	public function doSearch($request)
-	{
-		$list = $this->context->getQuery($request->requestVars(), false, false);
+		$list = $this->context->getQuery($data, false, false);
 		// If we're viewing the search list on a PageElement,
 		// then we have to remove all parents as possible elements
 		if ($this->parent->ClassName === PageElement::class) {
 			$list = $list->subtract($this->parent->getAllParents());
 		}
-		$list = new PaginatedList($list, $request);
+		$list = new PaginatedList($list, $data);
 		$data = $this->customise([
-				'SearchForm' => $this->SearchForm(),
+				'SearchForm' => $form,
 				'Items'      => $list
 		]);
 		return $data->renderWith("FLXLabs\PageSections\TreeViewFindExistingForm");
+	}
+
+	/**
+	 * Creates a detail edit form for the specified item
+	 * @param \FLXLabs\PageSections\PageElement $item
+	 * @param bool $loadData True if the data from $item should be loaded into the form, false otherwise.
+	 * @return \SilverStripe\Forms\Form
+	 */
+	public function DetailForm(PageElement $item, bool $loadData = true)
+	{
+		$canEdit = $item->canEdit();
+		$canDelete = $item->canDelete();
+
+		$actions = new FieldList();
+		if ($canEdit) {
+			$actions->push(FormAction::create('doSave', _t('SilverStripe\\Forms\\GridField\\GridFieldDetailForm.Save', 'Save'))
+				->setUseButtonTag(true)
+				->addExtraClass('btn-primary font-icon-save'));
+		}
+		if ($canDelete) {
+			$actions->push(FormAction::create('doDelete', _t('SilverStripe\\Forms\\GridField\\GridFieldDetailForm.Delete', 'Delete'))
+				->setUseButtonTag(true)
+				->addExtraClass('btn-outline-danger btn-hide-outline font-icon-trash-bin action-delete'));
+		}
+
+		$fields = $item->getCMSFields();
+		$fields->addFieldToTab("Root.Main", HiddenField::create("ID", "ID", $item->ID));
+
+		$form = Form::create(
+			$this,
+			'detail',
+			$fields,
+			$actions
+		);
+		if ($loadData) {
+			$form->loadDataFrom($item, Form::MERGE_DEFAULT);
+		}
+
+		$form->setTemplate([
+			'type' => 'Includes',
+			'SilverStripe\\Admin\\LeftAndMain_EditForm',
+		]);
+		$form->addExtraClass('view-detail-form cms-content cms-edit-form center fill-height flexbox-area-grow');
+		if ($form->Fields()->hasTabSet()) {
+			$form->Fields()->findOrMakeTab('Root')->setTemplate('SilverStripe\\Forms\\CMSTabSet');
+			$form->addExtraClass('cms-tabset');
+		}
+
+		return $form;
+	}
+
+	/**
+	 * This action is called when the detail form for an item is opened.
+	 * @param \SilverStripe\Control\HTTPRequest $request
+	 * @return string
+	 */
+	public function detail($request) {
+		$id = intval($request->requestVar("ID"));
+
+		// This is a request to show the form so we return it as a template so 
+		// that SilverStripe doesn't think this is already a submission 
+		// (it would call the first action on the form)
+		if ($request->isGET()) {
+			$item = PageElement::get()->byID($id);
+			if (!$item) {
+				return $this->httpError(404);
+			}
+			$form = $this->DetailForm($item);
+			// Save the id of the page element on this form's security token
+			$request->getSession()->set("_tv_df_" . $form->getSecurityToken()->getValue(), $id);
+			return $form->forAjaxTemplate();
+		}
+
+		// If it's a POST request then it's a submission and we have to get the ID
+		// from the session using the form's security token.
+		$id = $request->getSession()->get("_tv_df_" . $request->requestVar("SecurityID"));
+		$item = PageElement::get()->byID($id);
+		return $this->DetailForm($item, false);
+	}
+
+	/**
+	 * This action is called when the detail form is submitted (saved/deleted)
+	 * @param \SilverStripe\Control\HTTPRequest $request
+	 * @return string
+	 */
+	public function doSave($data, $form) {
+		$id = intval($data["ID"]);
+		$item = PageElement::get()->byID($id);
+
+		$form->saveInto($item);
+		$item->write();
 	}
 
 	/**
@@ -550,17 +651,6 @@ class TreeView extends FormField
 			$icon = ($isOpen === true ? 'font-icon-down-open' : 'font-icon-right-open');
 		}
 
-		// Create a button to edit the item
-		$editButton = TreeViewFormAction::create(
-			$this,
-			"DeleteAction".$item->ID,
-			null,
-			null,
-			null
-		);
-		$editButton->addExtraClass("col-actions__button edit-button");
-		$editButton->setButtonContent('Edit');
-
 		// Create a button to add a new child element
 		// and save the allowed child classes on the button
 		$classes = $item->getAllowedPageElements();
@@ -624,18 +714,14 @@ class TreeView extends FormField
 		$treeButton->setButtonContent(' ');
 
 		return ArrayData::create([
-			"ID"              => $item->ID,
-			"ClassName"       => $item->ClassName,
-			"Name"            => $item->Name,
+			"Item"            => $item,
 			"Tree"            => $tree,
-			"SortOrder"       => $item->SortOrder,
 			"IsOpen"          => $isOpen,
 			"IsFirst"         => $isFirst,
 			"Children"        => $childContent,
 			"AllowedRoot"     => $isAllowedRoot,
 			"AllowedElements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			"TreeButton"      => $treeButton,
-			"EditButton"      => $editButton,
 			"AddButton"       => $addButton,
 			"DeleteButton"    => $deleteButton,
 			"UsedCount"       => $item->Parents()->Count() + $item->getAllPages()->Count(),

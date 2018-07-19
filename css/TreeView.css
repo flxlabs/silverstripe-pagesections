@@ -120,6 +120,10 @@
 	display: none;
 }
 
+.treeview-item-fill {
+	flex: 1;
+}
+
 /*
  * Add new button
  */

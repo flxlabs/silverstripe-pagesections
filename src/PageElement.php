@@ -170,19 +170,10 @@ class PageElement extends DataObject
 	}
 
 	/**
-	 * Gets the TreeView for the children of this PageElement
-	 * @return \FLXLabs\PageSections\TreeView
-	 */
-	public function getChildrenTreeView()
-	{
-		return new TreeView("Child", "Children", $this->Children());
-	}
-
-	/**
-	 * Gets the preview of this PageElement in the GridField.
+	 * Gets the preview of this PageElement in the TreeView.
 	 * @return string
 	 */
-	public function getGridFieldPreview()
+	public function getTreeViewPreview()
 	{
 		return $this->Name;
 	}
@@ -241,12 +232,6 @@ class PageElement extends DataObject
 		$fields->removeByName('__Counter');
 
 		$fields->removeByName("Children");
-		if ($this->ID && count($this->getAllowedPageElements()) > 0) {
-			$fields->insertAfter(
-				"Main",
-				Tab::create("Child", "Children", $this->getChildrenTreeView())
-			);
-		}
 
 		// Add our newest version as a readonly field
 		$fields->addFieldsToTab(
@@ -261,9 +246,7 @@ class PageElement extends DataObject
 		if ($pages->Count() > 0) {
 			$config = GridFieldConfig_Base::create()
 				->removeComponentsByType(GridFieldDataColumns::class)
-				->addComponent($dataColumns = new GridFieldDataColumns())
-				->addComponent(new GridFieldDetailForm())
-				->addComponent(new GridFieldEditButton());
+				->addComponent($dataColumns = new GridFieldDataColumns());
 			$dataColumns->setDisplayFields([
 				"ID" => "ID",
 				"ClassName" => "Type",

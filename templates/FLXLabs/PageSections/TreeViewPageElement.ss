@@ -1,9 +1,10 @@
 <div
 	class="treeview-item ui-draggable" 
-	data-id="$ID" 
-	data-class="$ClassName"
+	data-id="$Item.ID" 
+	data-name="$Item.Name"
+	data-class="$Item.ClassName"
 	data-tree="$Tree"
-	data-sort="$SortOrder"
+	data-sort="$Item.SortOrder"
 	data-is-open="$IsOpen"
 	data-allowed-root="$AllowedRoot"
 	data-allowed-elements="$AllowedElements"
@@ -20,19 +21,22 @@
 			$TreeButton
 			$AddButton
 			$DeleteButton
-			$EditButton
 		</div>
 		<div class="treeview-item-content">
 			$ButtonField
 			<div class="treeview-item-content__text">
 				<div class="treeview-item-content__classname">
-					$ClassName (ID: $ID, {$UsedCount}x)
+					$Item.ClassName (ID: $Item.ID, {$UsedCount}x)
 				</div>
 				<div class="treeview-item-content__title">
-					$Name
+					$Item.Name
 				</div>
 			</div>
 		</div>
+		<div class="treeview-item-preview">
+			$Item.TreeViewPreview
+		</div>
+		<div class="treeview-item-fill"></div>
 	</div>
 	<div class="treeview-item-children">
 		$Children.RAW
