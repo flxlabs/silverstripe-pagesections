@@ -206,7 +206,7 @@ class TreeView extends FormField
 		$sortArr = [$sortBy => $sort];
 
 		// Add the element to the new parent
-		if (is_subclass_of($newParent, PageSection::class)) {
+		if ($newParent->ClassName == PageSection::class) {
 			$newParent->Elements()->Add($item, $sortArr);
 		} else {
 			$newParent->Children()->Add($item, $sortArr);
@@ -391,6 +391,9 @@ class TreeView extends FormField
 	public function doSearch($data, $form)
 	{
 		$list = $this->context->getQuery($data, false, false);
+		$allowed = $this->parent->getAllowedPageElements();
+		// Remove all disallowed classes
+		$list = $list->filter("ClassName", $allowed);
 		// If we're viewing the search list on a PageElement,
 		// then we have to remove all parents as possible elements
 		if ($this->parent->ClassName === PageElement::class) {
@@ -683,10 +686,6 @@ class TreeView extends FormField
 		$deleteButton->setAttribute(
 			"data-used-count",
 			$item->Parents()->Count() + $item->getAllPages()->Count()
-		);
-		$deleteButton->setAttribute(
-			"data-parent-id",
-			$item->_Parent ? $item->_Parent->ID : $this->parent->ID
 		);
 		$deleteButton->addExtraClass("col-actions__button delete-button font-icon-trash-bin");
 		$deleteButton->setButtonContent('Delete');

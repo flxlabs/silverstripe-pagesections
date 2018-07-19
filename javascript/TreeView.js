@@ -464,7 +464,8 @@
 								}
 
 								var newParent =
-									type === 'child' ? itemId : parents[parents.length - 1];
+									type === 'child' ?
+									itemId : (parents.length > 0 ? parents[parents.length - 1] : '');
 
 								$treeView.reload({
 									url: url + '/move',
