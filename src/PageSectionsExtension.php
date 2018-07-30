@@ -84,7 +84,7 @@ class PageSectionsExtension extends DataExtension {
 				// Create a page section if we don't have one yet
 				if (!$this->owner->$name()->ID) {
 					$section = PageSection::create();
-					$section->__Name = $name;
+					$section->__Name = $section;
 					$section->__ParentID = $this->owner->ID;
 					$section->__ParentClass = $this->owner->ClassName;
 					$section->__isNew = true;
