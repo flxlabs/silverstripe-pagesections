@@ -176,7 +176,7 @@ class PageElement extends DataObject {
 		$parents = ArrayList::create();
 
 		foreach ($this->PageSections() as $section) {
-			$p = $section->Parent();
+			$p = $section->Parent()->duplicate(false);
 			$stage = Versioned::get_stage();
 			Versioned::set_stage(Versioned::LIVE);
 			$pubSection = DataObject::get_by_id($section->ClassName, $section->ID);
