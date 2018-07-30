@@ -73,18 +73,15 @@ class PageSectionsExtension extends DataExtension {
 		parent::onBeforeWrite();
 
 		if ($this->owner->ID) {
-			$sections = $this->owner->config()->get("page_sections");
-			if (!$sections) {
-				$sections = ["Main"];
-			}
+			$sections = $this->getPageSectionNames();
 
-			foreach ($sections as $section) {
-				$name = "PageSection".$section;
+			foreach ($sections as $sectionName) {
+				$name = "PageSection".$sectionName;
 
 				// Create a page section if we don't have one yet
 				if (!$this->owner->$name()->ID) {
 					$section = PageSection::create();
-					$section->__Name = $section;
+					$section->__Name = $sectionName;
 					$section->__ParentID = $this->owner->ID;
 					$section->__ParentClass = $this->owner->ClassName;
 					$section->__isNew = true;
@@ -96,10 +93,7 @@ class PageSectionsExtension extends DataExtension {
 	}
 
 	public function updateCMSFields(FieldList $fields) {
-		$sections = $this->owner->config()->get("page_sections");
-		if (!$sections) {
-			$sections = ["Main"];
-		}
+		$sections = $this->getPageSectionNames();
 
 		$fields->removeByName("__PageSectionCounter");
 
