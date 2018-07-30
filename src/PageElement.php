@@ -96,7 +96,7 @@ class PageElement extends DataObject {
 	];
 
 	private static $better_buttons_actions = array (
-		'publishOnAllPages',
+		'publishOnAllSectionParents',
 	);
 
 	// Returns all page element classes, without the base class
@@ -170,25 +170,25 @@ class PageElement extends DataObject {
 		return $this->Name;
 	}
 
-	// Gets all the pages that this page element is on, plus adds a __PageSection
-	// attribute to the page object so we know which section this element is in.
-	public function getAllPages() {
-		$pages = ArrayList::create();
+	// Gets all the parents of the sections that this page element is on, plus adds a
+	// __PageSection attribute to the parent object so we know which section this element is in.
+	public function getAllSectionParents() {
+		$parents = ArrayList::create();
 
 		foreach ($this->PageSections() as $section) {
-			$page = $section->Page();
+			$p = $section->Parent();
 			$stage = Versioned::get_stage();
 			Versioned::set_stage(Versioned::LIVE);
 			$pubSection = DataObject::get_by_id($section->ClassName, $section->ID);
 			$pubElem = $pubSection ? $pubSection->Elements()->filter("ID", $this->ID)->First() : null;
-			$page->__PageSection = $section;
-			$page->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
-			$page->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
+			$p->__PageSection = $section;
+			$p->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
+			$p->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
 			Versioned::set_stage($stage);
-			$pages->add($page);
+			$parents->add($p);
 		}
 
-		return $pages;
+		return $parents;
 	}
 
 	public function getCMSFields() {
@@ -210,10 +210,10 @@ class PageElement extends DataObject {
 			"Title"
 		);
 
-		// Create an array of all the pages this element is on
-		$pages = $this->getAllPages();
+		// Create an array of all the sections this element is on
+		$parents = $this->getAllSectionParents();
 
-		if ($pages->Count() > 0) {
+		if ($parents->Count() > 0) {
 			$config = GridFieldConfig_Base::create()
 				->removeComponentsByType(GridFieldDataColumns::class)
 				->addComponent($dataColumns = new GridFieldDataColumns())
@@ -223,13 +223,13 @@ class PageElement extends DataObject {
 				"ID" => "ID",
 				"ClassName" => "Type",
 				"Title" => "Title",
-				"__PageSection.Name" => "PageSection",
+				"__PageSection.__Name" => "PageSection",
 				"__PageElementVersion" => "Element version",
 				"__PageElementPublishedVersion" => "Published element version",
-				"getPublishState" => "Page state",
+				"getPublishState" => "Parent State",
 			]);
-			$gridField = GridField::create("Pages", "Pages", $pages, $config);
-			$fields->addFieldToTab("Root.Pages", $gridField);
+			$gridField = GridField::create("Pages", "Section Parents", $parents, $config);
+			$fields->addFieldToTab("Root.SectionParents", $gridField);
 		}
 
 		return $fields;
@@ -279,16 +279,16 @@ class PageElement extends DataObject {
 	public function getBetterButtonsActions() {
 		$actions = FieldList::create([
 			SaveAndClose::create(),
-			CustomAction::create('publishOnAllPages', 'Publish on all pages')
+			CustomAction::create('publishOnAllSectionParents', 'Publish everywhere')
 				->setRedirectType(CustomAction::REFRESH)
 		]);
 		return $actions;
 	}
 
-	public function publishOnAllPages() {
-		foreach ($this->getAllPages() as $page) {
-			$page->publish(Versioned::get_stage(), Versioned::LIVE);
+	public function publishOnAllSectionParents() {
+		foreach ($this->getAllSectionParents() as $parent) {
+			$parent->publish(Versioned::get_stage(), Versioned::LIVE);
 		}
-		return 'Published on all pages';
+		return 'Published on all section parents';
 	}
 }

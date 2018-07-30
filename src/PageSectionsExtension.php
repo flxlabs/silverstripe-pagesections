@@ -84,7 +84,9 @@ class PageSectionsExtension extends DataExtension {
 				// Create a page section if we don't have one yet
 				if (!$this->owner->$name()->ID) {
 					$section = PageSection::create();
-					$section->PageID = $this->owner->ID;
+					$section->__Name = $name;
+					$section->__ParentID = $this->owner->ID;
+					$section->__ParentClass = $this->owner->ClassName;
 					$section->__isNew = true;
 					$section->write();
 					$this->owner->$name = $section;
@@ -99,10 +101,13 @@ class PageSectionsExtension extends DataExtension {
 			$sections = ["Main"];
 		}
 
+		$fields->removeByName("__PageSectionCounter");
+
 		foreach ($sections as $section) {
 			$name = "PageSection".$section;
 
 			$fields->removeByName($name);
+			$fields->removeByName($name . "ID");
 
 			if ($this->owner->ID) {
 				$addNewButton = new GridFieldAddNewMultiClass();
