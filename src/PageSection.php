@@ -2,7 +2,6 @@
 
 namespace FLXLabs\PageSections;
 
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Forms\Form;
@@ -23,11 +22,10 @@ class PageSection extends DataObject
 	private static $table_name = "FLXLabs_PageSections_PageSection";
 
 	private static $db = [
+		"__Name" => "Varchar",
+		"__ParentID" => "Int",
+		"__ParentClass" => "Varchar",
 		"__Counter" => "Int",
-	];
-
-	private static $has_one = [
-		"Page" => SiteTree::class,
 	];
 
 	private static $owns = [
@@ -46,8 +44,11 @@ class PageSection extends DataObject
 		]
 	];
 
-	public function onBeforeWrite()
-	{
+	public function Parent() {
+		return DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
+	}
+
+	public function onBeforeWrite() {
 		parent::onBeforeWrite();
 
 		$elems = $this->Elements()->Sort("SortOrder")->Column("ID");
@@ -62,47 +63,28 @@ class PageSection extends DataObject
 		parent::onAfterWrite();
 
 		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT) {
-			$this->Page()->__PageSectionCounter++;
-			$this->Page()->write();
+			$this->Parent()->__PageSectionCounter++;
+			$this->Parent()->write();
 		}
 	}
 
 	public function forTemplate()
 	{
 		return $this->Elements()->Count();
-
-		$actions = FieldList::create();
-		$fields = FieldList::create();
-		$form = Form::create(null, "Form", $fields, $actions);
-
-		$config = GridFieldConfig::create()
-			->addComponent(new GridFieldToolbarHeader())
-			->addComponent($dataColumns = new GridFieldDataColumns())
-			->addComponent(new GridFieldPageSectionsExtension($this->owner));
-		$dataColumns->setFieldCasting(["GridFieldPreview" => "HTMLText->RAW"]);
-
-		$grid = GridField::create("Elements", "Elements", $this->Elements(), $config);
-		$grid->setForm($form);
-		$fields->add($grid);
-
-		$form->setFields($fields);
-
-		return $form->forTemplate();
 	}
 
 	/**
 	 * Gets the name of this PageSection
 	 * @return string
 	 */
-	public function getName()
-	{
-		$page = $this->Page();
+	public function getName() {
+		$parent = $this->Parent();
 		// TODO: Find out why this happens
-		if (!method_exists($page, "getPageSectionNames")) {
+		if (!method_exists($parent, "getPageSectionNames")) {
 			return null;
 		}
-		foreach ($page->getPageSectionNames() as $sectionName) {
-			if ($page->{"PageSection" . $sectionName . "ID"} === $this->ID) {
+		foreach ($parent->getPageSectionNames() as $sectionName) {
+			if ($parent->{"PageSection" . $sectionName . "ID"} === $this->ID) {
 				return $sectionName;
 			}
 		}
@@ -116,8 +98,7 @@ class PageSection extends DataObject
 	 * @param string $section The section for which to get the allowed child classes.
 	 * @return string[]
 	 */
-	public function getAllowedPageElements($section = "Main")
-	{
-		return $this->Page()->getAllowedPageElements($section);
+	public function getAllowedPageElements($section = "Main") {
+		return $this->Parent()->getAllowedPageElements($section);
 	}
 }

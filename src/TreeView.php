@@ -14,6 +14,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormField;
 use SilverStripe\ORM\PaginatedList;
 use SilverStripe\ORM\SS_List;
+use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\HTML;
 use SilverStripe\View\Requirements;
@@ -44,11 +45,11 @@ class TreeView extends FormField
 	);
 
 
-	public function __construct($name, $title = null, $parent = null)
+	public function __construct($name, $title = null, $section = null)
 	{
 		parent::__construct($name, $title, null);
 
-		$this->parent = $parent;
+		$this->section = $section;
 		$this->context = singleton(PageElement::class)->getDefaultSearchContext();
 
 		// Open default elements
@@ -56,6 +57,17 @@ class TreeView extends FormField
 		foreach ($this->getItems() as $item) {
 			$this->openRecursive($item);
 		}
+	}
+
+	/**
+	 * Saves this TreeView into the specified record
+	 *
+	 * We do nothing here, because the TreeView saves all changes while editing, 
+	 * so there are no additional actions we have to perform here. We overwrite 
+	 * this because the default behavior would write a NULL value into the relation.
+	 */
+	public function saveInto(DataObjectInterface $record)
+	{
 	}
 
 	/**
@@ -180,7 +192,7 @@ class TreeView extends FormField
 		if ($newParentId) {
 			$newParent = PageElement::get()->byID($newParentId);
 		} else {
-			$newParent = $this->parent;
+			$newParent = $this->section;
 		}
 		
 		// Check if this element is allowed as a child on the new element
@@ -391,14 +403,14 @@ class TreeView extends FormField
 	public function doSearch($data, $form)
 	{
 		$list = $this->context->getQuery($data, false, false);
-		$allowed = $this->parent->getAllowedPageElements();
+		$allowed = $this->section->getAllowedPageElements();
 		// Remove all disallowed classes
 		$list = $list->filter("ClassName", $allowed);
 		// If we're viewing the search list on a PageElement,
 		// then we have to remove all parents as possible elements
-		if ($this->parent->ClassName === PageElement::class) {
+		/*if ($this->parent->ClassName === PageElement::class) {
 			$list = $list->subtract($this->parent->getAllParents());
-		}
+		}*/
 		$list = new PaginatedList($list, $data);
 		$data = $this->customise([
 				'SearchForm' => $form,
@@ -506,8 +518,9 @@ class TreeView extends FormField
 	 */
 	public function getItems()
 	{
-		return $this->parent->ClassName == PageSection::class ?
-			$this->parent->Elements() : $this->parent->Children();
+		return $this->section->Elements();
+		/*return $this->parent->ClassName == PageSection::class ?
+			$this->parent->Elements() : $this->parent->Children();*/
 	}
 
 	/**
@@ -550,7 +563,7 @@ class TreeView extends FormField
 
 		$content = '';
 
-		$classes = $this->parent->getAllowedPageElements();
+		$classes = $this->section->getAllowedPageElements();
 		$elems = [];
 		foreach ($classes as $class) {
 			$elems[$class] = $class::getSingularName();
@@ -633,7 +646,7 @@ class TreeView extends FormField
 		// Find out if this item is allowed as a root item
 		// There are two cases, either this GridField is on a page,
 		// or it is on a PageElement and we're looking that the children
-		$parentClasses = $this->parent->getAllowedPageElements();
+		$parentClasses = $this->section->getAllowedPageElements();
 		$isAllowedRoot = in_array($item->ClassName, $parentClasses);
 
 		// Get the list of parents of this element as an array of ids
@@ -685,7 +698,7 @@ class TreeView extends FormField
 		);
 		$deleteButton->setAttribute(
 			"data-used-count",
-			$item->Parents()->Count() + $item->getAllPages()->Count()
+			$item->Parents()->Count() + $item->getAllSectionParents()->Count()
 		);
 		$deleteButton->addExtraClass("col-actions__button delete-button font-icon-trash-bin");
 		$deleteButton->setButtonContent('Delete');
@@ -723,7 +736,7 @@ class TreeView extends FormField
 			"TreeButton"      => $treeButton,
 			"AddButton"       => $addButton,
 			"DeleteButton"    => $deleteButton,
-			"UsedCount"       => $item->Parents()->Count() + $item->getAllPages()->Count(),
+			"UsedCount"       => $item->Parents()->Count() + $item->getAllSectionParents()->Count(),
 		])->renderWith("\FLXLabs\PageSections\TreeViewPageElement");
 	}
 

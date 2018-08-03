@@ -112,7 +112,7 @@ class PageElement extends DataObject
 	];
 
 	private static $better_buttons_actions = array (
-		'publishOnAllPages',
+		'publishOnAllSectionParents',
 	);
 
 	// Returns all page element classes, without the base class
@@ -178,36 +178,32 @@ class PageElement extends DataObject
 		return $this->Name;
 	}
 
-	/**
-	 * Gets all pages that this PageElement is rendered on.
-	 *
-	 * Adds the following properties to each page:
-	 *   __PageSection: The PageSection on the page that the PageElement is from.
-	 *   __PageElementVersion: The version of the PageElement being used.
-	 *   __PageElementPublishedVersion: The published version of the PageElement being used.
-	 * @return \Page[]
-	 */
-	public function getAllPages()
-	{
-		$pages = ArrayList::create();
+	/** 
+   * Gets all parents that this PageElement is rendered on. 
+   * 
+   * Adds the following properties to each parent: 
+   *   __PageSection: The PageSection on the parent that the PageElement is from. 
+   *   __PageElementVersion: The version of the PageElement being used. 
+   *   __PageElementPublishedVersion: The published version of the PageElement being used. 
+   * @return \DataObject[] 
+   */ 
+	public function getAllSectionParents() {
+		$parents = ArrayList::create();
 
 		foreach ($this->PageSections() as $section) {
-			$page = $section->Page();
+			$p = $section->Parent()->duplicate(false);
 			$stage = Versioned::get_stage();
 			Versioned::set_stage(Versioned::LIVE);
 			$pubSection = DataObject::get_by_id($section->ClassName, $section->ID);
 			$pubElem = $pubSection ? $pubSection->Elements()->filter("ID", $this->ID)->First() : null;
-
-			// Add extra info to pages
-			$page->__PageSection = $section;
-			$page->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
-			$page->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
-			
+			$p->__PageSection = $section;
+			$p->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
+			$p->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
 			Versioned::set_stage($stage);
-			$pages->add($page);
+			$parents->add($p);
 		}
 
-		return $pages;
+		return $parents;
 	}
 
 	/**
@@ -240,10 +236,10 @@ class PageElement extends DataObject
 			"Title"
 		);
 
-		// Create an array of all the pages this element is on
-		$pages = $this->getAllPages();
+		// Create an array of all the sections this element is on
+		$parents = $this->getAllSectionParents();
 
-		if ($pages->Count() > 0) {
+		if ($parents->Count() > 0) {
 			$config = GridFieldConfig_Base::create()
 				->removeComponentsByType(GridFieldDataColumns::class)
 				->addComponent($dataColumns = new GridFieldDataColumns());
@@ -251,13 +247,13 @@ class PageElement extends DataObject
 				"ID" => "ID",
 				"ClassName" => "Type",
 				"Title" => "Title",
-				"__PageSection.Name" => "PageSection",
+				"__PageSection.__Name" => "PageSection",
 				"__PageElementVersion" => "Element version",
 				"__PageElementPublishedVersion" => "Published element version",
-				"getPublishState" => "Page state",
+				"getPublishState" => "Parent State",
 			]);
-			$gridField = GridField::create("Pages", "Pages", $pages, $config);
-			$fields->addFieldToTab("Root.Pages", $gridField);
+			$gridField = GridField::create("Pages", "Section Parents", $parents, $config);
+			$fields->addFieldToTab("Root.SectionParents", $gridField);
 		}
 
 		return $fields;
@@ -329,20 +325,16 @@ class PageElement extends DataObject
 	{
 		$actions = FieldList::create([
 			SaveAndClose::create(),
-			CustomAction::create('publishOnAllPages', 'Publish on all pages')
+			CustomAction::create('publishOnAllSectionParents', 'Publish everywhere')
 				->setRedirectType(CustomAction::REFRESH)
 		]);
 		return $actions;
 	}
 
-	/**
-	 * Publishes all pages that this PageElement is on.
-	 */
-	public function publishOnAllPages()
-	{
-		foreach ($this->getAllPages() as $page) {
-			$page->publish(Versioned::get_stage(), Versioned::LIVE);
+	public function publishOnAllSectionParents() {
+		foreach ($this->getAllSectionParents() as $parent) {
+			$parent->publish(Versioned::get_stage(), Versioned::LIVE);
 		}
-		return 'Published on all pages';
+		return 'Published on all section parents';
 	}
 }
