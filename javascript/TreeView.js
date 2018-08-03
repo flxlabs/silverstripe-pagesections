@@ -101,7 +101,7 @@
 
 		// Attach data to our tree view
 		$('.treeview-pagesections').entwine({
-			addItem: function (parents, itemId, elemType) {
+			addItem: function (parents, itemId, elemType, sort = 99999) {
 				var $treeView = $(this);
 
 				$treeView.reload({
@@ -117,6 +117,10 @@
 						{
 							name: 'type',
 							value: elemType
+						},
+						{
+							name: 'sort',
+							value: sort
 						}
 					]
 				});
@@ -197,36 +201,12 @@
 				// Process items
 				$treeView.find('.treeview-item').each(function () {
 					var $item = $(this);
-					var $onlyThis = $item.find('> .treeview-item-flow');
 					var itemId = $item.data('id');
 					var parents = $item.data('tree');
 
-					// Show details dialog on item click
-					$onlyThis.find('.treeview-item-fill').click(function () {
-						var dialog = $('<div></div>')
-							.appendTo('body')
-							.dialog({
-								modal: false,
-								resizable: false,
-								width: $(window).width() * 0.9,
-								height: $(window).height() * 0.9,
-								close: function () {
-									$(this)
-										.dialog('destroy')
-										.remove();
-								}
-							});
-
-						dialog
-							.parent()
-							.addClass('view-detail-dialog')
-							.loadDialog($.get($treeView.data('url') + '/detail?ID=' + itemId));
-						dialog.data('treeview', $treeView);
-					});
-
 					// Open an item button
-					$onlyThis
-						.find('.treeview-item-actions .tree-button')
+					$item
+						.find('> .treeview-item-flow .tree-button')
 						.click(function (event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -245,9 +225,34 @@
 							});
 						});
 
+					// Edit button
+					$item
+						.find('> .treeview-item-actions .edit-button')
+						.click(function () {
+							var dialog = $('<div></div>')
+								.appendTo('body')
+								.dialog({
+									modal: false,
+									resizable: false,
+									width: $(window).width() * 0.9,
+									height: $(window).height() * 0.9,
+									close: function () {
+										$(this)
+											.dialog('destroy')
+											.remove();
+									}
+								});
+
+							dialog
+								.parent()
+								.addClass('view-detail-dialog')
+								.loadDialog($.get($treeView.data('url') + '/detail?ID=' + itemId));
+							dialog.data('treeview', $treeView);
+						});
+
 					// Add new item button
-					$onlyThis
-						.find('.treeview-item-actions .add-button')
+					$item
+						.find('> .treeview-item-actions .add-button')
 						.click(function (event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -284,9 +289,53 @@
 							$menu.show();
 						});
 
+					// Add new after item button
+					$item
+						.find('> .treeview-item-actions .add-after-button')
+						.click(function (event) {
+							event.preventDefault();
+							event.stopImmediatePropagation();
+
+							$target = $(event.target);
+							var elems = $target.data('allowed-elements');
+
+							var $menu = $(
+								"<ul id='treeview-menu-" +
+								name +
+								"' class='treeview-menu' data-id='" +
+								itemId +
+								"'></ul>"
+							);
+							$menu.css({
+								top: event.pageY + 'px',
+								left: event.pageX + 'px'
+							});
+							$(document.body).append($menu);
+
+							$menu.append(
+								"<li class='header'>" +
+								ss.i18n._t('PageSections.TreeView.AddAfterThis', 'Add after this element') +
+								'</li>'
+							);
+							$.each(elems, function (key, value) {
+								var $li = $("<li data-type='" + key + "'>" + value + '</li>');
+								$li.click(function () {
+									$treeView.addItem(
+										parents.slice(0, parents.length - 1),
+										parents[parents.length - 1],
+										key,
+										$item.data("sort") + 1
+									);
+									$menu.remove();
+								});
+								$menu.append($li);
+							});
+							$menu.show();
+						});
+
 					// Delete button action
-					$onlyThis
-						.find('.treeview-item-actions .delete-button')
+					$item
+						.find('> .treeview-item-actions .delete-button')
 						.click(function (event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -342,7 +391,7 @@
 						});
 
 					// Attach draggable events & info
-					$onlyThis.draggable({
+					$item.find("> .treeview-item-flow").draggable({
 						revert: 'invalid',
 						cursor: 'crosshair',
 						cursorAt: {
@@ -440,7 +489,7 @@
 					});
 
 					// Dropping targets
-					$onlyThis.find('.treeview-item-reorder div').each(function () {
+					$item.find('> .treeview-item-flow .treeview-item-reorder div').each(function () {
 						$(this).droppable({
 							hoverClass: 'state-active',
 							tolerance: 'pointer',

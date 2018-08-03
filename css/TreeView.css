@@ -40,50 +40,11 @@
 	font-weight: bold;
 }
 
-.treeview-item-actions {
-	display: flex;
-	flex-flow: column nowrap;
+.treeview-item .treeview-item-actions {
+	background: #ccc;
 }
 
-.treeview-item-actions .edit-link {
-	display: none;
-}
-
-.treeview-item-actions .col-actions__button {
-	opacity: 0;
-	cursor: pointer;
-	appearance: none;
-	width: 2em;
-	height: 2em;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	margin: 1px;
-	color: #43536d;
-}
-
-.treeview-item-actions .col-actions__button:before {
-	font-size: 140%;
-}
-
-.treeview-item-actions .col-actions__button:hover {
-	color: #005489;
-}
-
-.treeview-item-actions .col-actions__button:disabled {
-	display: none;
-}
-
-.treeview-item-actions .col-actions__button .btn__title {
-	display: none;
-}
-
-.treeview-item:hover .treeview-item-actions .col-actions__button {
-	opacity: 1;
-}
-
-.treeview-item-actions .tree-button {
+.treeview-item .tree-button {
 	appearance: none;
 	background: transparent;
 	border: 2px solid #43536d;
@@ -100,23 +61,23 @@
 	font-size: 114%;
 }
 
-.treeview-item-actions .tree-button.is-end {
+.treeview-item .tree-button.is-end {
 	opacity: 0;
 }
 
-.treeview-item-actions .tree-button:hover {
+.treeview-item .tree-button:hover {
 	color: #005489;
 	border-color: #005489;
 }
 
-.treeview-item-actions .tree-button:before {
+.treeview-item .tree-button:before {
 	position: absolute;
 	left: -0.08em;
 	top: -0.08em;
 	font-size: 90%;
 }
 
-.treeview-item-actions .tree-button .btn__title {
+.treeview-item .tree-button .btn__title {
 	display: none;
 }
 
