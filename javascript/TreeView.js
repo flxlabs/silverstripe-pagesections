@@ -32,8 +32,8 @@
 				var wH = $(window).height();
 				var eW = that.$menu.outerWidth(true);
 				var eH = that.$menu.outerHeight(true);
-				pos.left = pos.left - eW * 0.5;
-				pos.top = pos.top - eH * 0.5;
+				pos.left = Math.max(2, pos.left - eW * 0.5);
+				pos.top = Math.max(2, pos.top - eH * 0.5);
 				if (pos.left + eW > wW) {
 					pos.left = wW - eW - 2;
 				}
@@ -443,7 +443,6 @@
 						greedy: true,
 
 						helper: function(event) {
-							console.log("ev", event);
 							var $panel = $item.find("> .treeview-item__panel");
 							var $helper = $("<div class='treeview-item__dragger'/>");
 							$helper
@@ -463,12 +462,45 @@
 							$(".ui-droppable").each(function() {
 								var $drop = $(this);
 								var $dropItem = $drop.closest(".treeview-item");
+								var $parentDropItem = $dropItem
+									.parent()
+									.closest(".treeview-item");
+								var clazz = $item.data("class");
+
 								var isOpen = $dropItem.data("is-open");
 
 								// Dont enable dropping on itself
+								// or a same id
+								if ($dropItem.data("id") == itemId) {
+									return;
+								}
+
+								// Dont enable dropping on a child of itself
+								// or a same id
 								if (
-									$dropItem.data("id") == itemId &&
-									$dropItem.data("tree") == parents
+									$dropItem.parents(".treeview-item[data-id='" + itemId + "']")
+										.length
+								) {
+									return;
+								}
+
+								// Dont enable dropping on .before/.after
+								// from neighbours with same id
+								// (no same ids on same branch)
+								if (
+									($drop.hasClass("after") || $drop.hasClass("before")) &&
+									$dropItem
+										.siblings(".treeview-item[data-id='" + itemId + "']")
+										.not($item).length
+								) {
+									return;
+								}
+
+								// Dont enable dropping on next bottom
+								// of the same id
+								if (
+									$drop.hasClass("after") &&
+									$dropItem.next().data("id") == itemId
 								) {
 									return;
 								}
@@ -479,29 +511,12 @@
 									return;
 								}
 
-								// Dont enable dropping on .after of itself
-								if (
-									$drop.hasClass("after") &&
-									$dropItem.next().data("id") == itemId
-								) {
-									return;
-								}
-
-								// Dont enable dropping on .middle of other same id elements
-								// (no recursive structures)
-								if (
-									$drop.hasClass("middle") &&
-									$dropItem.data("id") == itemId
-								) {
-									return;
-								}
-
-								// Don't allow dropping elements on the root level that aren't allowed there
-								if (
-									$dropItem.data("tree").length == 0 &&
-									($drop.hasClass("before") || $drop.hasClass("after"))
-								) {
-									if (!$item.data("allowed-root")) {
+								// avoid adding unallowed elements on root section
+								if (!$parentDropItem.length) {
+									var allowed = $drop
+										.closest(".treeview-pagesections")
+										.data("allowed-elements");
+									if (allowed && !allowed[clazz]) {
 										return;
 									}
 								}
@@ -509,14 +524,13 @@
 								// Don't allow dropping elements on this level if they're not an allowed child
 								// Depending on the arrow we either have to check this element or the parent
 								// of this element to see which children are allowed
-								var clazz = $item.data("class");
 								if ($drop.hasClass("before") || $drop.hasClass("after")) {
-									var $parent = $dropItem.parent().closest(".treeview-item");
-									var allowed = $parent.data("allowed-elements");
+									var allowed = $parentDropItem.data("allowed-elements");
 									if (allowed && !allowed[clazz]) {
 										return;
 									}
 								} else {
+									// is middle
 									var allowed = $dropItem.data("allowed-elements");
 									if (allowed && !allowed[clazz]) {
 										return;

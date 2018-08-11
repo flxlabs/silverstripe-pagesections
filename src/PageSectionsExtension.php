@@ -67,7 +67,11 @@ class PageSectionsExtension extends DataExtension
 	{
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
-		return $classes;
+		$ret = [];
+		foreach($classes as $class) {
+			if ($class::$canBeRoot) $ret[] = $class;
+		}
+		return $ret;
 	}
 
 	/**

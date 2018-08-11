@@ -258,12 +258,14 @@
 .treeview-item-reorder__handle {
 	pointer-events: all;
 	width: 30px;
-	height: 38px;
 	position: absolute;
-	top: 50%;
-	margin-top: -19px;
 	font-size: 30px;
 	cursor: pointer;
+	bottom: 35px;
+	top: 35px;
+	display: flex;
+	align-items: center;
+	cursor: grab
 }
 
 .treeview-item-reorder .ui-droppable {

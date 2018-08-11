@@ -602,6 +602,7 @@ class TreeView extends FormField
 				'data-name' => $this->getName(),
 				'data-url' => $this->Link(),
 				'data-state-id' => $sessionId,
+				'data-allowed-elements' => json_encode($elems),
 			],
 			$content
 		);
@@ -642,19 +643,6 @@ class TreeView extends FormField
 			}
 		}
 
-		// Construct the array of all allowed child elements
-		$classes = $item->getAllowedPageElements();
-		$elems = [];
-		foreach ($classes as $class) {
-			$elems[$class] = $class::getSingularName();
-		}
-
-		// Find out if this item is allowed as a root item
-		// There are two cases, either this GridField is on a page,
-		// or it is on a PageElement and we're looking that the children
-		$parentClasses = $this->section->getAllowedPageElements();
-		$isAllowedRoot = in_array($item->ClassName, $parentClasses);
-
 		// Get the list of parents of this element as an array of ids
 		// (already converted to json/a string)
 		$tree = "[" .
@@ -667,6 +655,27 @@ class TreeView extends FormField
 			) .
 			"]";
 
+		// Construct the array of all allowed child elements
+		$classes = $item->getAllowedPageElements();
+		$elems = [];
+		foreach ($classes as $class) {
+			$elems[$class] = singleton($class)->singular_name();
+		}
+
+		// Construct the array of all allowed child elements in parent slot
+		$parentClasses = count($parents) > 0 
+			? $parents[count($parents) - 1]->getAllowedPageElements() 
+			: $this->section->getAllowedPageElements();
+		$parentElems = [];
+		foreach ($parentClasses as $class) {
+			$parentElems[$class] = singleton($class)->singular_name();
+		}
+
+		// Find out if this item is allowed as a root item
+		// There are two cases, either this GridField is on a page,
+		// or it is on a PageElement and we're looking at the children
+		$isAllowedRoot = in_array($item->ClassName, $parentClasses);
+		
 		// Create the tree icon
 		$icon = '';
 		if ($item->Children() && $item->Children()->Count() > 0) {
@@ -676,10 +685,6 @@ class TreeView extends FormField
 		// Create a button to add a new child element
 		// and save the allowed child classes on the button
 		if (count($classes)) {
-			$elems = [];
-			foreach ($classes as $class) {
-				$elems[$class] = singleton($class)->singular_name();
-			}
 			$addButton = TreeViewFormAction::create(
 				$this,
 				"AddAction".$item->ID,
@@ -696,13 +701,6 @@ class TreeView extends FormField
 		}
 		// Create a button to add an element after
 		// and save the allowed child classes on the button
-		$classes = count($parents) > 0 
-			? $parents[count($parents) - 1]->getAllowedPageElements() 
-			: $this->section->getAllowedPageElements();
-		$elems = [];
-		foreach ($classes as $class) {
-			$elems[$class] = singleton($class)->singular_name();
-		}
 		$addAfterButton = TreeViewFormAction::create(
 			$this,
 			"AddAfterAction".$item->ID,
@@ -711,10 +709,10 @@ class TreeView extends FormField
 			null
 		);
 		$addAfterButton->setAttribute("data-allowed-elements", 
-			json_encode($elems, JSON_UNESCAPED_UNICODE)
+			json_encode($parentElems, JSON_UNESCAPED_UNICODE)
 		);
 		$addAfterButton->addExtraClass("btn add-after-button font-icon-plus");
-		if (!count($elems)) {
+		if (!count($parentElems)) {
 			$addAfterButton->setDisabled(true);
 		}
 		$addAfterButton->setButtonContent(' ');

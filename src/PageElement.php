@@ -33,17 +33,16 @@ class PageElement extends DataObject
 
 	private static $table_name = "FLXLabs_PageSections_PageElement";
 
-	protected static $singularName = "Element";
-	protected static $pluralName = "Elements";
 	protected static $defaultIsOpen = true;
+	public static $canBeRoot = true;
 
 	public static function getSingularName()
 	{
-		return static::$singularName;
+		return static::$singular_name;
 	}
 	public static function getPluralName()
 	{
-		return static::$pluralName;
+		return static::$plural_name;
 	}
 	public static function isOpenByDefault()
 	{
@@ -175,7 +174,7 @@ class PageElement extends DataObject
 	 */
 	public function getTreeViewPreview()
 	{
-		return $this->Name;
+		return $this->GridFieldPreview;
 	}
 
 	/** 
