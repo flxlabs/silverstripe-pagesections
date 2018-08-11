@@ -1,4 +1,51 @@
 (function($) {
+	function TreeViewContextMenu() {
+		this.createDom = function(id, name) {
+			this.$menu = $(
+				"<ul id='treeview-menu-" +
+					name +
+					"' class='treeview-menu' data-id='" +
+					id +
+					"'></ul>"
+			);
+		};
+		this.addLabel = function(label) {
+			this.$menu.append("<li class='header'>" + label + "</li>");
+		};
+		this.addItem = function(type, label, onClick = function() {}) {
+			var $li = $("<li data-type='" + type + "'>" + label + "</li>");
+			$li.click(onClick);
+			this.$menu.append($li);
+		};
+		this.show = function(x, y) {
+			var pos = {
+				top: y,
+				left: x
+			};
+
+			$(document.body).append(this.$menu);
+			this.$menu.css(pos);
+			this.$menu.show();
+			var that = this;
+			window.requestAnimationFrame(function() {
+				var wW = $(window).width();
+				var wH = $(window).height();
+				var eW = that.$menu.outerWidth(true);
+				var eH = that.$menu.outerHeight(true);
+				if (pos.left + eW > wW) {
+					pos.let = wW - eW;
+				}
+				if (pos.top + eH > wH) {
+					pos.top = wH - eH;
+				}
+				that.$menu.css(pos);
+			});
+		};
+		this.remove = function() {
+			this.$menu.remove();
+		};
+	}
+
 	$.entwine("ss", function($) {
 		// Hide our custom context menu when not needed
 		$(document).on("mousedown", function(event) {
@@ -271,33 +318,18 @@
 							$target = $(event.target);
 							var elems = $target.data("allowed-elements");
 
-							var $menu = $(
-								"<ul id='treeview-menu-" +
-									name +
-									"' class='treeview-menu' data-id='" +
-									itemId +
-									"'></ul>"
-							);
-							$menu.css({
-								top: event.pageY + "px",
-								left: event.pageX + "px"
-							});
-							$(document.body).append($menu);
-
-							$menu.append(
-								"<li class='header'>" +
-									ss.i18n._t("PageSections.TreeView.AddAChild", "Add a child") +
-									"</li>"
+							var menu = new TreeViewContextMenu();
+							menu.createDom(itemId, name);
+							menu.addLabel(
+								ss.i18n._t("PageSections.TreeView.AddAChild", "Add a child")
 							);
 							$.each(elems, function(key, value) {
-								var $li = $("<li data-type='" + key + "'>" + value + "</li>");
-								$li.click(function() {
+								menu.addItem(key, value, function() {
 									$treeView.addItem(parents, itemId, key);
-									$menu.remove();
+									menu.remove();
 								});
-								$menu.append($li);
 							});
-							$menu.show();
+							menu.show(event.pageX, event.pageY);
 						});
 
 					// Add new after item button
@@ -310,41 +342,27 @@
 							$target = $(event.target);
 							var elems = $target.data("allowed-elements");
 
-							var $menu = $(
-								"<ul id='treeview-menu-" +
-									name +
-									"' class='treeview-menu' data-id='" +
-									itemId +
-									"'></ul>"
+							var menu = new TreeViewContextMenu();
+							menu.createDom(itemId, name);
+							menu.addLabel(
+								ss.i18n._t(
+									"PageSections.TreeView.AddAfterThis",
+									"Add after this element"
+								)
 							);
-							$menu.css({
-								top: event.pageY + "px",
-								left: event.pageX + "px"
-							});
-							$(document.body).append($menu);
 
-							$menu.append(
-								"<li class='header'>" +
-									ss.i18n._t(
-										"PageSections.TreeView.AddAfterThis",
-										"Add after this element"
-									) +
-									"</li>"
-							);
 							$.each(elems, function(key, value) {
-								var $li = $("<li data-type='" + key + "'>" + value + "</li>");
-								$li.click(function() {
+								menu.addItem(key, value, function() {
 									$treeView.addItem(
 										parents.slice(0, parents.length - 1),
 										parents[parents.length - 1],
 										key,
 										$item.data("sort") + 1
 									);
-									$menu.remove();
+									menu.remove();
 								});
-								$menu.append($li);
 							});
-							$menu.show();
+							menu.show(event.pageX, event.pageY);
 						});
 
 					// Delete button action
@@ -356,52 +374,49 @@
 
 							$target = $(event.target);
 
-							var $menu = $(
-								"<ul id='treeview-menu-" +
-									name +
-									"' class='treeview-menu' data-id='" +
-									itemId +
-									"'></ul>"
-							);
-							$menu.css({
-								top: event.pageY + "px",
-								left: event.pageX + "px"
-							});
-							$(document.body).append($menu);
-
-							$menu.append(
-								"<li class='header'>" +
-									ss.i18n._t("PageSections.TreeView.Delete", "Delete") +
-									"</li>"
+							var menu = new TreeViewContextMenu();
+							menu.createDom(itemId, name);
+							menu.addLabel(
+								ss.i18n._t("PageSections.TreeView.Delete", "Delete")
 							);
 
-							var $li = $(
-								"<li data-type='__REMOVE__'>" +
-									ss.i18n._t("PageSections.TreeView.RemoveAChild", "Remove") +
-									"</li>"
+							menu.addItem(
+								"__REMOVE__",
+								ss.i18n._t("PageSections.TreeView.RemoveAChild", "Remove"),
+								function() {
+									$treeView.removeItem(parents, itemId);
+									menu.remove();
+								}
 							);
-							$li.click(function() {
-								$treeView.removeItem(parents, itemId);
-								$menu.remove();
-							});
-							$menu.append($li);
+
 							if ($target.data("used-count") < 2) {
+								menu.addItem(
+									"",
+									ss.i18n._t(
+										"PageSections.TreeView.DeleteAChild",
+										"Finally delete"
+									),
+									function() {
+										$treeView.deleteItem(parents, itemId);
+										menu.remove();
+									}
+								);
+
 								var $li = $(
 									"<li>" +
 										ss.i18n._t(
 											"PageSections.TreeView.DeleteAChild",
 											"Finally delete"
 										) +
-										"</li>"
+										"</li>",
+									function() {
+										$treeView.deleteItem(parents, itemId);
+										menu.remove();
+									}
 								);
-								$li.click(function() {
-									$treeView.deleteItem(parents, itemId);
-									$menu.remove();
-								});
-								$menu.append($li);
 							}
 
-							$menu.show();
+							menu.show(event.pageX, event.pageY);
 						});
 
 					// Attach draggable events & info
