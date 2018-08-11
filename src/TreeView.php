@@ -565,16 +565,17 @@ class TreeView extends FormField
 		$session = Controller::curr()->getRequest()->getSession();
 		$session->set($sessionId, $this->opens);
 
-		$content = '';
+		$content = '<div class="treeview-pagesections__header">';
 
 		$classes = $this->section->getAllowedPageElements();
 		$elems = [];
 		foreach ($classes as $class) {
-			$elems[$class] = $class::getSingularName();
+			$elems[$class] = singleton($class)->singular_name();
 		}
 
 		// Create the add new multi class button
 		$addNew = DropdownField::create('AddNewClass', '', $elems);
+		$addNew->addExtraClass("treeview-actions-addnew__dropdown");
 		$content .= ArrayData::create([
 			"Title" => "Add new",
 			"ClassField" => $addNew
@@ -582,8 +583,9 @@ class TreeView extends FormField
 
 		// Create the find existing button
 		$findExisting = TreeViewFormAction::create($this, 'FindExisting', 'Find existing');
-		$findExisting->addExtraClass("tree-actions-findexisting");
+		$findExisting->addExtraClass("btn font-icon-search tree-actions-findexisting");
 		$content .= $findExisting->forTemplate();
+		$content .= "</div>";
 
 		$list = $this->getItems()->sort($this->sortField)->toArray();
 

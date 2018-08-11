@@ -4,6 +4,17 @@
 
 .treeview-pagesections {}
 
+.treeview-pagesections__header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.tree-actions-findexisting {
+	margin-right: 0;
+	margin-left: auto;
+}
+
 .treeview-item {
 	position: relative;
 	box-sizing: border-box;
@@ -90,11 +101,16 @@
  */
 
 .treeview-actions-addnew {
-	display: inline-block;
+	display: flex;
+	align-items: center;
 }
 
-.treeview-actions-addnew div {
-	display: inline-block;
+.treeview-actions-addnew__dropdown {
+	flex: 1 0 200px;
+	padding-bottom: 0;
+	margin-bottom: 0;
+	margin-right: 5px;
+	border-bottom: 0;
 }
 
 /*
