@@ -34,7 +34,7 @@
 				</div>
 			</div>
 			<div class="treeview-item__preview">
-				$Item.TreeViewPreview
+				$Item.TreeViewPreview.RAW
 			</div>
 			<div class="treeview-item-actions treeview-item-actions--edit">
 				$EditButton
