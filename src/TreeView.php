@@ -265,7 +265,7 @@ class TreeView extends FormField
 			$type = $data["type"];
 	
 			$child = $type::create();
-			$child->Name = "New " . $type;
+			$child->Name = "New " . $child->singular_name();
 
 			$sort = intval($data["sort"]);
 			$sortBy = $this->getSortField();
@@ -675,25 +675,25 @@ class TreeView extends FormField
 
 		// Create a button to add a new child element
 		// and save the allowed child classes on the button
-		$classes = $item->getAllowedPageElements();
-		$elems = [];
-		foreach ($classes as $class) {
-			$elems[$class] = singleton($class)->singular_name();
+		if (count($classes)) {
+			$elems = [];
+			foreach ($classes as $class) {
+				$elems[$class] = singleton($class)->singular_name();
+			}
+			$addButton = TreeViewFormAction::create(
+				$this,
+				"AddAction".$item->ID,
+				null,
+				null,
+				null
+			);
+			$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
+			$addButton->addExtraClass("btn add-button font-icon-plus");
+			if (!count($elems)) {
+				$addButton->setDisabled(true);
+			}
+			$addButton->setButtonContent(' ');
 		}
-		$addButton = TreeViewFormAction::create(
-			$this,
-			"AddAction".$item->ID,
-			null,
-			null,
-			null
-		);
-		$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
-		$addButton->addExtraClass("add-button font-icon-plus");
-		if (!count($elems)) {
-			$addButton->setDisabled(true);
-		}
-		$addButton->setButtonContent('Add');
-
 		// Create a button to add an element after
 		// and save the allowed child classes on the button
 		$classes = count($parents) > 0 
@@ -713,11 +713,11 @@ class TreeView extends FormField
 		$addAfterButton->setAttribute("data-allowed-elements", 
 			json_encode($elems, JSON_UNESCAPED_UNICODE)
 		);
-		$addAfterButton->addExtraClass("add-after-button font-icon-plus");
+		$addAfterButton->addExtraClass("btn add-after-button font-icon-plus");
 		if (!count($elems)) {
 			$addAfterButton->setDisabled(true);
 		}
-		$addAfterButton->setButtonContent('Add after');
+		$addAfterButton->setButtonContent(' ');
 
 		// Create a button to delete and/or remove the element from the parent
 		$deleteButton = TreeViewFormAction::create(
@@ -731,7 +731,7 @@ class TreeView extends FormField
 			"data-used-count",
 			$item->Parents()->Count() + $item->getAllSectionParents()->Count()
 		);
-		$deleteButton->addExtraClass("delete-button font-icon-trash-bin");
+		$deleteButton->addExtraClass("btn delete-button font-icon-trash-bin");
 		$deleteButton->setButtonContent('Delete');
 
 		// Create a button to edit the record
@@ -742,7 +742,7 @@ class TreeView extends FormField
 			null,
 			null
 		);
-		$editButton->addExtraClass("edit-button font-icon-edit");
+		$editButton->addExtraClass("btn edit-button font-icon-edit");
 		$editButton->setButtonContent('Edit');
 
 		// Create the tree icon
@@ -759,7 +759,7 @@ class TreeView extends FormField
 			"dotreenav",
 			["element" => $item]
 		);
-		$treeButton->addExtraClass("tree-button " . ($isOpen ? "is-open" : "is-closed"));
+		$treeButton->addExtraClass("tree-button treeview-item__treeswitch__button btn " . ($isOpen ? "is-open" : "is-closed"));
 		if (!$item->Children()->Count()) {
 			$treeButton->addExtraClass(" is-end");
 			$treeButton->setDisabled(true);
@@ -776,7 +776,7 @@ class TreeView extends FormField
 			"AllowedRoot"     => $isAllowedRoot,
 			"AllowedElements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			"TreeButton"      => $treeButton,
-			"AddButton"       => $addButton,
+			"AddButton"       => isset($addButton) ? $addButton : null,
 			"AddAfterButton"  => $addAfterButton,
 			"EditButton"      => $editButton,
 			"DeleteButton"    => $deleteButton,

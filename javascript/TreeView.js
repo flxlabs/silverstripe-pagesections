@@ -32,11 +32,13 @@
 				var wH = $(window).height();
 				var eW = that.$menu.outerWidth(true);
 				var eH = that.$menu.outerHeight(true);
+				pos.left = pos.left - eW * 0.5;
+				pos.top = pos.top - eH * 0.5;
 				if (pos.left + eW > wW) {
-					pos.let = wW - eW;
+					pos.left = wW - eW - 2;
 				}
 				if (pos.top + eH > wH) {
-					pos.top = wH - eH;
+					pos.top = wH - eH - 2;
 				}
 				that.$menu.css(pos);
 			});
@@ -263,7 +265,7 @@
 
 					// Open an item button
 					$item
-						.find("> .treeview-item-flow .tree-button")
+						.find("> .treeview-item__panel > .treeview-item-flow .tree-button")
 						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -284,33 +286,37 @@
 						});
 
 					// Edit button
-					$item.find("> .treeview-item-actions .edit-button").click(function() {
-						var dialog = $("<div></div>")
-							.appendTo("body")
-							.dialog({
-								modal: false,
-								resizable: false,
-								width: $(window).width() * 0.9,
-								height: $(window).height() * 0.9,
-								close: function() {
-									$(this)
-										.dialog("destroy")
-										.remove();
-								}
-							});
+					$item
+						.find("> .treeview-item__panel > .treeview-item-flow .edit-button")
+						.click(function() {
+							var dialog = $("<div></div>")
+								.appendTo("body")
+								.dialog({
+									modal: false,
+									resizable: false,
+									width: $(window).width() * 0.9,
+									height: $(window).height() * 0.9,
+									close: function() {
+										$(this)
+											.dialog("destroy")
+											.remove();
+									}
+								});
 
-						dialog
-							.parent()
-							.addClass("view-detail-dialog")
-							.loadDialog(
-								$.get($treeView.data("url") + "/detail?ID=" + itemId)
-							);
-						dialog.data("treeview", $treeView);
-					});
+							dialog
+								.parent()
+								.addClass("view-detail-dialog")
+								.loadDialog(
+									$.get($treeView.data("url") + "/detail?ID=" + itemId)
+								);
+							dialog.data("treeview", $treeView);
+						});
 
 					// Add new item button
 					$item
-						.find("> .treeview-item-actions .add-button")
+						.find(
+							"> .treeview-item__panel > .treeview-item-actions .add-button"
+						)
 						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -334,7 +340,7 @@
 
 					// Add new after item button
 					$item
-						.find("> .treeview-item-actions .add-after-button")
+						.find("> .treeview-item__post-actions .add-after-button")
 						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -347,7 +353,7 @@
 							menu.addLabel(
 								ss.i18n._t(
 									"PageSections.TreeView.AddAfterThis",
-									"Add after this element"
+									"Add new element"
 								)
 							);
 
@@ -367,7 +373,9 @@
 
 					// Delete button action
 					$item
-						.find("> .treeview-item-actions .delete-button")
+						.find(
+							"> .treeview-item__panel > .treeview-item-flow .delete-button"
+						)
 						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
@@ -420,27 +428,37 @@
 						});
 
 					// Attach draggable events & info
-					$item.find("> .treeview-item-flow").draggable({
+					$item.find(".treeview-item-reorder__handle").draggable({
+						//cancel: ".treeview-item",
+						appendTo: "body",
 						revert: "invalid",
 						cursor: "crosshair",
 						cursorAt: {
-							top: -15,
-							left: -15
+							top: 30,
+							left: 15
 						},
 						activeClass: "state-active",
 						hoverClass: "state-active",
 						tolerance: "pointer",
 						greedy: true,
-						helper: function() {
-							var $helper = $(
-								"<div class='treeview-item__draggable'>" +
-									$item.find(".treeview-item-content__title").text() +
-									"</div>"
-							);
-							$item.css("opacity", 0.6);
 
+						helper: function(event) {
+							console.log("ev", event);
+							var $panel = $item.find("> .treeview-item__panel");
+							var $helper = $("<div class='treeview-item__dragger'/>");
+							$helper
+								.append($item.clone(false))
+								.find(".treeview-item__children")
+								.remove();
+							$helper.css({
+								width: $panel.outerWidth(true),
+								marginTop: -40,
+								marginLeft: -4
+							});
+							$panel.css("opacity", 0.6);
 							return $helper;
 						},
+
 						start: function() {
 							$(".ui-droppable").each(function() {
 								var $drop = $(this);
@@ -509,71 +527,69 @@
 							});
 						},
 						stop: function(event, ui) {
-							$(".ui-droppable").hide();
+							$(".ui-droppable").css("display", "");
 							// Show the previous elements. If the user made an invalid movement then
 							// we want this to show anyways. If he did something valid the treeview will
 							// refresh so we don't care if it's visible behind the loading icon.
-							$(".treeview-item").css("opacity", "");
+							$(".treeview-item__panel").css("opacity", "");
 						}
 					});
 
 					// Dropping targets
-					$item
-						.find("> .treeview-item-flow .treeview-item-reorder div")
-						.each(function() {
-							$(this).droppable({
-								hoverClass: "state-active",
-								tolerance: "pointer",
-								drop: function(event, ui) {
-									$drop = $(this);
-									$dropItem = $drop.closest(".treeview-item");
+					$item.find(".treeview-item-reorder .droppable").each(function() {
+						$(this).droppable({
+							hoverClass: "state-active",
+							tolerance: "pointer",
+							drop: function(event, ui) {
+								$drop = $(this);
+								$dropItem = $drop.closest(".treeview-item");
 
-									$oldItem = ui.draggable.closest(".treeview-item");
-									var oldId = $oldItem.data("id");
-									var oldParents = $oldItem.data("tree");
+								$oldItem = ui.draggable.closest(".treeview-item");
+								var oldId = $oldItem.data("id");
+								var oldParents = $oldItem.data("tree");
 
-									var type = "child";
-									var sort = 100000;
+								var type = "child";
+								var sort = 100000;
 
-									if ($drop.hasClass("before")) {
-										type = "before";
-										sort = $dropItem.data("sort") - 1;
-									} else if ($drop.hasClass("after")) {
-										type = "after";
-										sort = $dropItem.data("sort") + 1;
-									}
-
-									var newParent =
-										type === "child"
-											? itemId
-											: parents.length > 0
-												? parents[parents.length - 1]
-												: "";
-
-									$treeView.reload({
-										url: url + "/move",
-										data: [
-											{
-												name: "parents",
-												value: oldParents
-											},
-											{
-												name: "itemId",
-												value: oldId
-											},
-											{
-												name: "newParent",
-												value: newParent
-											},
-											{
-												name: "sort",
-												value: sort
-											}
-										]
-									});
+								if ($drop.hasClass("before")) {
+									type = "before";
+									sort = $dropItem.data("sort") - 1;
+								} else if ($drop.hasClass("after")) {
+									type = "after";
+									sort = $dropItem.data("sort") + 1;
 								}
-							});
+
+								var newParent =
+									type === "child"
+										? itemId
+										: parents.length > 0
+											? parents[parents.length - 1]
+											: "";
+
+								$treeView.reload({
+									url: url + "/move",
+									data: [
+										{
+											name: "parents",
+											value: oldParents
+										},
+										{
+											name: "itemId",
+											value: oldId
+										},
+										{
+											name: "newParent",
+											value: newParent
+										},
+										{
+											name: "sort",
+											value: sort
+										}
+									]
+								});
+							}
 						});
+					});
 				});
 			},
 			// This is copy paste from SilverStripe GridField.js, modified to work for the TreeView

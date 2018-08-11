@@ -15,32 +15,99 @@
 	margin-left: auto;
 }
 
-.treeview-item {
+.treeview-item__panel {
 	position: relative;
 	box-sizing: border-box;
-	border: 1px solid black;
+	background: #fff;
+	border-radius: 4px;
+	border: 1px solid #C1CADA;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: space-between;
+	min-height: 95px;
+}
+
+.treeview-item:first-child {
+	margin-top: 0;
+}
+
+.treeview-item:last-child {
+	margin-bottome: 0;
 }
 
 .treeview-item-flow {
-	display: flex;
-	justify-content: flex-start;
-	align-items: stretch;
-}
-
-.treeview-item-children {
-	padding-left: 2em;
-}
-
-.treeview-item-content {
+	flex: 1 1 auto;
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: flex-start;
-	align-items: flex-start;
-	padding-top: 0.5em;
+	align-items: stretch;
+	padding: 8px 0;
 }
 
-.treeview-item-content__text {
-	margin-left: 1em;
+.treeview-item__treeswitch {
+	flex: 0 0 30px;
+}
+
+.treeview-item__treeswitch__button {
+	width: 100%;
+	height: 30px;
+	margin: 0;
+	margin-top: -7px;
+	padding: 0;
+	font-size: 114%;
+	padding-left: 5px;
+	box-sizing: border-box;
+	background: transparent;
+}
+
+.treeview-item__treeswitch__button.is-end {
+	opacity: 0;
+}
+
+/*
+.treeview-item__treeswitch__button:hover {
+	color: #005489;
+	border-color: #005489;
+}
+.treeview-item__treeswitch__button:before {
+	position: absolute;
+	left: -0.08em;
+	top: -0.08em;
+	font-size: 90%;
+}
+*/
+.treeview-item__treeswitch__button .btn__title {
+	display: none;
+}
+
+.treeview-item__preview {
+	margin-right: auto;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.treeview-item__children {
+	padding-left: 30px;
+	padding-right: 5px;
+	border-bottom: 1px solid #fff;
+}
+
+.treeview-item-content {
+	flex: 0 0 300px;
+	border-right: 1px solid #C1CADA;
+	padding-right: 5px;
+}
+
+.treeview-item .treeview-item .treeview-item-content {
+	flex: 0 1 270px;
+}
+
+.treeview-item .treeview-item .treeview-item .treeview-item-content {
+	flex: 0 1 240px;
+}
+
+.treeview-item .treeview-item .treeview-item .treeview-item  .treeview-item-content {
+	flex: 0 1 210px;
 }
 
 .treeview-item-content__classname {
@@ -48,52 +115,43 @@
 }
 
 .treeview-item-content__title {
+	font-size: 18px;
 	font-weight: bold;
 }
 
-.treeview-item .treeview-item-actions {
-	background: #ccc;
+.treeview-item-actions {
+	display: flex;
 }
 
-.treeview-item .tree-button {
-	appearance: none;
-	background: transparent;
-	border: 2px solid #43536d;
-	color: #43536d;
-	border-radius: 0.5em;
-	width: 1em;
-	height: 1em;
-	padding: 0;
-	margin: 0.25em 0 0 0;
-	box-sizing: border-box;
-	display: block;
-	position: relative;
-	cursor: pointer;
-	font-size: 114%;
-}
-
-.treeview-item .tree-button.is-end {
-	opacity: 0;
-}
-
-.treeview-item .tree-button:hover {
-	color: #005489;
-	border-color: #005489;
-}
-
-.treeview-item .tree-button:before {
+.treeview-item-actions--edit {
 	position: absolute;
-	left: -0.08em;
-	top: -0.08em;
-	font-size: 90%;
+	top: 0;
+	right: 0;
+	display: none;
+	background: #fff;
 }
 
-.treeview-item .tree-button .btn__title {
+.treeview-item-flow:hover .treeview-item-actions--edit {
+	display: block;
+}
+
+.treeview-item-actions--pre {
+	background: transparent;
+	padding-left: 26px;
+}
+
+.treeview-item-actions--pre .btn[disabled] {
 	display: none;
 }
 
-.treeview-item-fill {
-	flex: 1;
+.treeview-item-actions .btn, .treeview-item .treeview-item__post-actions .btn {
+	padding-left: 0;
+	background: transparent;
+	color: #43536d;
+}
+
+.treeview-item-actions .edit-button {
+	margin-left: auto;
 }
 
 /*
@@ -105,12 +163,24 @@
 	align-items: center;
 }
 
+.treeview-actions-addnew .form-group::after {
+	content: none;
+}
+
 .treeview-actions-addnew__dropdown {
 	flex: 1 0 200px;
 	padding-bottom: 0;
-	margin-bottom: 0;
-	margin-right: 5px;
 	border-bottom: 0;
+	margin: 0 5px 0 0;
+}
+
+@media(min-width: 992px) {
+	.treeview-actions-addnew__dropdown .form__field-holder {
+		margin-left: 0 !important;
+		margin-right: 5px !important;
+		flex: 1 1 auto !important;
+		max-width: none !important;
+	}
 }
 
 /*
@@ -161,41 +231,58 @@
  * Orderable rows
  */
 
-.treeview-item__draggable {
-	z-index: 300;
-	background: #f6f7f8;
-	padding: 2px 4px;
-	border-radius: 2px;
-	box-shadow: 0 0 1px #ccc;
+.treeview-item__dragger {
+	z-index: 3000;
+}
+
+.treeview-item__dragger .treeview-item-actions,
+.treeview-item__dragger .treeview-item-reorder .droppable,
+.treeview-item__dragger .treeview-item__post-actions {
+	display: none !important;
 }
 
 .treeview-item__draggable.state-active {
 	border: 1px solid #417505;
 }
 
-.treeview-item__draggable:before {
-	position: absolute;
-	content: '';
-	left: -19px;
-	top: -19px;
-	width: 8px;
-	height: 8px;
-	border: 3px solid #4a4a4a;
-	border-radius: 50%;
-	box-sizing: border-box;
-}
-
 .treeview-item-reorder {
 	position: absolute;
-	height: 100%;
+	z-index: 200;
+	bottom: -5px;
+	top: -5px;
+	left: 0;
+	right: 0;
+	pointer-events: none;
+}
+
+.treeview-item-reorder__handle {
+	pointer-events: all;
+	width: 30px;
+	height: 38px;
+	position: absolute;
+	top: 50%;
+	margin-top: -19px;
+	font-size: 30px;
+	cursor: pointer;
 }
 
 .treeview-item-reorder .ui-droppable {
 	position: absolute;
-	left: 100%;
-	width: 2em;
+	left: 0;
+	right: 0;
 	z-index: 100;
 	display: none;
+}
+
+.treeview-item-reorder .ui-droppable:before {
+	content: "";
+	position: absolute;
+	left: -4px;
+	top: -2px;
+	right: -4px;
+	bottom: -2px;
+	border-radius: 5px;
+	border: 1px dashed transparent;
 }
 
 .treeview-item-reorder .ui-droppable svg {
@@ -206,40 +293,44 @@
 	transform: translate(0, -50%);
 }
 
+.treeview-item-reorder .ui-droppable:not(.middle) svg {
+	transform: translate(30px, -50%);
+}
+
 .treeview-item-reorder .ui-droppable svg path {
 	fill: #a8cb7f;
 }
 
-.treeview-item-reorder .ui-droppable.before {
-	top: 0;
-	height: 33%;
-}
-
-.treeview-item-reorder .ui-droppable.before svg {
-	top: 0;
-}
-
 .treeview-item-reorder .ui-droppable.middle {
-	top: 33%;
-	bottom: 33%;
+	top: 0;
+	bottom: 0;
+	left: -15px;
 }
 
-.treeview-item-reorder .ui-droppable.middle svg {}
+.treeview-item-reorder .ui-droppable.middle svg {
+	transform: translate(0, -50%) scale(-1, 1)
+}
+
+.treeview-item-reorder .ui-droppable.before {
+	z-index: 1;
+	bottom: 100%;
+	height: 24px;
+}
 
 .treeview-item-reorder .ui-droppable.after {
-	bottom: -1px;
-	height: 33%;
-}
-
-.treeview-item-reorder .ui-droppable.after svg {
+	z-index: 1;
 	top: 100%;
-	margin-top: -1px;
+	height: 24px;
 }
 
 .treeview-item-reorder .ui-droppable.state-active {
 	z-index: 200;
 }
 
+.treeview-item-reorder .ui-droppable.state-active:before {
+	border-color: #417505;
+}
+
 .treeview-item-reorder .ui-droppable.state-active svg path {
-	fill: #417505;
+	fill: #008A00;
 }
