@@ -267,7 +267,7 @@ class TreeView extends FormField
 			$child = $type::create();
 			$child->Name = "New " . $child->singular_name();
 
-			$sort = intval($data["sort"]);
+			$sort = isset($data["sort"]) ? intval($data["sort"]) : 0;
 			$sortBy = $this->getSortField();
 			$sortArr = [$sortBy => $sort];
 
