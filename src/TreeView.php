@@ -19,6 +19,7 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\View\HTML;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\ViewableData;
+use SilverStripe\View\SSViewer;
 
 /**
  * Class TreeView
@@ -463,7 +464,9 @@ class TreeView extends FormField
 			'type' => 'Includes',
 			'SilverStripe\\Admin\\LeftAndMain_EditForm',
 		]);
-		$form->addExtraClass('view-detail-form cms-content cms-edit-form center fill-height flexbox-area-grow');
+		$form->addExtraClass(
+			'view-detail-form cms-content cms-edit-form center fill-height flexbox-area-grow'
+		);
 		if ($form->Fields()->hasTabSet()) {
 			$form->Fields()->findOrMakeTab('Root')->setTemplate('SilverStripe\\Forms\\CMSTabSet');
 			$form->addExtraClass('cms-tabset');
@@ -479,6 +482,11 @@ class TreeView extends FormField
 	 */
 	public function detail($request) {
 		$id = intval($request->requestVar("ID"));
+		if ($id) {
+			$request->getSession()->set("ElementID", $id);
+		} else {
+			$id = $request->getSession()->get("ElementID");
+		}
 
 		// This is a request to show the form so we return it as a template so 
 		// that SilverStripe doesn't think this is already a submission 
@@ -490,15 +498,30 @@ class TreeView extends FormField
 			}
 			$form = $this->DetailForm($item);
 			// Save the id of the page element on this form's security token
-			$request->getSession()->set("_tv_df_" . $form->getSecurityToken()->getValue(), $id);
-			return $form->forAjaxTemplate();
+			//$request->getSession()->set("_tv_df_" . $form->getSecurityToken()->getValue(), $id);
+			return $form->forTemplate();
 		}
 
 		// If it's a POST request then it's a submission and we have to get the ID
 		// from the session using the form's security token.
-		$id = $request->getSession()->get("_tv_df_" . $request->requestVar("SecurityID"));
+		//$id = $request->getSession()->get("_tv_df_" . $request->requestVar("SecurityID"));
 		$item = PageElement::get()->byID($id);
 		return $this->DetailForm($item, false);
+	}
+
+	public function handleRequest(HTTPRequest $request) {
+		$this->setRequest($request);
+
+		// Forward requests to the elements in the detail form to their respective controller
+		if ($request->match('detail/$ID!')) {
+			$id = $request->getSession()->get("ElementID");
+			$item = PageElement::get()->byID($id);
+			$form = $this->DetailForm($item);
+			$request->shift(1);
+			return $form->getRequestHandler()->handleRequest($request);
+		}
+
+		return parent::handleRequest($request);
 	}
 
 	/**
