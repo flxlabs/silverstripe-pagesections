@@ -290,7 +290,6 @@
 				$treeView
 					.find("> .treeview-pagesections__header > .treeview-item-actions .add-button")
 					.click(function (event) {
-						console.log("click");
 						event.preventDefault();
 						event.stopImmediatePropagation();
 
@@ -507,7 +506,14 @@
 								marginTop: -40,
 								marginLeft: -4
 							});
-							$panel.css("opacity", 0.6);
+							//$panel.css("opacity", 0.6);
+							//$panel.hide();
+							$panel.css({
+								overflow: "hidden",
+								height: 0,
+								minHeight: 0,
+								border: 'none'
+							});
 							return $helper;
 						},
 
@@ -598,7 +604,13 @@
 							// Show the previous elements. If the user made an invalid movement then
 							// we want this to show anyways. If he did something valid the treeview will
 							// refresh so we don't care if it's visible behind the loading icon.
-							$(".treeview-item__panel").css("opacity", "");
+							//$(".treeview-item__panel").show();
+							$(".treeview-item__panel").css({
+								overflow: "",
+								height: "",
+								minHeight: "",
+								border: ""
+							});
 						}
 					});
 
