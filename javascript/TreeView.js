@@ -263,19 +263,6 @@
 				var name = $treeView.data("name");
 				var url = $treeView.data("url");
 
-				// Setup add new button
-				$treeView
-					.find(".treeview-actions-addnew .tree-button")
-					.click(function () {
-						$treeView.reload({
-							url: url + "/add",
-							data: [{
-								name: "type",
-								value: $("#AddNewClass").val()
-							}]
-						});
-					});
-
 				// Setup find existing button
 				$treeView.find("button[name=action_FindExisting]").click(function () {
 					var dialog = $("<div></div>")
@@ -298,6 +285,31 @@
 						.loadDialog($.get($treeView.data("url") + "/search"));
 					dialog.data("treeview", $treeView);
 				});
+
+				// Add new button at the very top
+				$treeView
+					.find("> .treeview-pagesections__header > .treeview-item-actions .add-button")
+					.click(function (event) {
+						console.log("click");
+						event.preventDefault();
+						event.stopImmediatePropagation();
+
+						$target = $(event.target);
+						var elems = $target.data("allowed-elements");
+
+						var menu = new TreeViewContextMenu();
+						menu.createDom(null, name);
+						menu.addLabel(
+							ss.i18n._t("PageSections.TreeView.AddAChild", "Add a child")
+						);
+						$.each(elems, function (key, value) {
+							menu.addItem(key, value, function () {
+								$treeView.addItem([], null, key, 1);
+								menu.remove();
+							});
+						});
+						menu.show(event.pageX, event.pageY);
+					});
 
 				// Process items
 				$treeView.find(".treeview-item").each(function () {
@@ -372,7 +384,7 @@
 							);
 							$.each(elems, function (key, value) {
 								menu.addItem(key, value, function () {
-									$treeView.addItem(parents, itemId, key);
+									$treeView.addItem(parents, itemId, key, 1);
 									menu.remove();
 								});
 							});

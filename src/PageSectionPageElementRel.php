@@ -23,7 +23,7 @@ class PageSectionPageElementRel extends DataObject
 		parent::onBeforeWrite();
 
 		if (!$this->ID) {
-			if (!$this->SortOrder) {
+			if (!$this->SortOrder && $this->SortOrder !== 0) {
 				// Add new elements at the end (highest SortOrder)
 				$this->SortOrder = ($this->PageSection()->Elements()->Count() + 1) * 2;
 			}

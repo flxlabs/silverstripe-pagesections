@@ -289,6 +289,7 @@ class TreeView extends FormField
 	
 				$child->write();
 				$item->Children()->Add($child, $sortArr);
+				$item->write();
 	
 				// Make sure we can see the child
 				$this->openItem(array_merge($path, [$item->ID]));
@@ -596,12 +597,22 @@ class TreeView extends FormField
 			$elems[$class] = singleton($class)->singular_name();
 		}
 
-		// Create the add new multi class button
-		$addNew = DropdownField::create('AddNewClass', '', $elems);
-		$addNew->addExtraClass("treeview-actions-addnew__dropdown");
+		// Create the add new button at the very top
+		$addButton = TreeViewFormAction::create(
+			$this,
+			"AddActionBase",
+			null,
+			null,
+			null
+		);
+		$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
+		$addButton->addExtraClass("btn add-button font-icon-plus");
+		if (!count($elems)) {
+			$addButton->setDisabled(true);
+		}
+		$addButton->setButtonContent(' ');
 		$content .= ArrayData::create([
-			"Title" => "Add new",
-			"ClassField" => $addNew
+			"Button" => $addButton
 		])->renderWith("\FLXLabs\PageSections\TreeViewAddNewButton");
 
 		// Create the find existing button

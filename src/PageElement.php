@@ -86,12 +86,6 @@ class PageElement extends DataObject
 		"PageSections" => PageSection::class . ".Elements",
 	];
 
-	private static $many_many_extraFields = [
-		"Children" => [
-			"SortOrder" => 'Int',
-		],
-	];
-
 	private static $owns = [
 		"Children",
 	];
