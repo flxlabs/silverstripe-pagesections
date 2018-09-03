@@ -87,26 +87,33 @@ class PageSectionsExtension extends DataExtension
 		return $sections;
 	}
 
-	public function onBeforeWrite()
+	public function onAfterWrite()
 	{
-		parent::onBeforeWrite();
+		parent::onAfterWrite();
 
-		if ($this->owner->ID) {
+		if ($this->owner->ID && !$this->owner->__rewrite) {
 			$sections = $this->getPageSectionNames();
 
+			$new = false;
 			foreach ($sections as $sectionName) {
-				$name = "PageSection".$sectionName;
+				$name = "PageSection".$sectionName."ID";
 
 				// Create a page section if we don't have one yet
-				if (!$this->owner->$name()->ID) {
+				if (!$this->owner->$name) {
 					$section = PageSection::create();
 					$section->__Name = $sectionName;
 					$section->__ParentID = $this->owner->ID;
 					$section->__ParentClass = $this->owner->ClassName;
 					$section->__isNew = true;
 					$section->write();
-					$this->owner->$name = $section;
+					$this->owner->$name = $section->ID;
+					$new = true;
 				}
+			}
+
+			if ($new) {
+				$this->owner->__rewrite = true;
+				$this->owner->write();
 			}
 		}
 	}
