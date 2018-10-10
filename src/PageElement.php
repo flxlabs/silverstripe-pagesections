@@ -131,6 +131,12 @@ class PageElement extends DataObject
 	{
 		parent::onBeforeWrite();
 
+		// If a  field changed then update the counter, unless it's the counter that changed
+		$changed = $this->getChangedFields(true, DataObject::CHANGE_VALUE);
+		if (count($changed) > 0 && (!isset($changed["__Counter"]) || $changed["__Counter"]["level"] <= 1)) {
+			$this->__Counter++;
+		}
+
 		$elems = $this->Children()->Sort("SortOrder")->Column("ID");
 		$count = count($elems);
 		for ($i = 0; $i < $count; $i++) {
