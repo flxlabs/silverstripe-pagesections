@@ -62,7 +62,7 @@ class PageSection extends DataObject
 	{
 		parent::onAfterWrite();
 
-		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT) {
+		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
 			$this->Parent()->__PageSectionCounter++;
 			$this->Parent()->write();
 		}

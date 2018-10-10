@@ -142,10 +142,15 @@ class PageElement extends DataObject
 	{
 		parent::onAfterWrite();
 
-		if (Versioned::get_stage() == Versioned::DRAFT) {
+		if (Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
 			foreach ($this->PageSections() as $section) {
 				$section->__Counter++;
 				$section->write();
+			}
+
+			foreach ($this->Parents() as $parent) {
+				$parent->__Counter++;
+				$parent->write();
 			}
 		}
 	}
