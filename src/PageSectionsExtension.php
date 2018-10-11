@@ -167,12 +167,21 @@ class PageSectionsExtension extends DataExtension
 			$section = $this->owner->$name();
 			// If we have a page section we're good
 			if ($section && $section->ID) {
+				if ($section->__ParentClass != $this->owner->ClassName || $section->__ParentID != $this->owner->ID) {
+					$section->__ParentClass = $this->owner->ClassName;
+					$section->__ParentID = $this->owner->ID;
+					$section->write();
+				}
 				return $section;
 			}
 
 			// Try restoring the section from the history
 			$archived = Versioned::get_latest_version(PageSection::class, $this->owner->{$name . "ID"});
 			if ($archived && $archived->ID) {
+				// Update the back references
+				$archived->__ParentClass = $this->owner->ClassName;
+				$archived->__ParentID = $this->owner->ID;
+				// Save a copy in draft
 				$id = $archived->writeToStage(Versioned::DRAFT, true);
 				return DataObject::get_by_id(PageSection::class, $id, false);
 			}
