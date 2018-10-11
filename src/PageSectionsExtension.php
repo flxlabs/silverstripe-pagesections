@@ -11,6 +11,7 @@ use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\SiteTree;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\FieldType\DBField;
@@ -130,9 +131,55 @@ class PageSectionsExtension extends DataExtension
 			$fields->removeByName($name . "ID");
 
 			if ($this->owner->ID) {
-				$tv = new TreeView($name, $section, $this->owner->$name());
+				$tv = new TreeView($name, $section, $this->owner->$name);
 				$fields->addFieldToTab("Root.PageSections.{$section}", $tv);
 			}
+		}
+	}
+
+	// Add a get method for each page section to the owner
+	public function allMethodNames($custom = false)
+	{
+		$arr = [
+			"getAllowedPageElements",
+			"getPageSectionNames",
+			"onAfterWrite",
+			"updateCMSFields",
+			"allMethodNames",
+			"RenderPageSection",
+			"getPublishState"
+		];
+
+		$sections = $this->getPageSectionNames();
+		foreach ($sections as $section) {
+			$arr[] = "PageSection" . $section;
+			$arr[] = "getPageSection" . $section;
+		}
+
+		return $arr;
+	}
+
+	public function __call($method, $arguments)
+	{
+		// Check if we're trying to get a page section
+		if (mb_strpos($method, "getPageSection") === 0) {
+			$name = mb_substr($method, 3);
+			$section = $this->owner->$name();
+			// If we have a page section we're good
+			if ($section && $section->ID) {
+				return $section;
+			}
+
+			// Try restoring the section from the history
+			$archived = Versioned::get_latest_version(PageSection::class, $this->owner->{$name . "ID"});
+			if ($archived && $archived->ID) {
+				$id = $archived->writeToStage(Versioned::DRAFT, true);
+				return DataObject::get_by_id(PageSection::class, $id, false);
+			}
+
+			throw new \Error("Could not restore PageSection");
+		} else {
+			throw new \Error("Unknown method $method on PageSectionsExtension");
 		}
 	}
 
