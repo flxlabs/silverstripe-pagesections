@@ -27,7 +27,7 @@ class PageSectionsExtension extends DataExtension
 	{
 		$has_one = [];
 		$owns = [];
-		$cascade_deletes = [];
+		$cascades = [];
 
 		// Get all the sections that should be added
 		$sections = Config::inst()->get($class, "page_sections", Config::EXCLUDE_EXTRA_SOURCES);
@@ -40,7 +40,7 @@ class PageSectionsExtension extends DataExtension
 			$has_one[$name] = PageSection::class;
 
 			$owns[] = $name;
-			$cascade_deletes[] = $name;
+			$cascades[] = $name;
 
 			// Add the inverse relation to the PageElement class
 			/*Config::inst()->update(PageElement::class, "versioned_belongs_many_many", array(
@@ -53,7 +53,8 @@ class PageSectionsExtension extends DataExtension
 			"db" => ["__PageSectionCounter" => "Int"],
 			"has_one" => $has_one,
 			"owns" => $owns,
-			"cascade_deletes" => $cascade_deletes,
+			"cascade_deletes" => $cascades,
+			"cascade_duplicates" => $cascades,
 		];
 	}
 
