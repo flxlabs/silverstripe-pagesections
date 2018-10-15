@@ -227,6 +227,12 @@ class PageSectionsExtension extends DataExtension
 	 */
 	public function getPublishState()
 	{
-		return DBField::create_field("HTMLText", $this->owner->latestPublished() ? "Published" : "Draft");
+		$stage = "Draft";
+		if ($this->owner->isPublished()) {
+			$stage = "Published";
+		} else if ($this->owner->isArchived()) {
+			$stage = "Archived";
+		}
+		return DBField::create_field("HTMLText", $stage);
 	}
 }

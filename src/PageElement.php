@@ -197,8 +197,12 @@ class PageElement extends DataObject
 		foreach ($this->PageSections() as $section) {
 			$p = $section->Parent();
 			if (!$p || !$p->ID) {
-				// If our parent doesn't have an ID it's probably deleted/archived, so we just don't list it.
-				// TODO: Improve this to list the parent as "archived"
+				// If our parent doesn't have an ID it's probably deleted/archived.
+				$p = $archived = Versioned::get_latest_version($section->__ParentClass, $section->__ParentID);
+				$p->__PageSection = $section;
+				$p->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
+				$p->__PageElementPublishedVersion = "Not published";
+				$parents->add($p);
 				continue;
 			}
 
