@@ -105,6 +105,16 @@ class PageSectionsExtension extends DataExtension
 		}
 	}
 
+	public function onBeforeArchive()
+	{
+		$sections = $this->getPageSectionNames();
+
+		foreach ($sections as $sectionName) {
+			$name = "PageSection".$sectionName;
+			$this->owner->{$name . "ID"} = 0;
+		}
+	}
+
 	public function updateCMSFields(FieldList $fields) {
 		$sections = $this->getPageSectionNames();
 
