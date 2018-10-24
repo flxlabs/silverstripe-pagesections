@@ -91,7 +91,7 @@ class PageSectionsExtension extends DataExtension
 	{
 		parent::onAfterWrite();
 
-		if ($this->owner->ID && !$this->owner->__archived) {
+		if ($this->owner->ID) {
 			$sections = $this->getPageSectionNames();
 
 			foreach ($sections as $sectionName) {
@@ -109,7 +109,6 @@ class PageSectionsExtension extends DataExtension
 	{
 		$sections = $this->getPageSectionNames();
 
-		$this->owner->__archived = true;
 		foreach ($sections as $sectionName) {
 			$name = "PageSection".$sectionName;
 			$this->owner->{$name . "ID"} = 0;
@@ -174,6 +173,11 @@ class PageSectionsExtension extends DataExtension
 					$section->write();
 				}
 				return $section;
+			}
+
+			// Fix for archived errors
+			if ($this->owner->isArchived()) {
+				return new PageSection();
 			}
 
 			return $this->restoreOrCreate($sectionName);
