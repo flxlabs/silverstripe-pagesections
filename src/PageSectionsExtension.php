@@ -91,7 +91,7 @@ class PageSectionsExtension extends DataExtension
 	{
 		parent::onAfterWrite();
 
-		if ($this->owner->ID && !$this->owner->__rewrite) {
+		if ($this->owner->ID && !$this->owner->__archived) {
 			$sections = $this->getPageSectionNames();
 
 			foreach ($sections as $sectionName) {
@@ -109,6 +109,7 @@ class PageSectionsExtension extends DataExtension
 	{
 		$sections = $this->getPageSectionNames();
 
+		$this->owner->__archived = true;
 		foreach ($sections as $sectionName) {
 			$name = "PageSection".$sectionName;
 			$this->owner->{$name . "ID"} = 0;
