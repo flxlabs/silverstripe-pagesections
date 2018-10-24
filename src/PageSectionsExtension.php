@@ -120,15 +120,15 @@ class PageSectionsExtension extends DataExtension
 
 		$fields->removeByName("__PageSectionCounter");
 
-		foreach ($sections as $section) {
-			$name = "PageSection".$section;
+		foreach ($sections as $sectionName) {
+			$name = "PageSection".$sectionName;
 
 			$fields->removeByName($name);
 			$fields->removeByName($name . "ID");
 
 			if ($this->owner->ID) {
-				$tv = new TreeView($name, $section, $this->owner->$name);
-				$fields->addFieldToTab("Root.PageSections.{$section}", $tv);
+				$tv = new TreeView($name, $sectionName, $this->owner->$name);
+				$fields->addFieldToTab("Root.PageSections.{$sectionName}", $tv);
 			}
 		}
 	}
@@ -162,6 +162,7 @@ class PageSectionsExtension extends DataExtension
 		// Check if we're trying to get a page section
 		if (mb_strpos($method, "getPageSection") === 0) {
 			$name = mb_substr($method, 3);
+			$sectionName = mb_substr($name, 11);
 			$section = $this->owner->$name();
 
 			// If we have a page section we're good
@@ -174,13 +175,17 @@ class PageSectionsExtension extends DataExtension
 				return $section;
 			}
 
-			return $this->restoreOrCreate($name);
+			return $this->restoreOrCreate($sectionName);
 		} else {
 			throw new \Error("Unknown method $method on PageSectionsExtension");
 		}
 	}
 
 	private function restoreOrCreate($sectionName) {
+		if (mb_strpos($sectionName, "PageSection") !== false) {
+			throw new \Error("PageSection name should not contain 'PageSection' when restoring or creating!");
+		}
+
 		$name = "PageSection" . $sectionName;
 
 		// Try restoring the section from the history
