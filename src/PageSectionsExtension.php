@@ -180,7 +180,9 @@ class PageSectionsExtension extends DataExtension
 		}
 	}
 
-	private function restoreOrCreate($name) {
+	private function restoreOrCreate($sectionName) {
+		$name = "PageSection" . $sectionName;
+
 		// Try restoring the section from the history
 		$archived = Versioned::get_latest_version(PageSection::class, $this->owner->{$name . "ID"});
 		if ($archived && $archived->ID) {
@@ -196,11 +198,12 @@ class PageSectionsExtension extends DataExtension
 			return DataObject::get_by_id(PageSection::class, $id, false);
 		} else {
 			$section = PageSection::create();
-			$section->__Name = $name;
+			$section->__Name = $sectionName;
 			$section->__ParentID = $this->owner->ID;
 			$section->__ParentClass = $this->owner->ClassName;
 			$section->__isNew = true;
 			$section->write();
+
 			$this->owner->{$name . "ID"} = $section->ID;
 			$this->owner->write();
 
