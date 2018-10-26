@@ -19,8 +19,7 @@
   }],
   "require": {
     "silverstripe/framework": "^4.0.1",
-    "symbiote/silverstripe-gridfieldextensions": "^3",
-    "unclecheese/betterbuttons": "dev-feature/ss4-upgrade"
+    "symbiote/silverstripe-gridfieldextensions": "^3"
   },
   "extra": {
     "installer-name": "pagesections",

@@ -59,7 +59,7 @@ class PageElement extends DataObject
 	}
 	public function canDelete($member = null)
 	{
-		return true;
+		return false;
 	}
 	public function canCreate($member = null, $context = [])
 	{
