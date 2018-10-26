@@ -22,10 +22,6 @@ use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
-use UncleCheese\BetterButtons\Actions\PrevNext;
-use UncleCheese\BetterButtons\Actions\CustomAction;
-use UncleCheese\BetterButtons\Buttons\Save;
-use UncleCheese\BetterButtons\Buttons\SaveAndClose;
 use SilverStripe\Forms\Tab;
 
 class PageElement extends DataObject
@@ -103,10 +99,6 @@ class PageElement extends DataObject
 		"Name",
 		"ID",
 	];
-
-	private static $better_buttons_actions = array (
-		'publishOnAllSectionParents',
-	);
 
 	// Returns all page element classes, without the base class
 	public static function getAllPageElementClasses()
@@ -325,30 +317,5 @@ class PageElement extends DataObject
 	public function replaceDefaultButtons()
 	{
 		return true;
-	}
-
-	public function getBetterButtonsUtils()
-	{
-		$fieldList = FieldList::create([
-			PrevNext::create(),
-		]);
-		return $fieldList;
-	}
-
-	public function getBetterButtonsActions()
-	{
-		$actions = FieldList::create([
-			SaveAndClose::create(),
-			CustomAction::create('publishOnAllSectionParents', 'Publish everywhere')
-				->setRedirectType(CustomAction::REFRESH)
-		]);
-		return $actions;
-	}
-
-	public function publishOnAllSectionParents() {
-		foreach ($this->getAllSectionParents() as $parent) {
-			$parent->publish(Versioned::get_stage(), Versioned::LIVE);
-		}
-		return 'Published on all section parents';
 	}
 }
