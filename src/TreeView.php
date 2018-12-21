@@ -53,11 +53,18 @@ class TreeView extends FormField
 		$this->section = $section;
 		$this->context = singleton(PageElement::class)->getDefaultSearchContext();
 
-		// Open default elements
-		$this->opens = new \stdClass();
-		foreach ($this->getItems() as $item) {
-			$this->openRecursive($item);
+		if ($section) {
+			// Open default elements
+			$this->opens = new \stdClass();
+			foreach ($this->getItems() as $item) {
+				$this->openRecursive($item);
+			}
 		}
+	}
+
+	public function setValue($value, $data = null) {
+		$this->section = $value;
+		return $this;
 	}
 
 	/**
@@ -874,3 +881,5 @@ class TreeView extends FormField
 		unset($opens->{$path[count($path) - 1]});
 	}
 }
+
+class TreeView_Readonly extends TreeView {}
