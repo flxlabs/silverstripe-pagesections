@@ -141,14 +141,16 @@ class PageElement extends DataObject
 	}
 
 	/** 
-	 * Gets all parents that this PageElement is rendered on. 
+	 * Gets all places that this PageElement is shown in.
 	 * 
-	 * Adds the following properties to each parent: 
-	 *   __PageSection: The PageSection on the parent that the PageElement is from.
+	 * Returns a list of objects with the following properties:
+	 *   Parent: The name and class name of the root parent object.
+	 *   Section: The name of the section on the root object where this element is shown.
+	 *   Path: The names of the parent PageElements that lead to this element.
 	 * @return \DataObject[] 
 	 */
-	public function getAllSectionParents() {
-		$parents = ArrayList::create();
+	public function getAllUses() {
+		$uses = ArrayList::create();
 
 		foreach ($this->PageSections() as $section) {
 			$p = $section->Parent();
@@ -156,7 +158,7 @@ class PageElement extends DataObject
 				continue;
 			}
 
-			$parents->add(DataObject::create([
+			$uses->add(DataObject::create([
 				"Parent" => $p->Title . " (" . $p->ClassName . ")",
 				"Section" => $section->__Name,
 				"Path" => "",
@@ -164,26 +166,13 @@ class PageElement extends DataObject
 		}
 
 		foreach ($this->Parents() as $parent) {
-			foreach ($parent->getAllSectionParents() as $p) {
-				$p->Path = $p->Path . " -> " . $parent->Name;
-				$parents->add($p);
+			foreach ($parent->getAllUses() as $use) {
+				$use->Path = $use->Path . " -> " . $parent->Name;
+				$uses->add($use);
 			}
 		}
 
-		return $parents;
-	}
-
-	/**
-	 * Recursively gets all the parents of this element, in no particular order.
-	 * @return \FLXLabs\PageSections\PageElement[]
-	 */
-	public function getAllParents()
-	{
-		$parents = ArrayList::create($this->Parents()->toList());
-		foreach ($this->Parents() as $parent) {
-			$parents->merge($parent->getAllParents());
-		}
-		return $parents;
+		return $uses;
 	}
 
 	public function getCMSFields()
@@ -203,10 +192,10 @@ class PageElement extends DataObject
 			"Title"
 		);
 
-		// Create an array of all the sections this element is on
-		$parents = $this->getAllSectionParents();
+		// Create an array of all places this PageElement is shown
+		$uses = $this->getAllUses();
 
-		if ($parents->Count() > 0) {
+		if ($uses->Count() > 0) {
 			$config = GridFieldConfig_Base::create()
 				->removeComponentsByType(GridFieldDataColumns::class)
 				->addComponent($dataColumns = new GridFieldDataColumns());
@@ -215,8 +204,8 @@ class PageElement extends DataObject
 				"Section" => "Section",
 				"Path" => "Path",
 			]);
-			$gridField = GridField::create("Pages", "Section Parents", $parents, $config);
-			$fields->addFieldToTab("Root.SectionParents", $gridField);
+			$gridField = GridField::create("Pages", "Uses", $uses, $config);
+			$fields->addFieldToTab("Root.Uses", $gridField);
 		}
 
 		return $fields;

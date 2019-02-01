@@ -419,11 +419,6 @@ class TreeView extends FormField
 		$allowed = $this->section->getAllowedPageElements();
 		// Remove all disallowed classes
 		$list = $list->filter("ClassName", $allowed);
-		// If we're viewing the search list on a PageElement,
-		// then we have to remove all parents as possible elements
-		/*if ($this->parent->ClassName === PageElement::class) {
-			$list = $list->subtract($this->parent->getAllParents());
-		}*/
 		$list = new PaginatedList($list, $data);
 		$data = $this->customise([
 				'SearchForm' => $form,
@@ -768,7 +763,7 @@ class TreeView extends FormField
 		);
 		$deleteButton->setAttribute(
 			"data-used-count",
-			$item->getAllSectionParents()->Count()
+			$item->getAllUses()->Count()
 		);
 		$deleteButton->addExtraClass("btn delete-button font-icon-trash-bin");
 		$deleteButton->setButtonContent('Delete');
@@ -819,7 +814,7 @@ class TreeView extends FormField
 			"AddAfterButton"  => $addAfterButton,
 			"EditButton"      => $editButton,
 			"DeleteButton"    => $deleteButton,
-			"UsedCount"       => $item->getAllSectionParents()->Count(),
+			"UsedCount"       => $item->getAllUses()->Count(),
 		])->renderWith("\FLXLabs\PageSections\TreeViewPageElement");
 	}
 
