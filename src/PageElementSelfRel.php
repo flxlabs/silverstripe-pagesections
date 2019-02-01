@@ -3,7 +3,6 @@
 namespace FLXLabs\PageSections;
 
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\Versioned;
 
 class PageElementSelfRel extends DataObject
 {
@@ -33,20 +32,10 @@ class PageElementSelfRel extends DataObject
 	public function onAfterWrite()
 	{
 		parent::onAfterWrite();
-
-		if (!$this->__NewOrder && Versioned::get_stage() == Versioned::DRAFT) {
-			$this->Parent()->__Counter++;
-			$this->Parent()->write();
-		}
 	}
 
 	public function onAfterDelete()
 	{
 		parent::onAfterDelete();
-
-		if (Versioned::get_stage() == Versioned::DRAFT) {
-			$this->Parent()->__Counter++;
-			$this->Parent()->write();
-		}
 	}
 }

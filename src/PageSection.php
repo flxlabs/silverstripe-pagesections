@@ -2,18 +2,7 @@
 
 namespace FLXLabs\PageSections;
 
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Forms\Form;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
-use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverStripe\Forms\GridField\GridFieldButtonRow;
-use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
-use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
-use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 
@@ -25,7 +14,6 @@ class PageSection extends DataObject
 		"__Name" => "Varchar",
 		"__ParentID" => "Int",
 		"__ParentClass" => "Varchar",
-		"__Counter" => "Int",
 	];
 
 	private static $owns = [
@@ -61,11 +49,6 @@ class PageSection extends DataObject
 	public function onAfterWrite()
 	{
 		parent::onAfterWrite();
-
-		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
-			$this->Parent()->__PageSectionCounter++;
-			$this->Parent()->write();
-		}
 	}
 
 	public function forTemplate()

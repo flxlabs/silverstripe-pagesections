@@ -18,11 +18,12 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
-use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 use SilverStripe\Forms\Tab;
+
+use SilverStripe\Versioned\Versioned;
 
 class PageElement extends DataObject
 {
@@ -66,7 +67,6 @@ class PageElement extends DataObject
 
 	private static $db = [
 		"Name" => "Varchar(255)",
-		"__Counter" => "Int"
 	];
 
 	private static $many_many = [
@@ -139,30 +139,11 @@ class PageElement extends DataObject
 	public function onAfterWrite()
 	{
 		parent::onAfterWrite();
-
-		if (Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
-			foreach ($this->PageSections() as $section) {
-				$section->__Counter++;
-				$section->write();
-			}
-
-			foreach ($this->Parents() as $parent) {
-				$parent->__Counter++;
-				$parent->write();
-			}
-		}
 	}
 
 	public function onAfterDelete()
 	{
 		parent::onAfterDelete();
-
-		if (Versioned::get_stage() == Versioned::DRAFT) {
-			foreach ($this->PageSections() as $section) {
-				$section->__Counter++;
-				$section->write();
-			}
-		}
 	}
 
 	/**
@@ -175,14 +156,12 @@ class PageElement extends DataObject
 	}
 
 	/** 
-   * Gets all parents that this PageElement is rendered on. 
-   * 
-   * Adds the following properties to each parent: 
-   *   __PageSection: The PageSection on the parent that the PageElement is from. 
-   *   __PageElementVersion: The version of the PageElement being used. 
-   *   __PageElementPublishedVersion: The published version of the PageElement being used. 
-   * @return \DataObject[] 
-   */ 
+	 * Gets all parents that this PageElement is rendered on. 
+	 * 
+	 * Adds the following properties to each parent: 
+	 *   __PageSection: The PageSection on the parent that the PageElement is from.
+	 * @return \DataObject[] 
+	 */
 	public function getAllSectionParents() {
 		$parents = ArrayList::create();
 
@@ -191,21 +170,9 @@ class PageElement extends DataObject
 			if (!$p || !$p->ID) {
 				// If our parent doesn't have an ID it's probably deleted/archived.
 				$p = $archived = Versioned::get_latest_version($section->__ParentClass, $section->__ParentID);
-				$p->__PageSection = $section;
-				$p->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
-				$p->__PageElementPublishedVersion = "Not published";
-				$parents->add($p);
-				continue;
 			}
 
-			$stage = Versioned::get_stage();
-			Versioned::set_stage(Versioned::LIVE);
-			$pubSection = DataObject::get_by_id($section->ClassName, $section->ID);
-			$pubElem = $pubSection ? $pubSection->Elements()->filter("ID", $this->ID)->First() : null;
 			$p->__PageSection = $section;
-			$p->__PageElementVersion = $section->Elements()->filter("ID", $this->ID)->First()->Version;
-			$p->__PageElementPublishedVersion = $pubElem ? $pubElem->Version : "Not published";
-			Versioned::set_stage($stage);
 			$parents->add($p);
 		}
 
@@ -254,9 +221,6 @@ class PageElement extends DataObject
 				"ClassName" => "Type",
 				"Title" => "Title",
 				"__PageSection.__Name" => "PageSection",
-				"__PageElementVersion" => "Element version",
-				"__PageElementPublishedVersion" => "Published element version",
-				"getPublishState" => "Parent State",
 			]);
 			$gridField = GridField::create("Pages", "Section Parents", $parents, $config);
 			$fields->addFieldToTab("Root.SectionParents", $gridField);

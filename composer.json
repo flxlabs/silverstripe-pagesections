@@ -1,22 +1,32 @@
 {
   "name": "flxlabs/silverstripe-pagesections",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Adds configurable page sections and elements to your SilverStripe project.",
   "type": "silverstripe-module",
   "homepage": "http://github.com/flxlabs/silverstripe-pagesections",
-  "keywords": ["silverstripe", "sections", "elements", "page sections", "page elements"],
+  "keywords": [
+    "silverstripe",
+    "sections",
+    "elements",
+    "page sections",
+    "page elements"
+  ],
   "license": "MIT",
-  "authors": [{
-    "name": "Marco Crespi",
-    "email": "mrc@flxlabs.com"
-  }],
+  "authors": [
+    {
+      "name": "Marco Crespi",
+      "email": "mrc@flxlabs.com"
+    }
+  ],
   "support": {
     "issues": "http://github.com/flxlabs/silverstripe-pagesections/issues"
   },
-  "repositories": [{
-    "type": "vcs",
-    "url": "https://github.com/flxlabs/silverstripe-gridfield-betterbuttons"
-  }],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/flxlabs/silverstripe-gridfield-betterbuttons"
+    }
+  ],
   "require": {
     "silverstripe/framework": "^4.0.1",
     "symbiote/silverstripe-gridfieldextensions": "^3"
