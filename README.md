@@ -44,17 +44,14 @@ where you wish to have page sections:
    Page:
      extensions:
        - PageSectionsExtension
-       - VersionedRelationsExtension
    ```
    This will by default add **one** page section called `Main` to your page(s)
-   > **Make sure that the *VersionedRelationsExtension* comes after the *PageSectionsExtension***
 
 1. If you want more than one page section add the following to your `mysite/_config/config.yaml`:
    ```
    Page:
      extensions:
        - PageSectionsExtension
-       - VersionedRelationsExtension
      page_sections:
   	   - Top
   	   - Middle
@@ -112,7 +109,7 @@ Below we will demonstrate how to create a simple page element.
    }
    ```
 
-1. Go to `/dev/build?flush=1` in your browser to load the new class and create database entries.
+1. Go to `/dev/build` in your browser to load the new class and create database entries.
 
 The class we just created adds the `TextElement` page element, which has a `Content` field that
 allows adding html content, and it also removes the `Children` field from it's own CMS fields,

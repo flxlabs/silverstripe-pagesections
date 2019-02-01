@@ -4,30 +4,15 @@ namespace FLXLabs\PageSections;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
-use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
-use SilverStripe\Forms\GridField\GridFieldButtonRow;
-use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
-use SilverStripe\Forms\GridField\GridFieldEditButton;
-use SilverStripe\Forms\GridField\GridFieldFooter;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Security\Member;
-
-use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
-use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
-use SilverStripe\Forms\Tab;
-
-use SilverStripe\Versioned\Versioned;
 
 class PageElement extends DataObject
 {
-
 	private static $table_name = "FLXLabs_PageSections_PageElement";
 
 	protected static $defaultIsOpen = true;
@@ -168,12 +153,21 @@ class PageElement extends DataObject
 		foreach ($this->PageSections() as $section) {
 			$p = $section->Parent();
 			if (!$p || !$p->ID) {
-				// If our parent doesn't have an ID it's probably deleted/archived.
-				$p = $archived = Versioned::get_latest_version($section->__ParentClass, $section->__ParentID);
+				continue;
 			}
 
-			$p->__PageSection = $section;
-			$parents->add($p);
+			$parents->add(DataObject::create([
+				"Parent" => $p->Title . " (" . $p->ClassName . ")",
+				"Section" => $section->__Name,
+				"Path" => "",
+			]));
+		}
+
+		foreach ($this->Parents() as $parent) {
+			foreach ($parent->getAllSectionParents() as $p) {
+				$p->Path = $p->Path . " -> " . $parent->Name;
+				$parents->add($p);
+			}
 		}
 
 		return $parents;
@@ -217,10 +211,9 @@ class PageElement extends DataObject
 				->removeComponentsByType(GridFieldDataColumns::class)
 				->addComponent($dataColumns = new GridFieldDataColumns());
 			$dataColumns->setDisplayFields([
-				"ID" => "ID",
-				"ClassName" => "Type",
-				"Title" => "Title",
-				"__PageSection.__Name" => "PageSection",
+				"Parent" => "Parent",
+				"Section" => "Section",
+				"Path" => "Path",
 			]);
 			$gridField = GridField::create("Pages", "Section Parents", $parents, $config);
 			$fields->addFieldToTab("Root.SectionParents", $gridField);

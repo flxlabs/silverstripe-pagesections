@@ -768,7 +768,7 @@ class TreeView extends FormField
 		);
 		$deleteButton->setAttribute(
 			"data-used-count",
-			$item->Parents()->Count() + $item->getAllSectionParents()->Count()
+			$item->getAllSectionParents()->Count()
 		);
 		$deleteButton->addExtraClass("btn delete-button font-icon-trash-bin");
 		$deleteButton->setButtonContent('Delete');
@@ -819,7 +819,7 @@ class TreeView extends FormField
 			"AddAfterButton"  => $addAfterButton,
 			"EditButton"      => $editButton,
 			"DeleteButton"    => $deleteButton,
-			"UsedCount"       => $item->Parents()->Count() + $item->getAllSectionParents()->Count(),
+			"UsedCount"       => $item->getAllSectionParents()->Count(),
 		])->renderWith("\FLXLabs\PageSections\TreeViewPageElement");
 	}
 

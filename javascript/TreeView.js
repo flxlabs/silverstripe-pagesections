@@ -443,6 +443,10 @@
 							event.stopImmediatePropagation();
 
 							$target = $(event.target);
+							// If we clicked the span get the parent button
+							if ($target.prop("tagName") === "SPAN") {
+								$target = $target.parent();
+							}
 
 							var menu = new TreeViewContextMenu();
 							menu.createDom(itemId, name);
@@ -459,7 +463,7 @@
 								}
 							);
 
-							if ($target.data('used-count') < 2) {
+							if (Number($target.data('used-count')) <= 1) {
 								menu.addItem(
 									'',
 									ss.i18n._t(
