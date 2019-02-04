@@ -104,7 +104,7 @@ class PageSectionsExtension extends DataExtension
 			$fields->removeByName($name);
 			$fields->removeByName($name . "ID");
 
-			if ($this->owner->ID) {
+			if ($this->owner->ID && $this->owner->{$name . "ID"}) {
 				$tv = new TreeView($name, $sectionName, $this->owner->$name);
 				$fields->addFieldToTab("Root.PageSections.{$sectionName}", $tv);
 			}
