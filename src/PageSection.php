@@ -57,31 +57,13 @@ class PageSection extends DataObject
 	}
 
 	/**
-	 * Gets the name of this PageSection
-	 * @return string
-	 */
-	public function getName() {
-		$parent = $this->Parent();
-		// TODO: Find out why this happens
-		if (!method_exists($parent, "getPageSectionNames")) {
-			return null;
-		}
-		foreach ($parent->getPageSectionNames() as $sectionName) {
-			if ($parent->{"PageSection" . $sectionName . "ID"} === $this->ID) {
-				return $sectionName;
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * The classes of allowed child elements
 	 *
 	 * Gets a list of classnames which are valid child elements of this PageSection.
 	 * @param string $section The section for which to get the allowed child classes.
 	 * @return string[]
 	 */
-	public function getAllowedPageElements($section = "Main") {
-		return $this->Parent()->getAllowedPageElements($section);
+	public function getAllowedPageElements() {
+		return $this->Parent()->getAllowedPageElements($this->__Name);
 	}
 }
