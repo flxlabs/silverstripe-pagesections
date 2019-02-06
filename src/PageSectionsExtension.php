@@ -32,7 +32,6 @@ class PageSectionsExtension extends DataExtension
 		return [
 			"has_one" => $has_one,
 			"owns" => $names,
-			"cascade_deletes" => $names,
 			"cascade_duplicates" => $names,
 		];
 	}

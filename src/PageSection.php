@@ -3,6 +3,7 @@
 namespace FLXLabs\PageSections;
 
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 
@@ -33,7 +34,11 @@ class PageSection extends DataObject
 	];
 
 	public function Parent() {
-		return DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
+		$parent = DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
+		if ($parent == null) {
+			$parent = Versioned::get_latest_version($this->__ParentClass, $this->__ParentID);
+		}
+		return $parent;
 	}
 
 	public function onBeforeWrite() {

@@ -46,11 +46,12 @@ class TreeView extends FormField
 	);
 
 
-	public function __construct($name, $title = null, $section = null)
+	public function __construct($name, $title = null, $section = null, $readonly = false)
 	{
 		parent::__construct($name, $title, null);
 
 		$this->section = $section;
+		$this->readonly = $readonly;
 		$this->context = singleton(PageElement::class)->getDefaultSearchContext();
 
 		if ($section) {
@@ -60,6 +61,10 @@ class TreeView extends FormField
 				$this->openRecursive($item);
 			}
 		}
+	}
+
+	public function performReadonlyTransformation() {
+		return new TreeView($this->name, $this->title, $this->section, $this->readonly);
 	}
 
 	public function setValue($value, $data = null) {
@@ -599,28 +604,31 @@ class TreeView extends FormField
 			$elems[$class] = singleton($class)->singular_name();
 		}
 
-		// Create the add new button at the very top
-		$addButton = TreeViewFormAction::create(
-			$this,
-			"AddActionBase",
-			null,
-			null,
-			null
-		);
-		$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
-		$addButton->addExtraClass("btn add-button font-icon-plus");
-		if (!count($elems)) {
-			$addButton->setDisabled(true);
-		}
-		$addButton->setButtonContent(' ');
-		$content .= ArrayData::create([
-			"Button" => $addButton
-		])->renderWith("\FLXLabs\PageSections\TreeViewAddNewButton");
+		if (!$this->readonly) {
+			// Create the add new button at the very top
+			$addButton = TreeViewFormAction::create(
+				$this,
+				"AddActionBase",
+				null,
+				null,
+				null
+			);
+			$addButton->setAttribute("data-allowed-elements", json_encode($elems, JSON_UNESCAPED_UNICODE));
+			$addButton->addExtraClass("btn add-button font-icon-plus");
+			if (!count($elems)) {
+				$addButton->setDisabled(true);
+			}
+			$addButton->setButtonContent(' ');
+			$content .= ArrayData::create([
+				"Button" => $addButton
+			])->renderWith("\FLXLabs\PageSections\TreeViewAddNewButton");
 
-		// Create the find existing button
-		$findExisting = TreeViewFormAction::create($this, 'FindExisting', 'Find existing');
-		$findExisting->addExtraClass("btn font-icon-search tree-actions-findexisting");
-		$content .= $findExisting->forTemplate();
+			// Create the find existing button
+			$findExisting = TreeViewFormAction::create($this, 'FindExisting', 'Find existing');
+			$findExisting->addExtraClass("btn font-icon-search tree-actions-findexisting");
+			$content .= $findExisting->forTemplate();
+		}
+
 		$content .= "</div>";
 
 		$list = $this->getItems()->sort($this->sortField)->toArray();
@@ -635,6 +643,7 @@ class TreeView extends FormField
 			'fieldset',
 			[
 				'class' => 'treeview-pagesections pagesection-' . $this->getName(),
+				'data-readonly' => $this->readonly,
 				'data-name' => $this->getName(),
 				'data-url' => $this->Link(),
 				'data-state-id' => $sessionId,
@@ -720,7 +729,7 @@ class TreeView extends FormField
 
 		// Create a button to add a new child element
 		// and save the allowed child classes on the button
-		if (count($classes)) {
+		if (!$this->readonly && count($classes)) {
 			$addButton = TreeViewFormAction::create(
 				$this,
 				"AddAction".$item->ID,
@@ -735,49 +744,52 @@ class TreeView extends FormField
 			}
 			$addButton->setButtonContent(' ');
 		}
-		// Create a button to add an element after
-		// and save the allowed child classes on the button
-		$addAfterButton = TreeViewFormAction::create(
-			$this,
-			"AddAfterAction".$item->ID,
-			null,
-			null,
-			null
-		);
-		$addAfterButton->setAttribute("data-allowed-elements", 
-			json_encode($parentElems, JSON_UNESCAPED_UNICODE)
-		);
-		$addAfterButton->addExtraClass("btn add-after-button font-icon-plus");
-		if (!count($parentElems)) {
-			$addAfterButton->setDisabled(true);
+
+		if (!$this->readonly) {
+			// Create a button to add an element after
+			// and save the allowed child classes on the button
+			$addAfterButton = TreeViewFormAction::create(
+				$this,
+				"AddAfterAction".$item->ID,
+				null,
+				null,
+				null
+			);
+			$addAfterButton->setAttribute("data-allowed-elements", 
+				json_encode($parentElems, JSON_UNESCAPED_UNICODE)
+			);
+			$addAfterButton->addExtraClass("btn add-after-button font-icon-plus");
+			if (!count($parentElems)) {
+				$addAfterButton->setDisabled(true);
+			}
+			$addAfterButton->setButtonContent(' ');
+
+			// Create a button to delete and/or remove the element from the parent
+			$deleteButton = TreeViewFormAction::create(
+				$this,
+				"DeleteAction".$item->ID,
+				null,
+				null,
+				null
+			);
+			$deleteButton->setAttribute(
+				"data-used-count",
+				$item->getAllUses()->Count()
+			);
+			$deleteButton->addExtraClass("btn delete-button font-icon-trash-bin");
+			$deleteButton->setButtonContent('Delete');
+
+			// Create a button to edit the record
+			$editButton = TreeViewFormAction::create(
+				$this,
+				"EditAction".$item->ID,
+				null,
+				null,
+				null
+			);
+			$editButton->addExtraClass("btn edit-button font-icon-edit");
+			$editButton->setButtonContent('Edit');
 		}
-		$addAfterButton->setButtonContent(' ');
-
-		// Create a button to delete and/or remove the element from the parent
-		$deleteButton = TreeViewFormAction::create(
-			$this,
-			"DeleteAction".$item->ID,
-			null,
-			null,
-			null
-		);
-		$deleteButton->setAttribute(
-			"data-used-count",
-			$item->getAllUses()->Count()
-		);
-		$deleteButton->addExtraClass("btn delete-button font-icon-trash-bin");
-		$deleteButton->setButtonContent('Delete');
-
-		// Create a button to edit the record
-		$editButton = TreeViewFormAction::create(
-			$this,
-			"EditAction".$item->ID,
-			null,
-			null,
-			null
-		);
-		$editButton->addExtraClass("btn edit-button font-icon-edit");
-		$editButton->setButtonContent('Edit');
 
 		// Create the tree icon
 		$icon = '';
@@ -802,6 +814,7 @@ class TreeView extends FormField
 		$treeButton->setButtonContent(' ');
 
 		return ArrayData::create([
+			"Readonly"        => $this->readonly,
 			"Item"            => $item,
 			"Tree"            => $tree,
 			"IsOpen"          => $isOpen,
@@ -811,9 +824,9 @@ class TreeView extends FormField
 			"AllowedElements" => json_encode($elems, JSON_UNESCAPED_UNICODE),
 			"TreeButton"      => $treeButton,
 			"AddButton"       => isset($addButton) ? $addButton : null,
-			"AddAfterButton"  => $addAfterButton,
-			"EditButton"      => $editButton,
-			"DeleteButton"    => $deleteButton,
+			"AddAfterButton"  => isset($addAfterButton) ? $addAfterButton : null,
+			"EditButton"      => isset($editButton) ? $editButton : null,
+			"DeleteButton"    => isset($deleteButton) ? $deleteButton : null,
 			"UsedCount"       => $item->getAllUses()->Count(),
 		])->renderWith("\FLXLabs\PageSections\TreeViewPageElement");
 	}
