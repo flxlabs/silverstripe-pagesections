@@ -47,7 +47,7 @@ class PageSection extends DataObject
 		$elems = $this->Elements()->Sort("SortOrder")->Column("ID");
 		$count = count($elems);
 		for ($i = 0; $i < $count; $i++) {
-			$this->Elements()->Add($elems[$i], [ "SortOrder" => ($i + 1) * 2, "__NewOrder" => true ]);
+			$this->Elements()->Add($elems[$i], [ "SortOrder" => ($i + 1) * 2 ]);
 		}
 	}
 

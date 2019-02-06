@@ -237,6 +237,9 @@ class TreeView extends FormField
 			$newParent->Children()->Add($item, $sortArr);
 		}
 
+		// Save the parent so the relation sort order is redone
+		$newParent->write();
+
 		return $this->FieldHolder();
 	}
 

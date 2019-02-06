@@ -111,7 +111,7 @@ class PageElement extends DataObject
 		$elems = $this->Children()->Sort("SortOrder")->Column("ID");
 		$count = count($elems);
 		for ($i = 0; $i < $count; $i++) {
-			$this->Children()->Add($elems[$i], [ "SortOrder" => ($i + 1) * 2, "__NewOrder" => true ]);
+			$this->Children()->Add($elems[$i], [ "SortOrder" => ($i + 1) * 2 ]);
 		}
 	}
 
