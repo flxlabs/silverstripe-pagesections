@@ -45,7 +45,11 @@ class PageSection extends DataObject
 	];
 
 	public function Parent() {
-		return DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
+		$parent = DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
+		if ($parent == null) {
+			$parent = Versioned::get_latest_version($this->__ParentClass, $this->__ParentID);
+		}
+		return $parent;
 	}
 
 	public function onBeforeWrite() {
@@ -78,6 +82,10 @@ class PageSection extends DataObject
 	 * @return string
 	 */
 	public function getName() {
+		if ($this->__Name) {
+			return $this->__Name;
+		}
+
 		$parent = $this->Parent();
 		// TODO: Find out why this happens
 		if (!method_exists($parent, "getPageSectionNames")) {
@@ -98,7 +106,7 @@ class PageSection extends DataObject
 	 * @param string $section The section for which to get the allowed child classes.
 	 * @return string[]
 	 */
-	public function getAllowedPageElements($section = "Main") {
-		return $this->Parent()->getAllowedPageElements($section);
+	public function getAllowedPageElements() {
+		return $this->Parent()->getAllowedPageElements($this->__Name);
 	}
 }
