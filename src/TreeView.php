@@ -648,7 +648,7 @@ class TreeView extends FormField
 				'class' => 'treeview-pagesections pagesection-' . $this->getName(),
 				'data-readonly' => $this->readonly,
 				'data-name' => $this->getName(),
-				'data-url' => $this->Link(),
+				'data-url' => !$this->readonly ? $this->Link() : null,
 				'data-state-id' => $sessionId,
 				'data-allowed-elements' => json_encode($elems),
 			],
@@ -723,12 +723,6 @@ class TreeView extends FormField
 		// There are two cases, either this GridField is on a page,
 		// or it is on a PageElement and we're looking at the children
 		$isAllowedRoot = in_array($item->ClassName, $parentClasses);
-		
-		// Create the tree icon
-		$icon = '';
-		if ($item->Children() && $item->Children()->Count() > 0) {
-			$icon = ($isOpen === true ? 'font-icon-down-open' : 'font-icon-right-open');
-		}
 
 		// Create a button to add a new child element
 		// and save the allowed child classes on the button
@@ -796,7 +790,7 @@ class TreeView extends FormField
 
 		// Create the tree icon
 		$icon = '';
-		if ($item->Children() && $item->Children()->Count() > 0) {
+		if (!$this->readonly && $item->Children() && $item->Children()->Count() > 0) {
 			$icon = ($isOpen === true ? 'font-icon-down-open' : 'font-icon-right-open');
 		}
 
