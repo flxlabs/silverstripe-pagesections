@@ -1,23 +1,23 @@
-(function ($) {
+(function($) {
 	function TreeViewContextMenu() {
-		this.createDom = function (id, name) {
+		this.createDom = function(id, name) {
 			this.$menu = $(
 				"<ul id='treeview-menu-" +
-				name +
-				"' class='treeview-menu' data-id='" +
-				id +
-				"'></ul>"
+					name +
+					"' class='treeview-menu' data-id='" +
+					id +
+					"'></ul>"
 			);
 		};
-		this.addLabel = function (label) {
+		this.addLabel = function(label) {
 			this.$menu.append("<li class='header'>" + label + '</li>');
 		};
-		this.addItem = function (type, label, onClick = function () {}) {
+		this.addItem = function(type, label, onClick = function() {}) {
 			var $li = $("<li data-type='" + type + "'>" + label + '</li>');
 			$li.click(onClick);
 			this.$menu.append($li);
 		};
-		this.show = function (x, y) {
+		this.show = function(x, y) {
 			var pos = {
 				top: y,
 				left: x
@@ -27,7 +27,7 @@
 			this.$menu.css(pos);
 			this.$menu.show();
 			var that = this;
-			window.requestAnimationFrame(function () {
+			window.requestAnimationFrame(function() {
 				var wW = $(window).width();
 				var wH = $(window).height();
 				var eW = that.$menu.outerWidth(true);
@@ -43,14 +43,14 @@
 				that.$menu.css(pos);
 			});
 		};
-		this.remove = function () {
+		this.remove = function() {
 			this.$menu.remove();
 		};
 	}
 
-	$.entwine('ss', function ($) {
+	$.entwine('ss', function($) {
 		// Hide our custom context menu when not needed
-		$(document).on('mousedown', function (event) {
+		$(document).on('mousedown', function(event) {
 			$parents = $(event.target).parents('.treeview-menu');
 			if ($parents.length == 0) {
 				$('.treeview-menu').remove();
@@ -58,7 +58,7 @@
 		});
 
 		$('.view-detail-dialog .gridfield-better-buttons-prevnext').entwine({
-			onclick: function () {
+			onclick: function() {
 				this.closest('.view-detail-dialog').loadDialog(
 					$.get(this.prop('href'))
 				);
@@ -67,7 +67,7 @@
 		});
 
 		$('.view-detail-dialog .action-detail').entwine({
-			onclick: function () {
+			onclick: function() {
 				const dialog = this.closest('.view-detail-dialog').loadDialog(
 					$.get(this.prop('href'))
 				);
@@ -77,36 +77,39 @@
 		});
 
 		$('.view-detail-dialog form').entwine({
-			onsubmit: function () {
+			onsubmit: function() {
 				var dialog = this.closest('.view-detail-dialog');
 
 				const self = this;
 
 				$.ajax(
-					$.extend({}, {
-						headers: {
-							'X-Pjax': 'CurrentField'
-						},
-						type: 'POST',
-						url: this.prop('action'),
-						dataType: 'html',
-						data: this.serialize(),
-						success: function () {
-							if (self.hasClass('view-detail-form')) {
-								dialog.data('treeview').reload();
-								dialog.dialog('close');
-							} else {
-								if (dialog.data("clickedButton") === 'action_doSaveAndQuit') {
-									dialog.loadDialog($.get(dialog.data("origUrl")));
+					$.extend(
+						{},
+						{
+							headers: {
+								'X-Pjax': 'CurrentField'
+							},
+							type: 'POST',
+							url: this.prop('action'),
+							dataType: 'html',
+							data: this.serialize(),
+							success: function() {
+								if (self.hasClass('view-detail-form')) {
+									dialog.data('treeview').reload();
+									dialog.dialog('close');
 								} else {
-									const url = self.prop('href') ?
-										self.prop('href') :
-										dialog.data('href');
-									dialog.loadDialog($.get(url));
+									if (dialog.data('clickedButton') === 'action_doSaveAndQuit') {
+										dialog.loadDialog($.get(dialog.data('origUrl')));
+									} else {
+										const url = self.prop('href')
+											? self.prop('href')
+											: dialog.data('href');
+										dialog.loadDialog($.get(url));
+									}
 								}
 							}
 						}
-					})
+					)
 				);
 
 				return false;
@@ -116,13 +119,13 @@
 		// Show our search form after opening the search dialog
 		// Show our detail form after opening the detail dialog
 		$('.add-existing-search-dialog-treeview, .view-detail-dialog').entwine({
-			loadDialog: function (deferred) {
+			loadDialog: function(deferred) {
 				var dialog = this.addClass('loading').empty();
 
-				deferred.done(function (data) {
+				deferred.done(function(data) {
 					dialog.html(data).removeClass('loading');
-					dialog.find("button[type=submit]").click(function () {
-						dialog.data("clickedButton", this.name);
+					dialog.find('button[type=submit]').click(function() {
+						dialog.data('clickedButton', this.name);
 					});
 				});
 				return this;
@@ -130,20 +133,22 @@
 		});
 
 		// Submit our search form to our own endpoint and show the results
-		$('.add-existing-search-dialog-treeview .add-existing-search-form').entwine({
-			onsubmit: function () {
-				this.closest('.add-existing-search-dialog-treeview').loadDialog(
-					$.get(this.prop('action'), this.serialize())
-				);
-				return false;
+		$('.add-existing-search-dialog-treeview .add-existing-search-form').entwine(
+			{
+				onsubmit: function() {
+					this.closest('.add-existing-search-dialog-treeview').loadDialog(
+						$.get(this.prop('action'), this.serialize())
+					);
+					return false;
+				}
 			}
-		});
+		);
 
 		// Allow clicking the elements in the search form
 		$(
 			'.add-existing-search-dialog-treeview .add-existing-search-items .list-group-item-action'
 		).entwine({
-			onclick: function () {
+			onclick: function() {
 				if (this.children('a').length > 0) {
 					this.children('a')
 						.first()
@@ -156,7 +161,7 @@
 		$(
 			'.add-existing-search-dialog-treeview .add-existing-search-items a'
 		).entwine({
-			onclick: function () {
+			onclick: function() {
 				var link = this.closest('.add-existing-search-items').data('add-link');
 				var id = this.data('id');
 
@@ -164,14 +169,17 @@
 					.addClass('loading')
 					.empty();
 
-				dialog.data('treeview').reload({
+				dialog.data('treeview').reload(
+					{
 						url: link,
-						data: [{
-							name: 'id',
-							value: id
-						}]
+						data: [
+							{
+								name: 'id',
+								value: id
+							}
+						]
 					},
-					function () {
+					function() {
 						dialog.dialog('close');
 					}
 				);
@@ -184,7 +192,7 @@
 		$(
 			'.add-existing-search-dialog-treeview .add-existing-search-pagination a'
 		).entwine({
-			onclick: function () {
+			onclick: function() {
 				this.closest('.add-existing-search-dialog-treeview').loadDialog(
 					$.get(this.prop('href'))
 				);
@@ -210,12 +218,13 @@
 
 		// Attach data to our tree view
 		$('.treeview-pagesections').entwine({
-			addItem: function (parents, itemId, elemType, sort = 99999) {
+			addItem: function(parents, itemId, elemType, sort = 99999) {
 				var $treeView = $(this);
 
 				$treeView.reload({
 					url: $treeView.data('url') + '/add',
-					data: [{
+					data: [
+						{
 							name: 'parents',
 							value: parents
 						},
@@ -234,12 +243,13 @@
 					]
 				});
 			},
-			removeItem: function (parents, itemId) {
+			removeItem: function(parents, itemId) {
 				var $treeView = $(this);
 
 				$treeView.reload({
 					url: $treeView.data('url') + '/remove',
-					data: [{
+					data: [
+						{
 							name: 'parents',
 							value: parents
 						},
@@ -250,12 +260,13 @@
 					]
 				});
 			},
-			deleteItem: function (parents, itemId) {
+			deleteItem: function(parents, itemId) {
 				var $treeView = $(this);
 
 				$treeView.reload({
 					url: $treeView.data('url') + '/delete',
-					data: [{
+					data: [
+						{
 							name: 'parents',
 							value: parents
 						},
@@ -266,13 +277,13 @@
 					]
 				});
 			},
-			onadd: function () {
+			onadd: function() {
 				var $treeView = $(this);
 				var name = $treeView.data('name');
 				var url = $treeView.data('url');
 
 				// Setup find existing button
-				$treeView.find('button[name=action_FindExisting]').click(function () {
+				$treeView.find('button[name=action_FindExisting]').click(function() {
 					var dialog = $('<div></div>')
 						.appendTo('body')
 						.dialog({
@@ -280,7 +291,7 @@
 							resizable: false,
 							width: 500,
 							height: 600,
-							close: function () {
+							close: function() {
 								$(this)
 									.dialog('destroy')
 									.remove();
@@ -300,7 +311,7 @@
 					.find(
 						'> .treeview-pagesections__header > .treeview-item-actions .add-button'
 					)
-					.click(function (event) {
+					.click(function(event) {
 						event.preventDefault();
 						event.stopImmediatePropagation();
 
@@ -312,8 +323,8 @@
 						menu.addLabel(
 							ss.i18n._t('PageSections.TreeView.AddAChild', 'Add a child')
 						);
-						$.each(elems, function (key, value) {
-							menu.addItem(key, value, function () {
+						$.each(elems, function(key, value) {
+							menu.addItem(key, value, function() {
 								$treeView.addItem([], null, key, 1);
 								menu.remove();
 							});
@@ -322,7 +333,7 @@
 					});
 
 				// Process items
-				$treeView.find('.treeview-item').each(function () {
+				$treeView.find('.treeview-item').each(function() {
 					var $item = $(this);
 					var itemId = $item.data('id');
 					var parents = $item.data('tree');
@@ -330,13 +341,14 @@
 					// Open an item button
 					$item
 						.find('> .treeview-item__panel > .treeview-item-flow .tree-button')
-						.click(function (event) {
+						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
 
 							$treeView.reload({
 								url: url + '/tree',
-								data: [{
+								data: [
+									{
 										name: 'parents',
 										value: parents
 									},
@@ -351,7 +363,7 @@
 					// Edit button
 					$item
 						.find('> .treeview-item__panel > .treeview-item-flow .edit-button')
-						.click(function () {
+						.click(function() {
 							var dialog = $('<div></div>')
 								.appendTo('body')
 								.dialog({
@@ -359,7 +371,7 @@
 									resizable: false,
 									width: $(window).width() * 0.9,
 									height: $(window).height() * 0.9,
-									close: function () {
+									close: function() {
 										$(this)
 											.dialog('destroy')
 											.remove();
@@ -379,7 +391,7 @@
 						.find(
 							'> .treeview-item__panel > .treeview-item-actions .add-button'
 						)
-						.click(function (event) {
+						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
 
@@ -391,8 +403,8 @@
 							menu.addLabel(
 								ss.i18n._t('PageSections.TreeView.AddAChild', 'Add a child')
 							);
-							$.each(elems, function (key, value) {
-								menu.addItem(key, value, function () {
+							$.each(elems, function(key, value) {
+								menu.addItem(key, value, function() {
 									$treeView.addItem(parents, itemId, key, 1);
 									menu.remove();
 								});
@@ -403,7 +415,7 @@
 					// Add new after item button
 					$item
 						.find('> .treeview-item__post-actions .add-after-button')
-						.click(function (event) {
+						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
 
@@ -419,8 +431,8 @@
 								)
 							);
 
-							$.each(elems, function (key, value) {
-								menu.addItem(key, value, function () {
+							$.each(elems, function(key, value) {
+								menu.addItem(key, value, function() {
 									$treeView.addItem(
 										parents.slice(0, parents.length - 1),
 										parents[parents.length - 1],
@@ -438,11 +450,15 @@
 						.find(
 							'> .treeview-item__panel > .treeview-item-flow .delete-button'
 						)
-						.click(function (event) {
+						.click(function(event) {
 							event.preventDefault();
 							event.stopImmediatePropagation();
 
 							$target = $(event.target);
+							// If we clicked the span get the parent button
+							if ($target.prop('tagName') === 'SPAN') {
+								$target = $target.parent();
+							}
 
 							var menu = new TreeViewContextMenu();
 							menu.createDom(itemId, name);
@@ -453,20 +469,20 @@
 							menu.addItem(
 								'__REMOVE__',
 								ss.i18n._t('PageSections.TreeView.RemoveAChild', 'Remove'),
-								function () {
+								function() {
 									$treeView.removeItem(parents, itemId);
 									menu.remove();
 								}
 							);
 
-							if ($target.data('used-count') < 2) {
+							if (Number($target.data('used-count')) <= 1) {
 								menu.addItem(
 									'',
 									ss.i18n._t(
 										'PageSections.TreeView.DeleteAChild',
 										'Finally delete'
 									),
-									function () {
+									function() {
 										$treeView.deleteItem(parents, itemId);
 										menu.remove();
 									}
@@ -474,12 +490,12 @@
 
 								var $li = $(
 									'<li>' +
-									ss.i18n._t(
-										'PageSections.TreeView.DeleteAChild',
-										'Finally delete'
-									) +
-									'</li>',
-									function () {
+										ss.i18n._t(
+											'PageSections.TreeView.DeleteAChild',
+											'Finally delete'
+										) +
+										'</li>',
+									function() {
 										$treeView.deleteItem(parents, itemId);
 										menu.remove();
 									}
@@ -504,7 +520,7 @@
 						tolerance: 'pointer',
 						greedy: true,
 
-						helper: function (event) {
+						helper: function(event) {
 							var $panel = $item.find('> .treeview-item__panel');
 							var $helper = $("<div class='treeview-item__dragger'/>");
 							$helper
@@ -527,8 +543,8 @@
 							return $helper;
 						},
 
-						start: function () {
-							$('.ui-droppable').each(function () {
+						start: function() {
+							$('.ui-droppable').each(function() {
 								var $drop = $(this);
 								var $dropItem = $drop.closest('.treeview-item');
 								var $parentDropItem = $dropItem
@@ -548,7 +564,7 @@
 								// or a same id
 								if (
 									$dropItem.parents(".treeview-item[data-id='" + itemId + "']")
-									.length
+										.length
 								) {
 									return;
 								}
@@ -559,8 +575,8 @@
 								if (
 									($drop.hasClass('after') || $drop.hasClass('before')) &&
 									$dropItem
-									.siblings(".treeview-item[data-id='" + itemId + "']")
-									.not($item).length
+										.siblings(".treeview-item[data-id='" + itemId + "']")
+										.not($item).length
 								) {
 									return;
 								}
@@ -609,7 +625,7 @@
 								$drop.show();
 							});
 						},
-						stop: function (event, ui) {
+						stop: function(event, ui) {
 							$('.ui-droppable').css('display', '');
 							// Show the previous elements. If the user made an invalid movement then
 							// we want this to show anyways. If he did something valid the treeview will
@@ -625,11 +641,11 @@
 					});
 
 					// Dropping targets
-					$item.find('.treeview-item-reorder .droppable').each(function () {
+					$item.find('.treeview-item-reorder .droppable').each(function() {
 						$(this).droppable({
 							hoverClass: 'state-active',
 							tolerance: 'pointer',
-							drop: function (event, ui) {
+							drop: function(event, ui) {
 								$drop = $(this);
 								$dropItem = $drop.closest('.treeview-item');
 
@@ -649,15 +665,16 @@
 								}
 
 								var newParent =
-									type === 'child' ?
-									itemId :
-									parents.length > 0 ?
-									parents[parents.length - 1] :
-									'';
+									type === 'child'
+										? itemId
+										: parents.length > 0
+										? parents[parents.length - 1]
+										: '';
 
 								$treeView.reload({
 									url: url + '/move',
-									data: [{
+									data: [
+										{
 											name: 'parents',
 											value: oldParents
 										},
@@ -683,7 +700,7 @@
 			// This is copy paste from SilverStripe GridField.js, modified to work for the TreeView
 			// It updates the gridfield by sending the specified request
 			// and using the response as the new content for the gridfield
-			reload: function (ajaxOpts, successCallback) {
+			reload: function(ajaxOpts, successCallback) {
 				var self = this,
 					form = this.closest('form'),
 					focusedElName = this.find(':input:focus').attr('name'), // Save focused element for restoring after refresh
@@ -691,10 +708,12 @@
 
 				if (!ajaxOpts) ajaxOpts = {};
 				if (!ajaxOpts.data) ajaxOpts.data = [];
-				ajaxOpts.data = ajaxOpts.data.concat(data).concat([{
-					name: 'state',
-					value: self.data('state-id')
-				}]);
+				ajaxOpts.data = ajaxOpts.data.concat(data).concat([
+					{
+						name: 'state',
+						value: self.data('state-id')
+					}
+				]);
 
 				// Include any GET parameters from the current URL, as the view state might depend on it.
 				// For example, a list prefiltered through external search criteria might be passed to GridField.
@@ -708,14 +727,16 @@
 				form.addClass('loading');
 
 				$.ajax(
-					$.extend({}, {
+					$.extend(
+						{},
+						{
 							headers: {
 								'X-Pjax': 'CurrentField'
 							},
 							type: 'POST',
 							url: this.data('url'),
 							dataType: 'html',
-							success: function (data) {
+							success: function(data) {
 								// Replace the grid field with response, not the form.
 								// TODO Only replaces all its children, to avoid replacing the current scope
 								// of the executing method. Means that it doesn't retrigger the onmatch() on the main container.
@@ -731,7 +752,7 @@
 								// TODO: Don't know how original SilverStripe GridField magically calls
 								self.onadd();
 							},
-							error: function (e) {
+							error: function(e) {
 								alert(i18n._t('Admin.ERRORINTRANSACTION'));
 								form.removeClass('loading');
 							}

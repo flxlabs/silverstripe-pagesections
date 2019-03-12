@@ -82,21 +82,7 @@ class PageSection extends DataObject
 	 * @return string
 	 */
 	public function getName() {
-		if ($this->__Name) {
-			return $this->__Name;
-		}
-
-		$parent = $this->Parent();
-		// TODO: Find out why this happens
-		if (!method_exists($parent, "getPageSectionNames")) {
-			return null;
-		}
-		foreach ($parent->getPageSectionNames() as $sectionName) {
-			if ($parent->{"PageSection" . $sectionName . "ID"} === $this->ID) {
-				return $sectionName;
-			}
-		}
-		return null;
+		return $this->__Name;
 	}
 
 	/**
