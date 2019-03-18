@@ -68,6 +68,10 @@ class TreeView extends FormField
 	}
 
 	public function setValue($value, $data = null) {
+		if (!$value) {
+			return $this;
+		}
+
 		$this->section = $value;
 		return $this;
 	}
