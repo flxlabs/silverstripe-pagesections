@@ -63,11 +63,13 @@ class TreeView extends FormField
 		}
 	}
 
-	public function performReadonlyTransformation() {
+	public function performReadonlyTransformation()
+	{
 		return new TreeView($this->name, $this->title, $this->section, $this->readonly);
 	}
 
-	public function setValue($value, $data = null) {
+	public function setValue($value, $data = null)
+	{
 		if (!$value) {
 			return $this;
 		}
@@ -84,8 +86,7 @@ class TreeView extends FormField
 	 * this because the default behavior would write a NULL value into the relation.
 	 */
 	public function saveInto(DataObjectInterface $record)
-	{
-	}
+	{ }
 
 	/**
 	 * Recursively opens an item
@@ -189,8 +190,10 @@ class TreeView extends FormField
 			return $this->FieldHolder();
 		}
 
-		if (!isset($data["itemId"]) || !isset($data["parents"]) ||
-				!isset($data["newParent"]) || !isset($data["sort"])) {
+		if (
+			!isset($data["itemId"]) || !isset($data["parents"]) ||
+			!isset($data["newParent"]) || !isset($data["sort"])
+		) {
 			Controller::curr()->getResponse()->setStatusCode(
 				400,
 				"Missing required data!"
@@ -200,7 +203,6 @@ class TreeView extends FormField
 
 		$itemId = intval($data["itemId"]);
 		$parents = array_values(array_filter(explode(",", $data["parents"]), 'strlen'));
-		$path = array_merge($parents, [$itemId]);
 
 		$item = PageElement::get()->byID($itemId);
 
@@ -211,7 +213,7 @@ class TreeView extends FormField
 		} else {
 			$newParent = $this->section;
 		}
-		
+
 		// Check if this element is allowed as a child on the new element
 		$allowed = in_array($item->ClassName, $newParent->getAllowedPageElements());
 		if (!$allowed) {
@@ -219,30 +221,46 @@ class TreeView extends FormField
 				400,
 				"The type " . $item->ClassName . " is not allowed as a child of " . $newParent->ClassName
 			);
-			return $gridField->FieldHolder();
+			return $this->FieldHolder();
 		}
 
-		// Remove the element from the current parent
+		// Get the current parent
 		if (count($parents) == 0) {
-			$this->getItems()->removeByID($itemId);
+			$parent = $this->section;
 		} else {
 			$parent = PageElement::get()->byID($parents[count($parents) - 1]);
-			$parent->Children()->removeByID($itemId);
 		}
 
+		// Get requested sort order
 		$sort = intval($data["sort"]);
 		$sortBy = $this->getSortField();
 		$sortArr = [$sortBy => $sort];
 
-		// Add the element to the new parent
-		if ($newParent->ClassName == PageSection::class) {
-			$newParent->Elements()->Add($item, $sortArr);
+		// Check if we moved the element within the same parent
+		if ($parent->ClassName === $newParent->ClassName && $parent->ID === $newParent->ID) {
+			// Move the element around in the current parent
+			if ($newParent->ClassName == PageSection::class) {
+				$newParent->Elements()->Add($itemId, $sortArr);
+			} else {
+				$newParent->Children()->Add($itemId, $sortArr);
+			}
 		} else {
-			$newParent->Children()->Add($item, $sortArr);
-		}
+			// Remove the element from the current parent
+			if (count($parents) == 0) {
+				$parent = $this->section;
+				$this->getItems()->removeByID($itemId);
+			} else {
+				$parent = PageElement::get()->byID($parents[count($parents) - 1]);
+				$parent->Children()->removeByID($itemId);
+			}
 
-		// Save the parent so the relation sort order is redone
-		$newParent->write();
+			// Add the element to the new parent
+			if ($newParent->ClassName == PageSection::class) {
+				$newParent->Elements()->Add($item, $sortArr);
+			} else {
+				$newParent->Children()->Add($item, $sortArr);
+			}
+		}
 
 		return $this->FieldHolder();
 	}
@@ -277,13 +295,13 @@ class TreeView extends FormField
 				);
 				return $this->FieldHolder();
 			}
-	
+
 			$this->getItems()->Add($element);
 		} else {
 			// ...otherwise add a completely new item
 			$itemId = isset($data["itemId"]) ? intval($data["itemId"]) : null;
 			$type = $data["type"];
-	
+
 			$child = $type::create();
 			$child->Name = "New " . $child->singular_name();
 
@@ -305,11 +323,11 @@ class TreeView extends FormField
 					);
 					return $this->FieldHolder();
 				}
-	
+
 				$child->write();
 				$item->Children()->Add($child, $sortArr);
 				$item->write();
-	
+
 				// Make sure we can see the child
 				$this->openItem(array_merge($path, [$item->ID]));
 			} else {
@@ -433,8 +451,8 @@ class TreeView extends FormField
 		$list = $list->filter("ClassName", $allowed);
 		$list = new PaginatedList($list, $data);
 		$data = $this->customise([
-				'SearchForm' => $form,
-				'Items'      => $list
+			'SearchForm' => $form,
+			'Items'      => $list
 		]);
 		return $data->renderWith("FLXLabs\PageSections\TreeViewFindExistingForm");
 	}
@@ -495,7 +513,8 @@ class TreeView extends FormField
 	 * @param \SilverStripe\Control\HTTPRequest $request
 	 * @return string
 	 */
-	public function detail($request) {
+	public function detail($request)
+	{
 		$id = intval($request->requestVar("ID"));
 		if ($id) {
 			$request->getSession()->set("ElementID", $id);
@@ -524,7 +543,8 @@ class TreeView extends FormField
 		return $this->DetailForm($item, false);
 	}
 
-	public function handleRequest(HTTPRequest $request) {
+	public function handleRequest(HTTPRequest $request)
+	{
 		$this->setRequest($request);
 
 		// Forward requests to the elements in the detail form to their respective controller
@@ -544,7 +564,8 @@ class TreeView extends FormField
 	 * @param \SilverStripe\Control\HTTPRequest $request
 	 * @return string
 	 */
-	public function doSave($data, $form) {
+	public function doSave($data, $form)
+	{
 		$id = intval($data["ID"]);
 		$item = PageElement::get()->byID($id);
 
@@ -700,10 +721,12 @@ class TreeView extends FormField
 		$tree = "[" .
 			implode(
 				',',
-				array_map(function ($item) {
-					return $item->ID;
-				},
-				$parents)
+				array_map(
+					function ($item) {
+						return $item->ID;
+					},
+					$parents
+				)
 			) .
 			"]";
 
@@ -715,8 +738,8 @@ class TreeView extends FormField
 		}
 
 		// Construct the array of all allowed child elements in parent slot
-		$parentClasses = count($parents) > 0 
-			? $parents[count($parents) - 1]->getAllowedPageElements() 
+		$parentClasses = count($parents) > 0
+			? $parents[count($parents) - 1]->getAllowedPageElements()
 			: $this->section->getAllowedPageElements();
 		$parentElems = [];
 		foreach ($parentClasses as $class) {
@@ -733,7 +756,7 @@ class TreeView extends FormField
 		if (!$this->readonly && count($classes)) {
 			$addButton = TreeViewFormAction::create(
 				$this,
-				"AddAction".$item->ID,
+				"AddAction" . $item->ID,
 				null,
 				null,
 				null
@@ -751,12 +774,13 @@ class TreeView extends FormField
 			// and save the allowed child classes on the button
 			$addAfterButton = TreeViewFormAction::create(
 				$this,
-				"AddAfterAction".$item->ID,
+				"AddAfterAction" . $item->ID,
 				null,
 				null,
 				null
 			);
-			$addAfterButton->setAttribute("data-allowed-elements", 
+			$addAfterButton->setAttribute(
+				"data-allowed-elements",
 				json_encode($parentElems, JSON_UNESCAPED_UNICODE)
 			);
 			$addAfterButton->addExtraClass("btn add-after-button font-icon-plus");
@@ -768,7 +792,7 @@ class TreeView extends FormField
 			// Create a button to delete and/or remove the element from the parent
 			$deleteButton = TreeViewFormAction::create(
 				$this,
-				"DeleteAction".$item->ID,
+				"DeleteAction" . $item->ID,
 				null,
 				null,
 				null
@@ -783,7 +807,7 @@ class TreeView extends FormField
 			// Create a button to edit the record
 			$editButton = TreeViewFormAction::create(
 				$this,
-				"EditAction".$item->ID,
+				"EditAction" . $item->ID,
 				null,
 				null,
 				null
@@ -801,7 +825,7 @@ class TreeView extends FormField
 		// Create the tree field
 		$treeButton = TreeViewFormAction::create(
 			$this,
-			"TreeNavAction".$item->ID,
+			"TreeNavAction" . $item->ID,
 			null,
 			"dotreenav",
 			["element" => $item]
@@ -891,4 +915,5 @@ class TreeView extends FormField
 	}
 }
 
-class TreeView_Readonly extends TreeView {}
+class TreeView_Readonly extends TreeView
+{ }
