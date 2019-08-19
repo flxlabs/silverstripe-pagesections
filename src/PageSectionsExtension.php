@@ -35,7 +35,7 @@ class PageSectionsExtension extends DataExtension
 		}
 
 		foreach ($sections as $section) {
-			$name = "PageSection".$section;
+			$name = "PageSection" . $section;
 			$has_one[$name] = PageSection::class;
 
 			$names[] = $name;
@@ -68,7 +68,7 @@ class PageSectionsExtension extends DataExtension
 		$classes = array_values(ClassInfo::subclassesFor(PageElement::class));
 		$classes = array_diff($classes, [PageElement::class]);
 		$ret = [];
-		foreach($classes as $class) {
+		foreach ($classes as $class) {
 			if ($class::$canBeRoot) $ret[] = $class;
 		}
 		return $ret;
@@ -95,7 +95,7 @@ class PageSectionsExtension extends DataExtension
 			$sections = $this->getPageSectionNames();
 
 			foreach ($sections as $sectionName) {
-				$name = "PageSection".$sectionName;
+				$name = "PageSection" . $sectionName;
 
 				if (!$this->owner->{$name . "ID"}) {
 					// Restore or create a page section if we don't have one yet
@@ -113,18 +113,19 @@ class PageSectionsExtension extends DataExtension
 		$sections = $this->getPageSectionNames();
 
 		foreach ($sections as $sectionName) {
-			$name = "PageSection".$sectionName;
+			$name = "PageSection" . $sectionName;
 			$this->owner->{$name . "ID"} = 0;
 		}
 	}
 
-	public function updateCMSFields(FieldList $fields) {
+	public function updateCMSFields(FieldList $fields)
+	{
 		$sections = $this->getPageSectionNames();
 
 		$fields->removeByName("__PageSectionCounter");
 
 		foreach ($sections as $sectionName) {
-			$name = "PageSection".$sectionName;
+			$name = "PageSection" . $sectionName;
 
 			$fields->removeByName($name);
 			$fields->removeByName($name . "ID");
@@ -189,7 +190,8 @@ class PageSectionsExtension extends DataExtension
 		}
 	}
 
-	private function restoreOrCreate($sectionName) {
+	private function restoreOrCreate($sectionName)
+	{
 		if (mb_strpos($sectionName, "PageSection") !== false) {
 			throw new \Error("PageSection name should not contain 'PageSection' when restoring or creating!");
 		}
@@ -197,7 +199,8 @@ class PageSectionsExtension extends DataExtension
 		$name = "PageSection" . $sectionName;
 
 		// Try restoring the section from the history
-		$archived = Versioned::get_latest_version(PageSection::class, $this->owner->{$name . "ID"});
+		$id = $this->owner->{$name . "ID"};
+		$archived = $id ? Versioned::get_latest_version(PageSection::class, $id) : null;
 		if ($archived && $archived->ID) {
 			// Update the back references
 			$archived->ID = $this->owner->{$name . "ID"};
