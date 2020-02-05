@@ -404,6 +404,13 @@ class TreeView extends FormField
 		// Close the element in case it's open to avoid errors
 		$this->closeItem($path);
 
+		// let's remove all relations
+		$this->getItems()->removeByID($itemId);
+		foreach ($parents as $parentId) {
+			$parent = PageElement::get()->byID($parentId);
+			if ($parent) $parent->Children()->removeByID($itemId);
+		}
+
 		// Delete the element
 		$item->delete();
 
