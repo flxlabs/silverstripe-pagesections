@@ -74,7 +74,11 @@ class PageSection extends DataObject
 
 	public function forTemplate()
 	{
-		return $this->Elements()->Count();
+		$elements = $this->Elements();
+		return $this->renderWith(
+			"RenderChildren",
+			array("Elements" => $elements, "ParentList" => strval($this->ID))
+		);
 	}
 
 	/**
