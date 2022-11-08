@@ -180,7 +180,7 @@ class PageSectionsExtension extends DataExtension
 			}
 
 			// Fix for archived errors
-			if ($this->owner->isArchived()) {
+			if (method_exists($this->owner, 'isArchived') && $this->owner->isArchived()) {
 				return new PageSection();
 			}
 
