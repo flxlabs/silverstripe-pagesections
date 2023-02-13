@@ -1,12 +1,4 @@
 (function($) {
-	// Silverstripe <= 4.12 use jQuery 3.6 which breaks jQuery UI's 'dialog' function.
-	// If we detect a jQuery version > 3, we lazy load jQuery migrate
-	if ($().jquery.startsWith('3')) {
-		const migrateScript = document.createElement('script');
-		migrateScript.src = 'https://code.jquery.com/jquery-migrate-3.4.0.min.js';
-		document.body.appendChild(migrateScript);
-	}
-
 	function TreeViewContextMenu() {
 		this.createDom = function(id, name) {
 			this.$menu = $(
