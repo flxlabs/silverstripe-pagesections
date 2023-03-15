@@ -601,26 +601,15 @@ class TreeView extends FormField
     }
 
     /**
-     * Gets the directory name of this module
-     *
-     * @return string
-     */
-    public static function getModuleDir()
-    {
-        return basename(dirname(__DIR__));
-    }
-
-    /**
      * Renders this TreeView as an HTML tag
      * @param array $properties The additional properties for the TreeView
      * @return string
      */
     public function FieldHolder($properties = array())
     {
-        $moduleDir = self::getModuleDir();
-        Requirements::css($moduleDir . "/css/TreeView.css");
-        Requirements::javascript($moduleDir . "/javascript/TreeView.js");
-        Requirements::add_i18n_javascript($moduleDir . '/javascript/lang', false, true);
+        Requirements::css("flxlabs/silverstripe-pagesections:client/css/TreeView.css");
+        Requirements::javascript("flxlabs/silverstripe-pagesections:client/javascript/TreeView.js");
+        Requirements::add_i18n_javascript('flxlabs/silverstripe-pagesections:client/javascript/lang', false, true);
 
         // Ensure $id doesn't contain only numeric characters
         $sessionId = 'ps_tv_' . substr(md5(serialize($this->opens)), 0, 8);
