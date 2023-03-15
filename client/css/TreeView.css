@@ -32,7 +32,7 @@
 }
 
 .treeview-item:last-child {
-	margin-bottome: 0;
+	margin-bottom: 0;
 }
 
 .treeview-item-flow {
@@ -335,4 +335,37 @@
 
 .treeview-item-reorder .ui-droppable.state-active svg path {
 	fill: #008A00;
+}
+
+/**
+ * Dialog
+ */
+.pagesections-dialog {
+	z-index: 1005;
+}
+
+.pagesections-dialog button.ui-dialog-titlebar-close {
+	position: absolute;
+	top: -5px;
+	right: -13px;
+	width: 30px;
+	height: 30px;
+	z-index: 100000;
+	background: transparent;
+	border: none;
+}
+.pagesections-dialog button.ui-dialog-titlebar-close {
+	border: none;
+}
+
+.pagesections-dialog button.ui-dialog-titlebar-close > .ui-icon-closethick {
+	margin: 1px;
+	top: 0;
+	left: 0;
+	background-image: url(../img/sprite-sprites-32x32.png);
+}
+.pagesections-dialog
+	button.ui-dialog-titlebar-close
+	> .ui-icon-closethick:hover {
+	background-image: url(../img/sprite-sprites-32x32.png);
 }

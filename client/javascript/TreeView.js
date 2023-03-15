@@ -287,6 +287,7 @@
 					var dialog = $('<div></div>')
 						.appendTo('body')
 						.dialog({
+							dialogClass: 'pagesections-dialog',
 							modal: true,
 							resizable: false,
 							width: 500,
@@ -367,6 +368,7 @@
 							var dialog = $('<div></div>')
 								.appendTo('body')
 								.dialog({
+									dialogClass: 'pagesections-dialog',
 									modal: false,
 									resizable: false,
 									width: $(window).width() * 0.9,
