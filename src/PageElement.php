@@ -131,12 +131,20 @@ class PageElement extends DataObject
         if (Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
             foreach ($this->PageSections() as $section) {
                 $section->__Counter++;
-                $section->write();
+                if ($section->isLiveVersion()) {
+                    $section->write();
+                } else {
+                    $section->writeWithoutVersion();
+                }
             }
 
             foreach ($this->Parents() as $parent) {
                 $parent->__Counter++;
-                $parent->write();
+                if ($parent->isLiveVersion()) {
+                    $parent->write();
+                } else {
+                    $parent->writeWithoutVersion();
+                }
             }
         }
     }
@@ -148,7 +156,11 @@ class PageElement extends DataObject
         if (Versioned::get_stage() == Versioned::DRAFT) {
             foreach ($this->PageSections() as $section) {
                 $section->__Counter++;
-                $section->write();
+                if ($section->isLiveVersion()) {
+                    $section->write();
+                } else {
+                    $section->writeWithoutVersion();
+                }
             }
         }
     }
@@ -158,7 +170,11 @@ class PageElement extends DataObject
         if (Versioned::get_stage() == Versioned::DRAFT) {
             foreach ($this->PageSections() as $section) {
                 $section->__Counter++;
-                $section->write();
+                if ($section->isLiveVersion()) {
+                    $section->write();
+                } else {
+                    $section->writeWithoutVersion();
+                }
             }
         }
     }

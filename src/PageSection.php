@@ -68,7 +68,12 @@ class PageSection extends DataObject
 
 		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
 			$this->Parent()->__PageSectionCounter++;
-			$this->Parent()->write();
+			// Only create a new version when the previous one is <th></th>e published one.
+			if ($this->Parent()->isLiveVersion()) {
+				$this->Parent()->write();
+			} else {
+				$this->Parent()->writeWithoutVersion();
+			}
 		}
 	}
 

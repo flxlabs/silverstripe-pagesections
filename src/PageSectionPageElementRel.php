@@ -36,7 +36,11 @@ class PageSectionPageElementRel extends DataObject
 
 		if (!$this->__NewOrder && Versioned::get_stage() == Versioned::DRAFT) {
 			$this->PageSection()->__Counter++;
-			$this->PageSection()->write();
+			if ($this->PageSection()->isLiveVersion()) {
+				$this->PageSection()->write();
+			} else {
+				$this->PageSection()->writeWithoutVersion();
+			}
 		}
 	}
 
@@ -46,7 +50,11 @@ class PageSectionPageElementRel extends DataObject
 
 		if (Versioned::get_stage() == Versioned::DRAFT) {
 			$this->PageSection()->__Counter++;
-			$this->PageSection()->write();
+			if ($this->PageSection()->isLiveVersion()) {
+				$this->PageSection()->write();
+			} else {
+				$this->PageSection()->writeWithoutVersion();
+			}
 		}
 	}
 }

@@ -36,7 +36,11 @@ class PageElementSelfRel extends DataObject
 
 		if (!$this->__NewOrder && Versioned::get_stage() == Versioned::DRAFT) {
 			$this->Parent()->__Counter++;
-			$this->Parent()->write();
+			if ($this->Parent()->isLiveVersion()) {
+				$this->Parent()->write();
+			} else {
+				$this->Parent()->writeWithoutVersion();
+			}
 		}
 	}
 
@@ -46,7 +50,11 @@ class PageElementSelfRel extends DataObject
 
 		if (Versioned::get_stage() == Versioned::DRAFT) {
 			$this->Parent()->__Counter++;
-			$this->Parent()->write();
+			if ($this->Parent()->isLiveVersion()) {
+				$this->Parent()->write();
+			} else {
+				$this->Parent()->writeWithoutVersion();
+			}
 		}
 	}
 }
