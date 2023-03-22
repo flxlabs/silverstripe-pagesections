@@ -227,6 +227,15 @@
 	border-top: 1px solid #ccc;
 }
 
+.treeview-menu li.treeview-menu__add-existing {
+	position: relative;
+}
+.treeview-menu li.treeview-menu__add-existing::before {
+	position: absolute;
+	left: 7px;
+	top: 12px;
+}
+
 /**
  * Orderable rows
  */
@@ -341,7 +350,6 @@
 	margin-left: 0;
 	margin-right: 0;
 }
-
 /**
  * Dialog
  */
