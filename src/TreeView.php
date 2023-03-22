@@ -25,6 +25,9 @@ class TreeView extends FormField
      */
     protected $sortField = 'SortOrder';
     protected $parent = null;
+    /**
+     * @var \SilverStripe\ORM\Search\SearchContext
+     */
     protected $context = null;
     protected $opens = null;
 
@@ -280,53 +283,58 @@ class TreeView extends FormField
 
         // If we have an id then add an existing item...
         if (isset($data["id"])) {
-            $element = PageElement::get()->byID($data["id"]);
-            if (!$element) {
+            $existing = true;
+            $child = PageElement::get()->byID($data["id"]);
+            if (!$child) {
                 Controller::curr()->getResponse()->setStatusCode(
                     400,
                     "Could not find PageElement with id " . $data['id']
                 );
                 return $this->FieldHolder();
             }
-
-            $this->getItems()->Add($element);
+            $type = $child->ClassName;
         } else {
             // ...otherwise add a completely new item
-            $itemId = isset($data["itemId"]) ? intval($data["itemId"]) : null;
+            $existing = false;
             $type = $data["type"];
 
             $child = $type::create();
-            $child->Name = "New " . $child->singular_name();
+        }
 
-            $sort = isset($data["sort"]) ? intval($data["sort"]) : 0;
-            $sortBy = $this->getSortField();
-            $sortArr = [$sortBy => $sort];
+        $itemId = isset($data["itemId"]) ? intval($data["itemId"]) : null;
+        $sort = isset($data["sort"]) ? intval($data["sort"]) : 0;
+        $sortBy = $this->getSortField();
+        $sortArr = [$sortBy => $sort];
 
-            // If we have an itemId then we're adding to another element
-            // otherwise we're adding to the root
-            if ($itemId) {
-                $parents = array_values(array_filter(explode(",", $data["parents"]), 'strlen'));
-                $path = array_merge($parents, [$itemId]);
+        // If we have an itemId then we're adding to another element
+        // otherwise we're adding to the root
+        if ($itemId) {
+            $parents = array_values(array_filter(explode(",", $data["parents"]), 'strlen'));
+            $path = array_merge($parents, [$itemId]);
 
-                $item = PageElement::get()->byID($itemId);
-                if (!in_array($type, $item->getAllowedPageElements())) {
-                    Controller::curr()->getResponse()->setStatusCode(
-                        400,
-                        "The type " . $type . " is not allowed as a child of " . $item->ClassName
-                    );
-                    return $this->FieldHolder();
-                }
-
-                $child->write();
-                $item->Children()->Add($child, $sortArr);
-                $item->write();
-
-                // Make sure we can see the child
-                $this->openItem(array_merge($path, [$item->ID]));
-            } else {
-                $child->write();
-                $this->getItems()->Add($child, $sortArr);
+            $item = PageElement::get()->byID($itemId);
+            if (!in_array($type, $item->getAllowedPageElements())) {
+                Controller::curr()->getResponse()->setStatusCode(
+                    400,
+                    "The type " . $type . " is not allowed as a child of " . $item->ClassName
+                );
+                return $this->FieldHolder();
             }
+
+            if (!$existing) {
+                $child->write();
+            }
+            $item->Children()->Add($child, $sortArr);
+            $item->write();
+
+            // Make sure we can see the child (an its children)
+            $this->openRecursive($child, [$item]);
+        } else {
+            if ($existing) {
+                $child->write();
+                $this->openRecursive($child);
+            }
+            $this->getItems()->Add($child, $sortArr);
         }
 
         return $this->FieldHolder();
@@ -413,6 +421,15 @@ class TreeView extends FormField
         return $this->FieldHolder();
     }
 
+    protected function getTarget($itemId)
+    {
+        $target = $this->section;
+        if ($itemId && $targetElement = PageElement::get()->byID($itemId)) {
+            $target = $targetElement;
+        }
+        return $target;
+    }
+
     /**
      * This action is called when the find existing dialog is shown.
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -420,6 +437,21 @@ class TreeView extends FormField
      */
     public function search($request)
     {
+        $parents = $request->getVar('parents') ?? [];
+        $itemId = $request->getVar('itemId');
+        $sort = $request->getVar('sort') ?? 9999;
+        $target = $this->getTarget($itemId);
+
+        $fields = $this->context->getFields();
+        if ($classField = $fields->fieldByName('ClassName')) {
+            $allowed = $target->getAllowedPageElements();
+            $classField->setSource(array_combine($allowed, $allowed));
+        }
+
+        $fields->push(HiddenField::create('parents', 'parents', $parents));
+        $fields->push(HiddenField::create('itemId', 'itemId', $itemId));
+        $fields->push(HiddenField::create('sort', 'sort', $sort));
+
         $form = Form::create(
             $this,
             'search',
@@ -435,7 +467,11 @@ class TreeView extends FormField
 
         // Check if we're requesting the form for the first time (we return the template)
         // or if this is a submission (we return the form, so it calls the submitted action)
-        if (count($request->requestVars()) === 0) {
+        $extraRequestVars = array_filter($request->requestVars(), function ($name) {
+            return !in_array($name, ['parents', 'sort', 'itemId']);
+        }, ARRAY_FILTER_USE_KEY);
+
+        if (count($extraRequestVars) === 0) {
             return $form->forAjaxTemplate();
         }
         return $form;
@@ -448,14 +484,24 @@ class TreeView extends FormField
      */
     public function doSearch($data, $form)
     {
-        $list = $this->context->getQuery($data, false, false);
-        $allowed = $this->section->getAllowedPageElements();
+        $list = $this->context->getQuery([
+            'ClassName' => $data['ClassName'],
+            'Name' => $data['Name'],
+        ], false, false);
+        $allowed = $this->getTarget($data['itemId'])->getAllowedPageElements();
         // Remove all disallowed classes
-        $list = $list->filter("ClassName", $allowed);
+        $list = $list->filter(["ClassName" => $allowed, "Name:not" => [null, '']]);
+        $sql = $list->dataQuery()->getFinalisedQuery()->sql($parameters);
+
         $list = new PaginatedList($list, $data);
         $data = $this->customise([
             'SearchForm' => $form,
             'Items' => $list,
+            'AddArguments' => [
+                'Parents' => $data['parents'],
+                'ItemID' => $data['itemId'],
+                'Sort' => $data['sort'],
+            ],
         ]);
         return $data->renderWith("FLXLabs\PageSections\TreeViewFindExistingForm");
     }
@@ -585,8 +631,6 @@ class TreeView extends FormField
     public function getItems()
     {
         return $this->section->Elements();
-        /*return $this->parent->ClassName == PageSection::class ?
-    $this->parent->Elements() : $this->parent->Children();*/
     }
 
     /**
@@ -642,11 +686,6 @@ class TreeView extends FormField
             $content .= ArrayData::create([
                 "Button" => $addButton,
             ])->renderWith("\FLXLabs\PageSections\TreeViewAddNewButton");
-
-            // Create the find existing button
-            $findExisting = TreeViewFormAction::create($this, 'FindExisting', 'Find existing');
-            $findExisting->addExtraClass("btn font-icon-search tree-actions-findexisting");
-            $content .= $findExisting->forTemplate();
         }
 
         $content .= "</div>";

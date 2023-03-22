@@ -4,6 +4,7 @@ if (typeof(ss) === 'undefined' || typeof(ss.i18n) === 'undefined') {
   }
 } else {
   ss.i18n.addDictionary('en', {
+      "PageSections.GridField.FindExisting": "Find existing",
       "PageSections.GridField.AddAChild": "Add a child",
       "PageSections.GridField.Delete": "Delete",
       "PageSections.GridField.DeleteAChild": "Finally delete",

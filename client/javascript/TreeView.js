@@ -12,6 +12,11 @@
 		this.addLabel = function(label) {
 			this.$menu.append("<li class='header'>" + label + '</li>');
 		};
+		this.addAddExistingButton = function(label, onClick = function() {}) {
+			var $li = $("<li class='treeview-menu__add-existing font-icon-search'>" + label + "</li>");
+			$li.click(onClick);
+			this.$menu.append($li);
+		}
 		this.addItem = function(type, label, onClick = function() {}) {
 			var $li = $("<li data-type='" + type + "'>" + label + '</li>');
 			$li.click(onClick);
@@ -162,7 +167,11 @@
 			'.add-existing-search-dialog-treeview .add-existing-search-items a'
 		).entwine({
 			onclick: function() {
-				var link = this.closest('.add-existing-search-items').data('add-link');
+				var items = this.closest('.add-existing-search-items');
+				var link = items.data('add-link');
+				var parents = items.data('add-parents');
+				var itemId = items.data('add-item-id');
+				var sort = items.data('add-sort');
 				var id = this.data('id');
 
 				var dialog = this.closest('.add-existing-search-dialog-treeview')
@@ -176,6 +185,18 @@
 							{
 								name: 'id',
 								value: id
+							},
+							{
+								name: 'parents',
+								value: parents || []
+							},
+							{
+								name: 'itemId',
+								value: itemId || null
+							},
+							{
+								name: 'sort',
+								value: sort
 							}
 						]
 					},
@@ -282,8 +303,7 @@
 				var name = $treeView.data('name');
 				var url = $treeView.data('url');
 
-				// Setup find existing button
-				$treeView.find('button[name=action_FindExisting]').click(function() {
+				function showFindExistingDialog(parents, itemId, sort) {
 					var dialog = $('<div></div>')
 						.appendTo('body')
 						.dialog({
@@ -298,14 +318,21 @@
 									.remove();
 							}
 						});
-
-					var url = $.get($treeView.data('url') + '/search');
+					var search = new URLSearchParams();
+					search.append('parents', JSON.stringify(parents));
+					if (sort) {
+						search.append('sort', sort);
+					}
+					if (itemId) {
+						search.append('itemId', itemId);
+					}
+					var url = $.get($treeView.data('url') + '/search?' + search.toString());
 					dialog
 						.addClass('add-existing-search-dialog-treeview')
 						.data('treeview', $treeView)
 						.data('origUrl', url)
 						.loadDialog(url);
-				});
+				}
 
 				// Add new button at the very top
 				$treeView
@@ -324,6 +351,10 @@
 						menu.addLabel(
 							ss.i18n._t('PageSections.TreeView.AddAChild', 'Add a child')
 						);
+						menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
+							showFindExistingDialog([], null, 1);
+							menu.remove();
+						});
 						$.each(elems, function(key, value) {
 							menu.addItem(key, value, function() {
 								$treeView.addItem([], null, key, 1);
@@ -405,6 +436,10 @@
 							menu.addLabel(
 								ss.i18n._t('PageSections.TreeView.AddAChild', 'Add a child')
 							);
+							menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
+								showFindExistingDialog(parents, itemId, 1);
+								menu.remove();
+							});
 							$.each(elems, function(key, value) {
 								menu.addItem(key, value, function() {
 									$treeView.addItem(parents, itemId, key, 1);
@@ -432,7 +467,10 @@
 									'Add new element'
 								)
 							);
-
+							menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
+								showFindExistingDialog(parents.slice(0, parents.length - 1), parents[parents.length - 1], $item.data('sort') + 1);
+								menu.remove();
+							});
 							$.each(elems, function(key, value) {
 								menu.addItem(key, value, function() {
 									$treeView.addItem(

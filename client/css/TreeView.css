@@ -337,6 +337,11 @@
 	fill: #008A00;
 }
 
+.add-existing-search-results > .add-existing-search-items {
+	margin-left: 0;
+	margin-right: 0;
+}
+
 /**
  * Dialog
  */

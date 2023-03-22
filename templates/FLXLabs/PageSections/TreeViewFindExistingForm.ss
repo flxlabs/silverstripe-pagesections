@@ -3,10 +3,10 @@ $SearchForm
 <h3><%t GridFieldExtensions.RESULTS "Results" %></h3>
 <div class="add-existing-search-results">
 	<% if $Items %>
-		<ul class="list-group add-existing-search-items" data-add-link="$Link('add')">
+		<ul class="list-group add-existing-search-items" data-add-link="$Link('add')" data-add-parents="$AddArguments.Parents" data-add-item-id="$AddArguments.ItemID" data-add-sort="$AddArguments.Sort">
 			<% loop $Items %>
 				<li class="$EvenOdd list-group-item list-group-item-action">
-                    <a href="#" data-id="$ID">$Title</a>
+                    <a href="#" data-id="$ID">$Title</a> ($ClassName)
                 </li>
 			<% end_loop %>
 		</ul>
