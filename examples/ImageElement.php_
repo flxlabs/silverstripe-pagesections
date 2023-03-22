@@ -1,24 +1,29 @@
 <?php
+
+use SilverStripe\Assets\Image;
+use SilverStripe\AssetAdmin\Forms\UploadField;
+use FLXLabs\PageSections\PageElement;
+
 class ImageElement extends PageElement  {
-	public static $singular_name = 'Image';
-	public static $plural_name = 'Images';
-    
-    private static $has_one = array(
-        'Image' => 'Image',
-    );
-    
-    public function getCMSFields(){
-        $fields = parent::getCMSFields();
-        $fields->removeByName('Children');
-        
-        $fields->addFieldToTab(
-            'Root.Main',    
-            $uploadField = new UploadField(
-                $name = 'Image',
-                $title = 'Upload an image'
-            )
-        );
-        
-        return $fields;
-    }
+	protected static $singularName = 'Image';
+	protected static $pluralName = 'Images';
+	
+	private static $has_one = array(
+		'Image' => Image::class,
+	);
+	
+	public function getCMSFields(){
+		$fields = parent::getCMSFields();
+		$fields->removeByName('Children');
+		
+		$fields->addFieldToTab(
+			'Root.Main',    
+			$uploadField = new UploadField(
+				$name = 'Image',
+				$title = 'Upload an image'
+			)
+		);
+		
+		return $fields;
+	}
 }

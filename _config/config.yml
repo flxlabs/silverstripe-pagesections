@@ -1,14 +1,15 @@
 ---
 Name: pagesections
-After:
-  - 'framework/*'
-  - 'cms/*'
 ---
-# YAML configuration for SilverStripe
-# See http://doc.silverstripe.org/framework/en/topics/configuration
-# Caution: Indentation through two spaces, not tabs
-
-PageElement:
+FLXLabs\PageSections\PageElement:
   extensions:
-    - Versioned
-    - VersionedRelationsExtension
+    - SilverStripe\Versioned\Versioned
+FLXLabs\PageSections\PageSection:
+  extensions:
+    - SilverStripe\Versioned\Versioned
+FLXLabs\PageSections\PageElementSelfRel:
+  extensions:
+    - SilverStripe\Versioned\Versioned
+FLXLabs\PageSections\PageSectionPageElementRel:
+  extensions:
+    - SilverStripe\Versioned\Versioned

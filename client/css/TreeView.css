@@ -1,0 +1,376 @@
+/*
+ * Main
+ */
+
+.treeview-pagesections {}
+
+.treeview-pagesections__header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.tree-actions-findexisting {
+	margin-right: 0;
+	margin-left: auto;
+}
+
+.treeview-item__panel {
+	position: relative;
+	box-sizing: border-box;
+	background: #fff;
+	border-radius: 4px;
+	border: 1px solid #C1CADA;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: space-between;
+	min-height: 95px;
+}
+
+.treeview-item:first-child {
+	margin-top: 0;
+}
+
+.treeview-item:last-child {
+	margin-bottom: 0;
+}
+
+.treeview-item-flow {
+	flex: 1 1 auto;
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	padding: 8px 0;
+}
+
+.treeview-item__treeswitch {
+	flex: 0 0 30px;
+}
+
+.treeview-item__treeswitch__button {
+	width: 100%;
+	height: 30px;
+	margin: 0;
+	margin-top: -7px;
+	padding: 0;
+	font-size: 114%;
+	padding-left: 5px;
+	box-sizing: border-box;
+	background: transparent;
+}
+
+.treeview-item__treeswitch__button.is-end {
+	opacity: 0;
+}
+
+/*
+.treeview-item__treeswitch__button:hover {
+	color: #005489;
+	border-color: #005489;
+}
+.treeview-item__treeswitch__button:before {
+	position: absolute;
+	left: -0.08em;
+	top: -0.08em;
+	font-size: 90%;
+}
+*/
+.treeview-item__treeswitch__button .btn__title {
+	display: none;
+}
+
+.treeview-item__preview {
+	margin-right: auto;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.treeview-item__children {
+	padding-left: 30px;
+	padding-right: 5px;
+	border-bottom: 1px solid #fff;
+}
+
+.treeview-item-content {
+	flex: 0 0 300px;
+	border-right: 1px solid #C1CADA;
+	padding-right: 5px;
+}
+
+.treeview-item .treeview-item .treeview-item-content {
+	flex: 0 1 270px;
+}
+
+.treeview-item .treeview-item .treeview-item .treeview-item-content {
+	flex: 0 1 240px;
+}
+
+.treeview-item .treeview-item .treeview-item .treeview-item  .treeview-item-content {
+	flex: 0 1 210px;
+}
+
+.treeview-item-content__classname {
+	font-size: 87%;
+}
+
+.treeview-item-content__title {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+.treeview-item-actions {
+	display: flex;
+}
+
+.treeview-item-actions--edit {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: none;
+	background: #fff;
+}
+
+.treeview-item-flow:hover .treeview-item-actions--edit {
+	display: block;
+}
+
+.treeview-item-actions--pre {
+	background: transparent;
+	padding-left: 26px;
+}
+
+.treeview-item-actions--pre .btn[disabled] {
+	display: none;
+}
+
+.treeview-item-actions .btn, .treeview-item .treeview-item__post-actions .btn {
+	padding-left: 0;
+	background: transparent;
+	color: #43536d;
+}
+
+.treeview-item-actions .edit-button {
+	margin-left: auto;
+}
+
+/*
+ * Add new button
+ */
+
+.treeview-actions-addnew {
+	display: flex;
+	align-items: center;
+}
+
+.treeview-actions-addnew .form-group::after {
+	content: none;
+}
+
+.treeview-actions-addnew__dropdown {
+	flex: 1 0 200px;
+	padding-bottom: 0;
+	border-bottom: 0;
+	margin: 0 5px 0 0;
+}
+
+@media(min-width: 992px) {
+	.treeview-actions-addnew__dropdown .form__field-holder {
+		margin-left: 0 !important;
+		margin-right: 5px !important;
+		flex: 1 1 auto !important;
+		max-width: none !important;
+	}
+}
+
+/*
+ * Tree Nav
+ */
+
+.treeview-menu {
+	display: none;
+	z-index: 1000;
+	position: fixed;
+	overflow: hidden;
+	border: 1px solid #ccc;
+	white-space: nowrap;
+	font-family: sans-serif;
+	background: #fff;
+	color: #333;
+	border-radius: 5px;
+	padding: 0;
+}
+
+.treeview-menu li {
+	padding: 8px 12px 8px 2em;
+	cursor: pointer;
+	list-style-type: none;
+	transition: all 0.3s ease;
+}
+
+.treeview-menu li:hover {
+	background-color: #e9f0f4;
+}
+
+.treeview-menu li.header {
+	font-weight: bolder;
+	cursor: default;
+	border-bottom: 1px solid #ccc;
+	padding-left: 8px;
+}
+
+.treeview-menu li.header:hover {
+	background: none;
+}
+
+.treeview-menu li.options {
+	border-top: 1px solid #ccc;
+}
+
+/**
+ * Orderable rows
+ */
+
+.treeview-item__dragger {
+	z-index: 3000;
+}
+
+.treeview-item__dragger .treeview-item-actions,
+.treeview-item__dragger .treeview-item-reorder .droppable,
+.treeview-item__dragger .treeview-item__post-actions {
+	display: none !important;
+}
+
+.treeview-item__draggable.state-active {
+	border: 1px solid #417505;
+}
+
+.treeview-item-reorder {
+	position: absolute;
+	z-index: 200;
+	bottom: -5px;
+	top: -5px;
+	left: 0;
+	right: 0;
+	pointer-events: none;
+}
+
+.treeview-item-reorder__handle {
+	pointer-events: all;
+	width: 30px;
+	position: absolute;
+	font-size: 30px;
+	cursor: pointer;
+	bottom: 35px;
+	top: 35px;
+	display: flex;
+	align-items: center;
+	cursor: grab
+}
+
+.treeview-item-reorder .ui-droppable {
+	position: absolute;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	display: none;
+}
+
+.treeview-item-reorder .ui-droppable:before {
+	content: "";
+	position: absolute;
+	left: -4px;
+	top: -2px;
+	right: -4px;
+	bottom: -2px;
+	border-radius: 5px;
+	border: 1px dashed transparent;
+}
+
+.treeview-item-reorder .ui-droppable svg {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	z-index: 100;
+	transform: translate(0, -50%);
+}
+
+.treeview-item-reorder .ui-droppable:not(.middle) svg {
+	transform: translate(30px, -50%);
+}
+
+.treeview-item-reorder .ui-droppable svg path {
+	fill: #a8cb7f;
+}
+
+.treeview-item-reorder .ui-droppable.middle {
+	top: 0;
+	bottom: 0;
+	left: -15px;
+}
+
+.treeview-item-reorder .ui-droppable.middle svg {
+	transform: translate(0, -50%) scale(-1, 1)
+}
+
+.treeview-item-reorder .ui-droppable.before {
+	z-index: 1;
+	bottom: 100%;
+	height: 24px;
+}
+
+.treeview-item-reorder .ui-droppable.after {
+	z-index: 1;
+	top: 100%;
+	height: 24px;
+}
+
+.treeview-item-reorder .ui-droppable.state-active {
+	z-index: 200;
+}
+
+.treeview-item-reorder .ui-droppable.state-active:before {
+	border-color: #417505;
+}
+
+.treeview-item-reorder .ui-droppable.state-active svg path {
+	fill: #008A00;
+}
+
+.add-existing-search-results > .add-existing-search-items {
+	margin-left: 0;
+	margin-right: 0;
+}
+
+/**
+ * Dialog
+ */
+.pagesections-dialog {
+	z-index: 1005;
+}
+
+.pagesections-dialog button.ui-dialog-titlebar-close {
+	position: absolute;
+	top: -5px;
+	right: -13px;
+	width: 30px;
+	height: 30px;
+	z-index: 100000;
+	background: transparent;
+	border: none;
+}
+.pagesections-dialog button.ui-dialog-titlebar-close {
+	border: none;
+}
+
+.pagesections-dialog button.ui-dialog-titlebar-close > .ui-icon-closethick {
+	margin: 1px;
+	top: 0;
+	left: 0;
+	background-image: url(../img/sprite-sprites-32x32.png);
+}
+.pagesections-dialog
+	button.ui-dialog-titlebar-close
+	> .ui-icon-closethick:hover {
+	background-image: url(../img/sprite-sprites-32x32.png);
+}
