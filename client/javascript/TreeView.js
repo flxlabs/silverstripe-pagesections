@@ -351,15 +351,15 @@
 						menu.addLabel(
 							ss.i18n._t('PageSections.TreeView.AddAChild', 'Add a child')
 						);
-						menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
-							showFindExistingDialog([], null, 1);
-							menu.remove();
-						});
 						$.each(elems, function(key, value) {
 							menu.addItem(key, value, function() {
 								$treeView.addItem([], null, key, 1);
 								menu.remove();
 							});
+						});
+						menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
+							showFindExistingDialog([], null, 1);
+							menu.remove();
 						});
 						menu.show(event.pageX, event.pageY);
 					});
@@ -436,15 +436,15 @@
 							menu.addLabel(
 								ss.i18n._t('PageSections.TreeView.AddAChild', 'Add a child')
 							);
-							menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
-								showFindExistingDialog(parents, itemId, 1);
-								menu.remove();
-							});
 							$.each(elems, function(key, value) {
 								menu.addItem(key, value, function() {
 									$treeView.addItem(parents, itemId, key, 1);
 									menu.remove();
 								});
+							});
+							menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
+								showFindExistingDialog(parents, itemId, 1);
+								menu.remove();
 							});
 							menu.show(event.pageX, event.pageY);
 						});
@@ -467,10 +467,6 @@
 									'Add new element'
 								)
 							);
-							menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
-								showFindExistingDialog(parents.slice(0, parents.length - 1), parents[parents.length - 1], $item.data('sort') + 1);
-								menu.remove();
-							});
 							$.each(elems, function(key, value) {
 								menu.addItem(key, value, function() {
 									$treeView.addItem(
@@ -481,6 +477,14 @@
 									);
 									menu.remove();
 								});
+							});
+							menu.addAddExistingButton(ss.i18n._t('PageSection.TreeView.FindExisting', 'Find existing'), function() {
+								showFindExistingDialog(
+									parents.slice(0, parents.length - 1),
+									parents[parents.length - 1],
+									$item.data('sort') + 1
+								);
+								menu.remove();
 							});
 							menu.show(event.pageX, event.pageY);
 						});
