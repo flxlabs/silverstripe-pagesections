@@ -8,6 +8,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
@@ -228,18 +229,18 @@ class PageElement extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $fields->removeByName('Pages');
-        $fields->removeByName('Parents');
-        $fields->removeByName("PageSections");
-        $fields->removeByName('__Counter');
+        $fields->removeByName(["Name", "Pages", "Parents", "PageSections", "__Counter"]);
 
         $fields->removeByName("Children");
 
         // Add our newest version as a readonly field
         $fields->addFieldsToTab(
-            "Root.Main",
-            ReadonlyField::create("Version", "Version", $this->Version),
-            "Title"
+            "Root.Uses",
+            [
+                TextField::create("Name", "Name", $this->Name),
+                ReadonlyField::create("Version", "Version", $this->Version),
+            ],
+            "Uses"
         );
 
         // Create an array of all places this PageElement is shown
