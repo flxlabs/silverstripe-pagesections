@@ -327,12 +327,17 @@ class TreeView extends FormField
             $item->Children()->Add($child, $sortArr);
             $item->write();
 
-            // Make sure we can see the child (an its children)
-            $this->openRecursive($child, [$item]);
+            // Make sure we can see the child (and its children)
+            if ($existing) {
+                $this->openRecursive($child, [$item]);
+            } else {
+                $this->openItem(array_merge($path, [$item->ID]));
+            }
         } else {
             if ($existing) {
-                $child->write();
                 $this->openRecursive($child);
+            } else {
+                $child->write();
             }
             $this->getItems()->Add($child, $sortArr);
         }
