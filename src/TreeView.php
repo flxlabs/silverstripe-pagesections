@@ -82,7 +82,8 @@ class TreeView extends FormField
      * this because the default behavior would write a NULL value into the relation.
      */
     public function saveInto(DataObjectInterface $record)
-    {}
+    {
+    }
 
     /**
      * Recursively opens an item
@@ -121,7 +122,7 @@ class TreeView extends FormField
             $this->httpError(400, _t(
                 "SilverStripe\\Forms\\Form.CSRF_FAILED_MESSAGE",
                 "There seems to have been a technical problem. Please click the back button, " .
-                "refresh your browser, and try again."
+                    "refresh your browser, and try again."
             ));
             return;
         }
@@ -417,7 +418,6 @@ class TreeView extends FormField
             if ($parent) {
                 $parent->Children()->removeByID($itemId);
             }
-
         }
 
         // Delete the element
@@ -492,7 +492,7 @@ class TreeView extends FormField
         $list = $this->context->getQuery([
             'ClassName' => $data['ClassName'],
             'Name' => $data['Name'],
-        ], false, false);
+        ], false, null);
         $allowed = $this->getTarget($data['itemId'])->getAllowedPageElements();
         // Remove all disallowed classes
         $list = $list->filter(["ClassName" => $allowed, "Name:not" => [null, '']]);
@@ -525,13 +525,13 @@ class TreeView extends FormField
         $actions = new FieldList();
         if ($canEdit) {
             $actions->push(FormAction::create('doSave', _t('SilverStripe\\Forms\\GridField\\GridFieldDetailForm.Save', 'Save'))
-                    ->setUseButtonTag(true)
-                    ->addExtraClass('btn-primary font-icon-save'));
+                ->setUseButtonTag(true)
+                ->addExtraClass('btn-primary font-icon-save'));
         }
         if ($canDelete) {
             $actions->push(FormAction::create('doDelete', _t('SilverStripe\\Forms\\GridField\\GridFieldDetailForm.Delete', 'Delete'))
-                    ->setUseButtonTag(true)
-                    ->addExtraClass('btn-outline-danger btn-hide-outline font-icon-trash-bin action-delete'));
+                ->setUseButtonTag(true)
+                ->addExtraClass('btn-outline-danger btn-hide-outline font-icon-trash-bin action-delete'));
         }
 
         $fields = $item->getCMSFields();
@@ -755,15 +755,15 @@ class TreeView extends FormField
         // Get the list of parents of this element as an array of ids
         // (already converted to json/a string)
         $tree = "[" .
-        implode(
-            ',',
-            array_map(
-                function ($item) {
-                    return $item->ID;
-                },
-                $parents
-            )
-        ) .
+            implode(
+                ',',
+                array_map(
+                    function ($item) {
+                        return $item->ID;
+                    },
+                    $parents
+                )
+            ) .
             "]";
 
         // Construct the array of all allowed child elements
@@ -775,8 +775,8 @@ class TreeView extends FormField
 
         // Construct the array of all allowed child elements in parent slot
         $parentClasses = count($parents) > 0
-        ? $parents[count($parents) - 1]->getAllowedPageElements()
-        : $this->section->getAllowedPageElements();
+            ? $parents[count($parents) - 1]->getAllowedPageElements()
+            : $this->section->getAllowedPageElements();
         $parentElems = [];
         foreach ($parentClasses as $class) {
             $parentElems[$class] = singleton($class)->singular_name();
@@ -952,4 +952,5 @@ class TreeView extends FormField
 }
 
 class TreeView_Readonly extends TreeView
-{}
+{
+}
