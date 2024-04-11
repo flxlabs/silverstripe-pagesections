@@ -34,6 +34,10 @@ class PageSectionPageElementRel extends DataObject
 	{
 		parent::onAfterWrite();
 
+		if (!PageSectionChangeState::propagateWrites()) {
+			return;
+		}
+
 		if (!$this->__NewOrder && Versioned::get_stage() == Versioned::DRAFT) {
 			$this->PageSection()->__Counter++;
 			if ($this->PageSection()->isLiveVersion()) {

@@ -79,6 +79,10 @@ class PageElement extends DataObject
         "Children",
     ];
 
+    private static $cascade_duplicates = [
+        "Children",
+    ];
+
     private static $summary_fields = [
         "GridFieldPreview",
     ];
@@ -112,6 +116,10 @@ class PageElement extends DataObject
     {
         parent::onBeforeWrite();
 
+        if (!$this->isInDB()) {
+            return;
+        }
+
         // If a  field changed then update the counter, unless it's the counter that changed
         $changed = $this->getChangedFields(true, DataObject::CHANGE_VALUE);
         if (count($changed) > 0 && (!isset($changed["__Counter"]) || $changed["__Counter"]["level"] <= 1)) {
@@ -128,6 +136,10 @@ class PageElement extends DataObject
     public function onAfterWrite()
     {
         parent::onAfterWrite();
+
+        if (!PageSectionChangeState::propagateWrites()) {
+            return;
+        }
 
         if (Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
             foreach ($this->PageSections() as $section) {
@@ -177,6 +189,40 @@ class PageElement extends DataObject
                     $section->writeWithoutVersion();
                 }
             }
+        }
+    }
+
+    /**
+     * Overwrites the parent version so that it actually clones Children rather than rereferencing them
+     *
+     * @param DataObject $sourceObject
+     * @param DataObject $destinationObject
+     * @param string $relation
+     */
+    protected function duplicateManyManyRelation($sourceObject, $destinationObject, $relation)
+    {
+        if ($relation === 'Children') {
+            return $this->duplicateChildren($sourceObject, $destinationObject);
+        }
+
+        return parent::duplicateManyManyRelation($sourceObject, $destinationObject, $relation);
+    }
+
+    /**
+     * Custom method to clone Children
+     *
+     * @param DataObject $sourceObject
+     * @param DataObject $destinationObject
+     */
+    protected function duplicateChildren($sourceObject, $destinationObject)
+    {
+        // Copy all components from source to destination
+        $source = $sourceObject->getManyManyComponents('Children')->sort('SortOrder');
+        $dest = $destinationObject->getManyManyComponents('Children');
+
+        foreach ($source as $item) {
+            $clonedItem = $item->duplicate(false);
+            $dest->add($clonedItem);
         }
     }
 

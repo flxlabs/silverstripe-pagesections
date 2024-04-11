@@ -2,23 +2,13 @@
 
 namespace FLXLabs\PageSections;
 
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Forms\Form;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
-use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverStripe\Forms\GridField\GridFieldButtonRow;
-use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
-use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
-use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Versioned\Versioned;
-
-use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 
 class PageSection extends DataObject
 {
+	public $__isNew = false;
+
 	private static $table_name = "FLXLabs_PageSections_PageSection";
 
 	private static $db = [
@@ -36,6 +26,10 @@ class PageSection extends DataObject
 		"Elements",
 	];
 
+	private static $cascade_duplicates = [
+		"Elements"
+	];
+
 	private static $many_many = [
 		"Elements" => [
 			"through" => PageSectionPageElementRel::class,
@@ -44,7 +38,8 @@ class PageSection extends DataObject
 		]
 	];
 
-	public function Parent() {
+	public function Parent()
+	{
 		$parent = DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
 		if ($parent == null) {
 			$parent = Versioned::get_latest_version($this->__ParentClass, $this->__ParentID);
@@ -52,19 +47,49 @@ class PageSection extends DataObject
 		return $parent;
 	}
 
-	public function onBeforeWrite() {
+
+	public function onBeforeDuplicate()
+	{
+		PageSectionChangeState::propagateWrites(false);
+	}
+
+	public function onAfterDuplicate()
+	{
+		PageSectionChangeState::propagateWrites(true);
+	}
+
+	public function onBeforeCopyToLocale()
+	{
+		PageSectionChangeState::propagateWrites(false);
+	}
+
+	public function onAfterCopyToLocale()
+	{
+		PageSectionChangeState::propagateWrites(true);
+	}
+
+	public function onBeforeWrite()
+	{
 		parent::onBeforeWrite();
+
+		if (!$this->isInDB()) {
+			return;
+		}
 
 		$elems = $this->Elements()->Sort("SortOrder")->Column("ID");
 		$count = count($elems);
 		for ($i = 0; $i < $count; $i++) {
-			$this->Elements()->Add($elems[$i], [ "SortOrder" => ($i + 1) * 2, "__NewOrder" => true ]);
+			$this->Elements()->Add($elems[$i], ["SortOrder" => ($i + 1) * 2, "__NewOrder" => true]);
 		}
 	}
 
 	public function onAfterWrite()
 	{
 		parent::onAfterWrite();
+
+		if (!PageSectionChangeState::propagateWrites()) {
+			return;
+		}
 
 		if (!$this->__isNew && Versioned::get_stage() == Versioned::DRAFT && $this->isChanged("__Counter", DataObject::CHANGE_VALUE)) {
 			$this->Parent()->__PageSectionCounter++;
@@ -74,6 +99,40 @@ class PageSection extends DataObject
 			} else {
 				$this->Parent()->writeWithoutVersion();
 			}
+		}
+	}
+
+	/**
+	 * Overwrites the parent version so that it actually clones Elements rather than rereferencing them
+	 *
+	 * @param DataObject $sourceObject
+	 * @param DataObject $destinationObject
+	 * @param string $relation
+	 */
+	protected function duplicateManyManyRelation($sourceObject, $destinationObject, $relation)
+	{
+		if ($relation === 'Elements') {
+			return $this->duplicateElements($sourceObject, $destinationObject);
+		}
+
+		return parent::duplicateManyManyRelation($sourceObject, $destinationObject, $relation);
+	}
+
+	/**
+	 * Custom method to clone Elements
+	 *
+	 * @param DataObject $sourceObject
+	 * @param DataObject $destinationObject
+	 */
+	protected function duplicateElements($sourceObject, $destinationObject)
+	{
+		// Copy all components from source to destination
+		$source = $sourceObject->getManyManyComponents('Elements')->sort('SortOrder');
+		$dest = $destinationObject->getManyManyComponents('Elements');
+
+		foreach ($source as $item) {
+			$clonedItem = $item->duplicate(false);
+			$dest->add($clonedItem);
 		}
 	}
 
@@ -90,7 +149,8 @@ class PageSection extends DataObject
 	 * Gets the name of this PageSection
 	 * @return string
 	 */
-	public function getName() {
+	public function getName()
+	{
 		return $this->__Name;
 	}
 
@@ -101,7 +161,8 @@ class PageSection extends DataObject
 	 * @param string $section The section for which to get the allowed child classes.
 	 * @return string[]
 	 */
-	public function getAllowedPageElements() {
+	public function getAllowedPageElements()
+	{
 		return $this->Parent()->getAllowedPageElements($this->__Name);
 	}
 }

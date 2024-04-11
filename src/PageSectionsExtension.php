@@ -5,20 +5,10 @@ namespace FLXLabs\PageSections;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverStripe\Forms\GridField\GridFieldButtonRow;
-use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
-use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
-use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\SiteTree;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Versioned\Versioned;
-
-use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
-use Symbiote\GridFieldExtensions\GridFieldAddExistingSearchButton;
 
 class PageSectionsExtension extends DataExtension
 {
