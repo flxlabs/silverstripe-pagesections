@@ -2,6 +2,7 @@
 
 namespace FLXLabs\PageSections;
 
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injector;
 
 /**
@@ -10,6 +11,8 @@ use SilverStripe\Core\Injector\Injector;
  */
 class PageSectionChangeState
 {
+    use Configurable;
+
     private $propagateWrites = true;
 
     public function setPropagateWrites(bool $value)
@@ -19,6 +22,10 @@ class PageSectionChangeState
 
     public function getPropagateWrites()
     {
+        if ($this->config()->get('always_propagate_writes')) {
+            return true;
+        }
+
         return $this->propagateWrites;
     }
 
