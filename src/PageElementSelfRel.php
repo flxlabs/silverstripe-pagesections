@@ -34,6 +34,10 @@ class PageElementSelfRel extends DataObject
 	{
 		parent::onAfterWrite();
 
+		if (!PageSectionChangeState::propagateWrites()) {
+			return;
+		}
+
 		if (!$this->__NewOrder && Versioned::get_stage() == Versioned::DRAFT) {
 			$this->Parent()->__Counter++;
 			if ($this->Parent()->isLiveVersion()) {
