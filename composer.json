@@ -1,45 +1,46 @@
 {
-	"name": "flxlabs/silverstripe-pagesections",
-	"description": "Adds configurable page sections and elements to your SilverStripe project.",
-	"type": "silverstripe-vendormodule",
-	"homepage": "http://github.com/flxlabs/silverstripe-pagesections",
-	"keywords": [
-		"silverstripe",
-		"sections",
-		"elements",
-		"page sections",
-		"page elements"
-	],
-	"license": "MIT",
-	"authors": [
-		{
-			"name": "Marco Crespi",
-			"email": "mrc@flxlabs.com"
-		}
-	],
-	"support": {
-		"issues": "http://github.com/flxlabs/silverstripe-pagesections/issues"
-	},
-	"require": {
-		"silverstripe/framework": "^5",
-		"symbiote/silverstripe-gridfieldextensions": "^4",
-		"silverstripe/vendor-plugin": "^2.0",
-		"silverstripe/versioned": "^2"
-	},
-	"autoload": {
-		"psr-4": {
-			"FlxLabs\\PageSections\\": "src/"
-		}
-	},
-	"extra": {
-		"expose": [
-			"client"
-		]
-	},
-	"config": {
-		"allow-plugins": {
-			"composer/installers": true,
-			"silverstripe/vendor-plugin": true
-		}
-	}
+  "name": "flxlabs/silverstripe-pagesections",
+  "description": "Adds configurable page sections and elements to your SilverStripe project.",
+  "type": "silverstripe-vendormodule",
+  "homepage": "http://github.com/flxlabs/silverstripe-pagesections",
+  "keywords": [
+    "silverstripe",
+    "sections",
+    "elements",
+    "page sections",
+    "page elements"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Marco Crespi",
+      "email": "mrc@flxlabs.com"
+    }
+  ],
+  "support": {
+    "issues": "http://github.com/flxlabs/silverstripe-pagesections/issues"
+  },
+  "require": {
+    "silverstripe/cms": "^6.0",
+    "silverstripe/framework": "^6.0",
+    "symbiote/silverstripe-gridfieldextensions": "^5",
+    "silverstripe/vendor-plugin": "^3.0",
+    "silverstripe/versioned": "^3"
+  },
+  "autoload": {
+    "psr-4": {
+      "FlxLabs\\PageSections\\": "src/"
+    }
+  },
+  "extra": {
+    "expose": [
+      "client"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "silverstripe/vendor-plugin": true
+    }
+  }
 }

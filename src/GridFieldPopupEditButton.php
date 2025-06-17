@@ -4,7 +4,7 @@ namespace FLXLabs\PageSections;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Forms\GridField\GridFieldEditButton;
-use SilverStripe\View\ArrayData;
+use SilverStripe\Model\ArrayData;
 
 class GridFieldPopupEditButton extends GridFieldEditButton
 {

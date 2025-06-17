@@ -9,7 +9,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 
@@ -23,11 +23,11 @@ class PageElement extends DataObject
 
     public static function getSingularName()
     {
-        return static::$singular_name;
+        return static::singleton()->i18n_singular_name();
     }
     public static function getPluralName()
     {
-        return static::$plural_name;
+        return static::singleton()->i18n_plural_name();
     }
     public static function isOpenByDefault()
     {
@@ -242,7 +242,7 @@ class PageElement extends DataObject
      *   Parent: The name and class name of the root parent object.
      *   Section: The name of the section on the root object where this element is shown.
      *   Path: The names of the parent PageElements that lead to this element.
-     * @return \SilverStripe\ORM\ArrayList An array of info objects
+     * @return \SilverStripe\Model\List\ArrayList An array of info objects
      */
     public function getAllUses()
     {
@@ -337,7 +337,7 @@ class PageElement extends DataObject
         );
     }
 
-    public function forTemplate($parentList = "")
+    public function forTemplate($parentList = ""): string
     {
         $parents = ArrayList::create();
         $splits = explode(",", $parentList);

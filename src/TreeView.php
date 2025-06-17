@@ -9,9 +9,9 @@ use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\HiddenField;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\Model\List\PaginatedList;
 use SilverStripe\ORM\DataObjectInterface;
-use SilverStripe\ORM\PaginatedList;
-use SilverStripe\View\ArrayData;
 use SilverStripe\View\HTML;
 use SilverStripe\View\Requirements;
 
@@ -81,9 +81,7 @@ class TreeView extends FormField
      * so there are no additional actions we have to perform here. We overwrite
      * this because the default behavior would write a NULL value into the relation.
      */
-    public function saveInto(DataObjectInterface $record)
-    {
-    }
+    public function saveInto(DataObjectInterface $record) {}
 
     /**
      * Recursively opens an item
@@ -631,7 +629,7 @@ class TreeView extends FormField
      * Get base items
      *
      * Gets all the top level items of this TreeView.
-     * @return \SilverStripe\ORM\ArrayList
+     * @return \SilverStripe\Model\List\ArrayList
      */
     public function getItems()
     {
@@ -727,7 +725,7 @@ class TreeView extends FormField
      *
      * Renders the specified item and it's children
      * @param PageElement $item The item to render
-     * @param string[] $parents The hierarchy of parents this item is a child of
+     * @param PageElement[] $parents The hierarchy of parents this item is a child of
      * @param \Stdclass $opens The local open state for the item
      * @param boolean $isFirst True if this is the first item of the direct parent, false otherwise
      */
@@ -951,6 +949,4 @@ class TreeView extends FormField
     }
 }
 
-class TreeView_Readonly extends TreeView
-{
-}
+class TreeView_Readonly extends TreeView {}

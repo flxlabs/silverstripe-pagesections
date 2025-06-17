@@ -4,13 +4,13 @@ namespace FLXLabs\PageSections;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Versioned\Versioned;
 
-class PageSectionsExtension extends DataExtension
+class PageSectionsExtension extends Extension
 {
 	// Generate the needed relations on the class
 	public static function get_extra_config($class = null, $extensionClass = null)
@@ -79,8 +79,6 @@ class PageSectionsExtension extends DataExtension
 
 	public function onAfterWrite()
 	{
-		parent::onAfterWrite();
-
 		if ($this->owner->ID) {
 			$sections = $this->getPageSectionNames();
 
@@ -151,8 +149,6 @@ class PageSectionsExtension extends DataExtension
 
 	public function __call($method, $arguments)
 	{
-		//var_dump($method);
-
 		// Check if we're trying to get a page section
 		if (mb_strpos($method, "getPageSection") === 0) {
 			$name = mb_substr($method, 3);

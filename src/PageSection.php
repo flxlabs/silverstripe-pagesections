@@ -136,7 +136,7 @@ class PageSection extends DataObject
 		}
 	}
 
-	public function forTemplate()
+	public function forTemplate(): string
 	{
 		$elements = $this->Elements();
 		return $this->renderWith(
