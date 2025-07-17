@@ -148,6 +148,11 @@
 	padding-left: 0;
 	background: transparent;
 	color: #43536d;
+	border-width: 0;
+}
+
+.treeview-item-actions .btn:hover {
+	border-width: 0;
 }
 
 .treeview-item-actions .edit-button {
