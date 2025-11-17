@@ -88,9 +88,12 @@ class PageSectionsExtension extends Extension
 				if (!$this->owner->{$name . "ID"}) {
 					// Restore or create a page section if we don't have one yet
 					$this->restoreOrCreate($sectionName);
-				} else if ($this->owner->$name()->__ParentClass !== $this->owner->ClassName) {
-					$this->owner->$name()->__ParentClass = $this->owner->ClassName;
-					$this->owner->$name()->write();
+				} else {
+					$section = PageSection::get()->byID($this->owner->{$name . "ID"});
+					if ($section && $section->__ParentClass !== $this->owner->ClassName) {
+						$section->__ParentClass = $this->owner->ClassName;
+						$section->write();
+					}
 				}
 			}
 		}

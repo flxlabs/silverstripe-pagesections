@@ -40,7 +40,11 @@ class PageSection extends DataObject
 
 	public function Parent()
 	{
-		$parent = DataObject::get_by_id($this->__ParentClass, $this->__ParentID);
+		if (!$this->__ParentClass || !$this->__ParentID) {
+			return null;
+		}
+
+		$parent = DataObject::get_by_id($this->__ParentClass, $this->__ParentID, false);
 		if ($parent == null) {
 			$parent = Versioned::get_latest_version($this->__ParentClass, $this->__ParentID);
 		}
