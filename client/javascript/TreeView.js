@@ -411,7 +411,7 @@
 									}
 								});
 
-							var url = $treeView.data('url') + '/detail?ID=' + itemId;
+							var url = $treeView.data('url') + '/detail?ElementID=' + itemId;
 							dialog
 								.addClass('view-detail-dialog')
 								.data('treeview', $treeView)

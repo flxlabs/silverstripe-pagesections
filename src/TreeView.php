@@ -533,7 +533,7 @@ class TreeView extends FormField
         }
 
         $fields = $item->getCMSFields();
-        $fields->addFieldToTab("Root.Main", HiddenField::create("ID", "ID", $item->ID));
+        $fields->addFieldToTab("Root.Main", HiddenField::create("ElementID", "ElementID", $item->ID));
 
         $form = Form::create(
             $this,
@@ -567,7 +567,7 @@ class TreeView extends FormField
      */
     public function detail($request)
     {
-        $id = intval($request->requestVar("ID"));
+        $id = intval($request->requestVar("ElementID"));
         if ($id) {
             $request->getSession()->set("ElementID", $id);
         } else {
@@ -618,7 +618,7 @@ class TreeView extends FormField
      */
     public function doSave($data, $form)
     {
-        $id = intval($data["ID"]);
+        $id = intval($data["ElementID"]);
         $item = PageElement::get()->byID($id);
 
         $form->saveInto($item);
