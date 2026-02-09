@@ -169,7 +169,7 @@ class PageSectionsExtension extends Extension
             }
 
             // Fix for archived errors
-            if (method_exists($this->owner, 'isArchived') && $this->owner->isArchived()) {
+            if ($this->owner->hasMethod('isArchived') && $this->owner->isArchived()) {
                 return new PageSection();
             }
 
