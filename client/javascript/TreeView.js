@@ -395,7 +395,9 @@
 					// Edit button
 					$item
 						.find('> .treeview-item__panel > .treeview-item-flow .edit-button')
-						.click(function() {
+						.click(function (event) {
+							event.preventDefault();
+							event.stopImmediatePropagation();
 							var dialog = $('<div></div>')
 								.appendTo('body')
 								.dialog({
