@@ -4,6 +4,8 @@ namespace FLXLabs\PageSections;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Manifest\VersionProvider;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
@@ -648,6 +650,20 @@ class TreeView extends FormField
     }
 
     /**
+     * Returns if the installed CMS version is below 6.2.
+     * @return array
+     */
+    private function isBelowCMSVersion62()
+    {
+        $p = Injector::inst()->get(VersionProvider::class);
+        $cmsVersion = explode('.', $p->getModuleVersion('silverstripe/cms'));
+        if ($cmsVersion[0] < 6) {
+            return true;
+        }
+        return $cmsVersion[1] < 2;
+    }
+
+    /**
      * Renders this TreeView as an HTML tag
      * @param array $properties The additional properties for the TreeView
      * @return string
@@ -655,6 +671,9 @@ class TreeView extends FormField
     public function FieldHolder($properties = array())
     {
         Requirements::css("flxlabs/silverstripe-pagesections:client/css/TreeView.css");
+        if ($this->isBelowCMSVersion62()) {
+            Requirements::css("flxlabs/silverstripe-pagesections:client/css/JqueryDialogFix.css");
+        }
         Requirements::javascript("flxlabs/silverstripe-pagesections:client/javascript/TreeView.js");
         Requirements::add_i18n_javascript('flxlabs/silverstripe-pagesections:client/javascript/lang', false, true);
 
