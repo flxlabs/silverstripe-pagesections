@@ -590,6 +590,13 @@
 						},
 
 						start: function() {
+							// Reset the drop guard for this drag interaction. The before/middle/after
+							// drop zones of neighbouring items overlap slightly (see TreeView.css), so a
+							// single physical drop can trigger more than one droppable's `drop` callback.
+							// Without this guard that sends duplicate /move requests, each adding the
+							// item to a different parent and leaving a duplicated entry behind.
+							$(this).data('dropHandled', false);
+
 							$('.ui-droppable').each(function() {
 								var $drop = $(this);
 								var $dropItem = $drop.closest('.treeview-item');
@@ -692,6 +699,12 @@
 							hoverClass: 'state-active',
 							tolerance: 'pointer',
 							drop: function(event, ui) {
+								// Only handle the first drop zone that matches for this drag interaction.
+								if (ui.draggable.data('dropHandled')) {
+									return;
+								}
+								ui.draggable.data('dropHandled', true);
+
 								$drop = $(this);
 								$dropItem = $drop.closest('.treeview-item');
 
