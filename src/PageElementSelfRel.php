@@ -59,6 +59,17 @@ class PageElementSelfRel extends DataObject
 			} else {
 				$this->Parent()->writeWithoutVersion();
 			}
+
+			// Unlike PageSectionPageElementRel, "Parent" here is itself a versioned
+			// PageElement, not the root owner - walk up to the actual root(s) and
+			// self-publish to Live if any of them has no real staged/publish workflow
+			// of its own.
+			foreach ($this->Parent()->getRootOwners() as $owner) {
+				if (!$owner->hasExtension(Versioned::class)) {
+					$this->deleteFromStage(Versioned::LIVE);
+					break;
+				}
+			}
 		}
 	}
 }
