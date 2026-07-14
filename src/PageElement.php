@@ -236,6 +236,32 @@ class PageElement extends DataObject
     }
 
     /**
+     * Walks up through PageSections and parent PageElements to find every root
+     * object (eg. a Page) that ultimately owns this element, since a
+     * nested element can be reused under several unrelated roots.
+     * @return \SilverStripe\ORM\List\ArrayList[]
+     */
+    public function getRootOwners(): ArrayList
+    {
+        $owners = ArrayList::create();
+
+        foreach ($this->PageSections() as $section) {
+            $p = $section->Parent();
+            if ($p && $p->ID) {
+                $owners->add($p);
+            }
+        }
+
+        foreach ($this->Parents() as $parent) {
+            foreach ($parent->getRootOwners() as $owner) {
+                $owners->add($owner);
+            }
+        }
+
+        return $owners;
+    }
+
+    /**
      * Gets all places that this PageElement is shown in.
      *
      * Returns a list of objects with the following properties:
