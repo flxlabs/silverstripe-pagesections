@@ -59,6 +59,14 @@ class PageSectionPageElementRel extends DataObject
 			} else {
 				$this->PageSection()->writeWithoutVersion();
 			}
+
+			// Owners without their own Versioned/staged workflow never
+			// go through a publish step that would otherwise carry this deletion over to
+			// Live, so the row would keep existing there. Remove it from Live directly.
+			$parent = $this->PageSection()->Parent();
+			if ($parent && !$parent->hasExtension(Versioned::class)) {
+				$this->deleteFromStage(Versioned::LIVE);
+			}
 		}
 	}
 }
